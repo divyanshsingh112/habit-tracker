@@ -1,0 +1,771 @@
+/* HABIT TRACKER MASTER STYLESHEET */
+
+:root {
+  --bg: #f8fafc;
+  --card: #ffffff;
+  --primary: #4caf50;          /* Vibrant Green */
+  --primary-hover: #43a047;
+  --primary-light: #eefdf2;    /* Very light green */
+  --text-main: #1e293b;        /* Dark Slate */
+  --text-sub: #64748b;         /* Cool Grey */
+  --border: #e2e8f0;
+  --danger: #ef4444;
+  
+  /* Category Colors */
+  --cat-health: #4caf50;
+  --cat-mind: #2196f3;
+  --cat-work: #ff9800;
+  --cat-personal: #9c27b0;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: var(--text-main);
+  -webkit-font-smoothing: antialiased;
+}
+
+.dashboard-wrapper {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 40px 24px;
+}
+
+/* =========================================
+   1. HEADER & LOGO AREA
+   ========================================= */
+
+.main-header {
+  margin-bottom: 20px; 
+}
+
+.header-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.icon-bg {
+  background: var(--primary-light);
+  padding: 10px;
+  border-radius: 14px;
+  color: var(--primary);
+  display: flex;
+}
+
+.header-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.main-header h1 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+/* Logo sits next to title */
+.title-logo {
+  height: 32px;
+  width: auto;
+  object-fit: contain;
+}
+
+.main-header p {
+  margin: 4px 0 0;
+  color: var(--text-sub);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* =========================================
+   2. BREADCRUMBS NAVIGATION
+   ========================================= */
+
+.breadcrumbs-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 40px;
+  padding-left: 2px;
+}
+
+.breadcrumbs-container button {
+  background: white;
+  border: 1px solid var(--border);
+  color: var(--text-sub);
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 50px;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+
+.breadcrumbs-container button:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.crumb-arrow {
+  color: #cbd5e1;
+}
+
+.current-crumb {
+  font-weight: 700;
+  color: var(--text-main);
+  background: white;
+  padding: 8px 16px;
+  border-radius: 50px;
+  font-size: 13px;
+  border: 1px solid transparent;
+  box-shadow: var(--shadow-sm);
+}
+
+/* =========================================
+   3. YEAR VIEW (Split Layout & Inputs)
+   ========================================= */
+
+.year-view-split {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr; /* Content vs Image */
+  gap: 60px;
+  align-items: start;
+}
+
+.view-header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.view-header h2 {
+  margin: 0;
+  font-size: 20px;
+  color: var(--text-main);
+}
+
+/* --- Dark Modern Input Group (For Year Selection) --- */
+.input-group-modern {
+  background: #1e293b; /* Dark Slate Background */
+  padding: 5px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  display: flex;
+  gap: 8px;
+  box-shadow: var(--shadow-sm);
+}
+
+.input-group-modern input {
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 8px 12px;
+  font-size: 14px;
+  width: 100px;
+  font-weight: 600;
+  color: #ffffff; /* WHITE TEXT (Since background is dark) */
+}
+
+/* Hide Spinner Arrows (Cross-browser fix) */
+.input-group-modern input::-webkit-outer-spin-button,
+.input-group-modern input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.input-group-modern input[type=number] {
+  -moz-appearance: textfield; /* Firefox */
+  appearance: textfield;      /* Standard */
+}
+
+.input-group-modern button {
+  background: #334155;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.2s;
+}
+
+.input-group-modern button:hover {
+  background: var(--primary);
+}
+
+/* --- Hero Image (Right Side) --- */
+.year-right-column {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-top: 20px;
+}
+
+.hero-illustration {
+  width: 100%;
+  max-width: 500px;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 20px 30px rgba(0,0,0,0.08));
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-15px); }
+}
+
+/* =========================================
+   4. GRID SYSTEM (Years & Months)
+   ========================================= */
+
+.card-grid {
+  display: grid;
+  gap: 24px;
+  margin-top: 20px;
+  width: 100%;
+}
+
+/* AUTO-FILL: This creates as many columns as fit in the screen.
+   It will take up the empty space on the right.
+*/
+.months-grid, .card-grid {
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+
+/* --- Card Styling --- */
+.selection-card {
+  background: white;
+  border-radius: 20px;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.selection-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--primary);
+}
+
+/* Month Specific */
+.month-card {
+  height: 120px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+.month-card:hover { color: var(--primary); }
+
+/* Year Specific */
+.year-card {
+  height: 180px;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: stretch;
+}
+
+.year-card-content {
+  padding: 24px;
+}
+
+.year-icon-box {
+  background: var(--primary-light);
+  color: var(--primary);
+  padding: 10px;
+  border-radius: 12px;
+  display: inline-block;
+  margin-bottom: 12px;
+}
+
+.year-card h3 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.year-card p {
+  margin: 0;
+  font-size: 13px;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.year-card-action {
+  background: #f8fafc;
+  padding: 12px 24px;
+  border-top: 1px solid #f1f5f9;
+  display: flex;
+  justify-content: flex-end;
+  color: #cbd5e1;
+  transition: all 0.3s ease;
+}
+
+.year-card:hover .year-card-action {
+  background: var(--primary);
+  color: white;
+}
+
+/* =========================================
+   5. TRACKER DASHBOARD UI
+   ========================================= */
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 24px;
+  margin-bottom: 30px;
+}
+
+.card {
+  background: var(--card);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+}
+
+.card h3 {
+  margin: 0 0 20px 0;
+  font-size: 15px;
+  color: var(--text-sub);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* --- Add Habit Form (FIXED TEXT COLOR) --- */
+.add-habit-form {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  background: white;
+  padding: 16px;
+  border-radius: 16px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+}
+
+.add-habit-form input, .add-habit-form select {
+  padding: 10px 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 14px;
+  outline: none;
+  background: #f8fafc; /* Light Grey Background */
+  
+  /* FORCE TEXT TO BE DARK (Important Fix) */
+  color: #1e293b; 
+  font-weight: 500;
+}
+
+.add-habit-form input::placeholder {
+  color: #94a3b8;
+}
+
+.add-habit-form input { flex: 2; }
+.add-habit-form select { flex: 0.5; cursor: pointer; color: #1e293b; }
+
+.add-habit-form button {
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 0 24px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.2s;
+}
+
+.add-habit-form button:hover {
+  background: var(--primary-hover);
+}
+
+/* --- Main Tracking Grid --- */
+.grid-card {
+  overflow-x: auto;
+  background: white;
+}
+
+.grid-head {
+  display: grid;
+  grid-template-columns: 240px 1fr 90px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--bg);
+  font-weight: 700;
+  font-size: 11px;
+  color: var(--text-sub);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.habit-row {
+  display: grid;
+  grid-template-columns: 240px 1fr 90px;
+  align-items: center;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--bg);
+  transition: background 0.1s;
+}
+
+.habit-row:hover {
+  background: #fdfdfd;
+}
+
+.h-col {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-right: 20px;
+}
+
+.habit-title {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-main);
+  margin-bottom: 4px;
+}
+
+.d-col {
+  display: flex;
+  gap: 4px;
+  padding: 0 10px;
+  overflow-x: auto;
+  scrollbar-width: none; 
+}
+.d-col::-webkit-scrollbar { display: none; }
+
+.grid-head .d-col span {
+  width: 26px;
+  text-align: center;
+  display: block;
+}
+
+/* Custom Checkbox */
+.check-box {
+  width: 26px;
+  height: 26px;
+  border: 2px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.check-box:hover {
+  border-color: var(--primary);
+  background: var(--primary-light);
+}
+
+.check-box.active {
+  background-color: var(--primary);
+  border-color: var(--primary);
+  /* Uses a white SVG checkmark encoded */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E");
+  background-size: 16px;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.progress-pill {
+  background: var(--bg);
+  padding: 6px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 13px;
+  text-align: center;
+  color: var(--text-main);
+}
+
+.cat-tag {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-weight: 700;
+  text-transform: uppercase;
+  display: inline-block;
+}
+
+.cat-health { background: #dcfce7; color: var(--cat-health); }
+.cat-mind { background: #e0f2fe; color: var(--cat-mind); }
+.cat-work { background: #ffedd5; color: var(--cat-work); }
+.cat-personal { background: #f3e8ff; color: var(--cat-personal); }
+
+.delete-btn {
+  background: transparent;
+  border: none;
+  color: #cbd5e1;
+  cursor: pointer;
+  padding: 4px;
+}
+.delete-btn:hover { color: var(--danger); }
+
+/* =========================================
+   6. UTILITIES
+   ========================================= */
+
+.animate-fade {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .year-view-split { grid-template-columns: 1fr; }
+  .year-right-column { display: none; }
+  .stats-grid { grid-template-columns: 1fr; }
+  .grid-head, .habit-row { grid-template-columns: 160px 1fr 60px; }
+}
+
+/* ... existing code ... */
+
+/* =========================================
+   7. LOGIN PAGE
+   ========================================= */
+
+.login-container {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f1f5f9;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+}
+
+.login-card {
+  background: white;
+  padding: 40px;
+  border-radius: 20px;
+  text-align: center;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  max-width: 400px;
+  width: 90%;
+}
+
+.login-logo {
+  width: 60px;
+  height: auto;
+  margin-bottom: 20px;
+}
+
+.login-card h1 {
+  margin: 0 0 8px 0;
+  font-size: 24px;
+  color: #1e293b;
+}
+
+.login-card p {
+  margin: 0 0 24px 0;
+  color: #64748b;
+}
+
+.google-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #e2e8f0;
+  background: white;
+  border-radius: 8px;
+  font-weight: 600;
+  color: #1e293b;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 15px;
+}
+
+.google-btn:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.google-btn img {
+  width: 20px;
+  height: 20px;
+}
+
+/* --- NEW AUTHENTICATION STYLES --- */
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.auth-form input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  background: #f8fafc;
+  color: #1e293b;
+  transition: all 0.2s;
+}
+
+.auth-form input:focus {
+  border-color: var(--primary);
+  background: white;
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.primary-auth-btn {
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 15px;
+  transition: background 0.2s;
+}
+
+.primary-auth-btn:hover {
+  background: var(--primary-hover);
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  margin: 20px 0;
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.divider::before, .divider::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.divider span {
+  padding: 0 10px;
+}
+
+.toggle-auth {
+  margin-top: 24px;
+  font-size: 14px;
+  color: #64748b;
+}
+
+.toggle-auth span {
+  color: var(--primary);
+  font-weight: 600;
+  cursor: pointer;
+  margin-left: 5px;
+}
+
+.toggle-auth span:hover {
+  text-decoration: underline;
+}
+
+.error-message {
+  background: #fef2f2;
+  color: #ef4444;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-bottom: 16px;
+  border: 1px solid #fee2e2;
+  text-align: left;
+}
+
+/* =========================================
+   8. LOADING SCREEN
+   ========================================= */
+
+.loading-container {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #f8fafc; /* Light grey background */
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 2000;
+}
+
+/* The Spinner Circle */
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #e2e8f0;       /* Light grey border */
+  border-top-color: var(--primary); /* Your theme green */
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 24px;
+}
+
+/* The Text below it */
+.loading-text {
+  font-size: 16px;
+  font-weight: 600;
+  color: #64748b;
+  letter-spacing: 0.02em;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* Animations */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
