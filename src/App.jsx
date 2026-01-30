@@ -8,7 +8,7 @@ import MonthView from './components/MonthView';
 import TrackerView from './components/TrackerView';
 import './App.css';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = 'https://habit-tracker-m9uw.onrender.com';
 
 export default function App() {
   const [user, setUser] = useState(null);
