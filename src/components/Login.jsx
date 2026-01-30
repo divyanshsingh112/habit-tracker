@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { loginWithGoogle, loginWithEmail, registerWithEmail } from '../firebase';
+import logoImg from '../assets/logo.png'
 
 export default function Login({ onLogin }) {
   const [isSignUp, setIsSignUp] = useState(false); // Toggle between Login and Sign Up
@@ -43,7 +44,7 @@ export default function Login({ onLogin }) {
   return (
     <div className="login-container">
       <div className="login-card">
-        <img src="src\assets\logo.png" alt="Logo" className="login-logo" />
+        <img src={logoImg} alt="Logo" className="login-logo" />
         
         <h1>{isSignUp ? "Create Account" : "Welcome"}</h1>
         <p>{isSignUp ? "Start your journey today." : "Track your habits, achieve your goals."}</p>
