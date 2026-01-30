@@ -45,7 +45,7 @@ export default function YearView({ years, onAddYear, onSelectYear }) {
       <div className="year-right-column">
         {/* CORRECTED PATH BELOW: Just slash + filename */}
         <img 
-          src="/hero.png" 
+          src="src\assets\hero.png" 
           alt="Habit Tracker Hero" 
           className="hero-illustration"
         />

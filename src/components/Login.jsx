@@ -43,7 +43,7 @@ export default function Login({ onLogin }) {
   return (
     <div className="login-container">
       <div className="login-card">
-        <img src="/logo.png" alt="Logo" className="login-logo" />
+        <img src="src\assets\logo.png" alt="Logo" className="login-logo" />
         
         <h1>{isSignUp ? "Create Account" : "Welcome"}</h1>
         <p>{isSignUp ? "Start your journey today." : "Track your habits, achieve your goals."}</p>
