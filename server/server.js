@@ -2,27 +2,25 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const MonthData = require('./models/MonthData');
+const MonthData = require('../models/MonthData'); // ADJUSTED PATH: Go up one level to find models
 
 const app = express();
 
 // --- 1. CORS CONFIGURATION ---
-// We allow your GitHub frontend explicitly
 app.use(cors({
   origin: ["https://divyanshsingh112.github.io", "http://localhost:5173"],
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  credentials: true,
-  allowedHeaders: ["Content-Type", "Authorization"]
+  credentials: true
 }));
 
 app.use(express.json());
 
-// --- 2. DATABASE CONNECTION ---
+// --- 2. DATABASE ---
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('✅ MongoDB Connected'))
   .catch(err => console.error('❌ MongoDB Connection Error:', err));
 
-// --- 3. ROUTES (NO '/api' PREFIX) ---
+// --- 3. ROUTES (REMOVED /api TO MATCH FRONTEND) ---
 
 // GET ALL YEARS
 app.get('/years/:userId', async (req, res) => {
@@ -31,7 +29,6 @@ app.get('/years/:userId', async (req, res) => {
     const years = await MonthData.find({ userId }).distinct('year');
     res.json(years); 
   } catch (err) {
-    console.error("Error getting years:", err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -43,7 +40,6 @@ app.get('/habits/:userId/:year/:month', async (req, res) => {
     const data = await MonthData.findOne({ userId, year, month });
     res.json(data ? data.habits : []);
   } catch (err) {
-    console.error("Error getting habits:", err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -52,7 +48,6 @@ app.get('/habits/:userId/:year/:month', async (req, res) => {
 app.post('/habits/:userId/:year/:month', async (req, res) => {
   const { userId, year, month } = req.params;
   const { habits } = req.body;
-
   try {
     const updatedData = await MonthData.findOneAndUpdate(
       { userId, year, month },
@@ -61,14 +56,11 @@ app.post('/habits/:userId/:year/:month', async (req, res) => {
     );
     res.json(updatedData);
   } catch (err) {
-    console.error("Error saving data:", err);
     res.status(500).json({ error: err.message });
   }
 });
 
-// Health Check
 app.get('/', (req, res) => res.send('Habit Tracker API Running'));
 
 // --- 4. EXPORT FOR VERCEL ---
-// This is critical. Do not remove this line.
 module.exports = app;
