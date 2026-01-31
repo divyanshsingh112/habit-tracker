@@ -1,5 +1,6 @@
 {
   "name": "habit-tracker-frontend",
+  "homepage": "https://divyanshsingh112.github.io/habit-tracker", 
   "private": true,
   "version": "0.0.0",
   "type": "module",
