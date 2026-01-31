@@ -2,23 +2,26 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const MonthData = require('./models/MonthData');
+// Ensure this path matches where you created your model file
+const MonthData = require('./models/MonthData'); 
 
 const app = express();
 
 // --- MIDDLEWARE ---
 app.use(cors({
-  // Replace the URL below with your actual Netlify/Vercel URL
-  origin: [" https://divyanshsingh112.github.io/habit-tracker/", "http://localhost:5173"], 
+  origin: [
+    "https://divyanshsingh112.github.io", // CORRECT: No trailing slash, no path, no spaces
+    "http://localhost:5173"               // Local development
+  ],
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true
 }));
+
 app.use(express.json());
 
 // --- DATABASE CONNECTION ---
-// Using process.env.MONGO_URI as seen in your logs
 mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('✅ MongoDB Connected')) //
+  .then(() => console.log('✅ MongoDB Connected'))
   .catch(err => console.error('❌ MongoDB Connection Error:', err));
 
 // --- ROUTES ---
@@ -29,7 +32,6 @@ app.get('/', (req, res) => {
 });
 
 // 1. GET ALL YEARS for a specific User
-// Ensure frontend calls: ${API_URL}/api/years/${userId}
 app.get('/api/years/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
@@ -43,7 +45,6 @@ app.get('/api/years/:userId', async (req, res) => {
 });
 
 // 2. GET HABITS for a User
-// Ensure frontend calls: ${API_URL}/api/habits/${userId}/${year}/${month}
 app.get('/api/habits/:userId/:year/:month', async (req, res) => {
   const { userId, year, month } = req.params;
   try {
@@ -57,7 +58,6 @@ app.get('/api/habits/:userId/:year/:month', async (req, res) => {
 });
 
 // 3. SAVE HABITS (Create Year or Update Habits)
-// Ensure frontend calls: ${API_URL}/api/habits/${userId}/${year}/${month}
 app.post('/api/habits/:userId/:year/:month', async (req, res) => {
   const { userId, year, month } = req.params;
   const { habits } = req.body;
@@ -76,6 +76,5 @@ app.post('/api/habits/:userId/:year/:month', async (req, res) => {
 });
 
 // --- START SERVER ---
-// Render uses port 10000 by default
 const PORT = process.env.PORT || 10000; 
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
