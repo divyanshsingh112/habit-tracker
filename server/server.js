@@ -10,7 +10,8 @@ const app = express();
 // --- MIDDLEWARE ---
 app.use(cors({
   origin: [
-    "https://divyanshsingh112.github.io"  
+    "https://divyanshsingh112.github.io",  // ✅ CORRECT: No space at start, no slash at end
+    "http://localhost:5173"
   ],
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true
