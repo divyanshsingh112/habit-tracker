@@ -8,7 +8,7 @@ import MonthView from './components/MonthView';
 import TrackerView from './components/TrackerView';
 import './App.css';
 
-const API_URL = 'https://habit-tracker-m9uw.onrender.com';
+const API_URL = 'https://habit-tracker-swart-two.vercel.app/';
 
 export default function App() {
   const [user, setUser] = useState(null);

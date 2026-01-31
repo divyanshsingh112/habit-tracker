@@ -10,8 +10,7 @@ const app = express();
 // --- MIDDLEWARE ---
 app.use(cors({
   origin: [
-    "https://divyanshsingh112.github.io", // CORRECT: No trailing slash, no path, no spaces
-    "http://localhost:5173"               // Local development
+    "https://divyanshsingh112.github.io"  
   ],
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true
@@ -76,5 +75,4 @@ app.post('/api/habits/:userId/:year/:month', async (req, res) => {
 });
 
 // --- START SERVER ---
-const PORT = process.env.PORT || 10000; 
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+module.exports = app;
