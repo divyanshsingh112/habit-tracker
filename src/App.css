@@ -258,6 +258,53 @@ html, body {
    YEAR VIEW & HOME PAGE (RESTORED)
    ========================================= */
 
+.view-header-split {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end; /* Aligns legend with bottom of text */
+  margin-bottom: 30px;
+  flex-wrap: wrap; /* Wraps on mobile */
+  gap: 16px;
+}
+
+.header-text-group h2 {
+  font-size: 28px;
+  margin: 0 0 8px 0;
+  color: var(--text-main);
+}
+
+.header-text-group p {
+  margin: 0;
+  color: var(--text-sub);
+  font-size: 14px;
+}
+
+/* The Legend Box */
+.status-legend {
+  display: flex;
+  gap: 16px;
+  background: white;
+  padding: 8px 16px;
+  border-radius: 50px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  align-items: center;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-sub);
+}
+
+/* Specific colors for legend icons */
+.legend-item .healthy { color: var(--primary); }
+.legend-item .warning { color: #f59e0b; }
+.legend-item .critical { color: var(--danger); }
+
 .year-view-split {
   display: grid;
   grid-template-columns: 1fr 1fr;

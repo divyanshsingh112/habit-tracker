@@ -9,26 +9,22 @@ const MONTHS = [
 export default function MonthView({ year, store, onSelectMonth }) {
   
   const getMonthHealth = (monthName) => {
-    // 1. Get habits for this month from the store
     const monthData = store[year]?.[monthName];
     
-    // 2. If no data, return 'none' status
+    // If no data
     if (!monthData || monthData.length === 0) {
       return { status: 'none', icon: <CircleDashed size={20} /> };
     }
 
     let totalCompleted = 0;
-    // Assume 30 days per habit for calculation
-    const totalPossible = monthData.length * 30; 
+    const totalPossible = monthData.length * 30; // Approx baseline
 
     monthData.forEach(h => {
-      // Add up all the completed days (keys in the map)
       totalCompleted += Object.keys(h.completedDays || {}).length;
     });
 
     const rate = totalPossible > 0 ? (totalCompleted / totalPossible) * 100 : 0;
 
-    // 3. Determine status based on rate
     if (rate >= 70) {
       return { status: 'healthy', icon: <CheckCircle2 size={20} className="health-icon healthy" /> };
     }
@@ -41,14 +37,34 @@ export default function MonthView({ year, store, onSelectMonth }) {
 
   return (
     <div className="view-container animate-fade">
-      <header className="view-header">
-        <h2>Months in {year}</h2>
-        <p>Review your monthly performance status.</p>
-      </header>
+      
+      {/* HEADER WITH LEGEND */}
+      <div className="view-header-split">
+        <div className="header-text-group">
+          <h2>Months in {year}</h2>
+          <p>Review your monthly performance status.</p>
+        </div>
+
+        {/* COMPACT LEGEND */}
+        <div className="status-legend">
+          <div className="legend-item">
+            <CheckCircle2 size={14} className="healthy"/> 
+            <span>&gt; 70%</span>
+          </div>
+          <div className="legend-item">
+            <AlertCircle size={14} className="warning"/> 
+            <span>30-70%</span>
+          </div>
+          <div className="legend-item">
+            <XCircle size={14} className="critical"/> 
+            <span>&lt; 30%</span>
+          </div>
+        </div>
+      </div>
 
       <div className="card-grid months-grid">
         {MONTHS.map((m) => {
-          // Pass 'store' to MonthView in App.jsx for this to work!
+          // Pass 'store' to check data
           const health = store ? getMonthHealth(m) : { status: 'none', icon: <CircleDashed size={20}/> };
           
           return (
