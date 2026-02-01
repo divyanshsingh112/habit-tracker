@@ -29,7 +29,6 @@ export default function App() {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       if (currentUser) {
-        // Load ALL data immediately so consistency stats work instantly
         loadAllData(currentUser.uid);
         fetchGlobalStreak(currentUser.uid);
       } else {
@@ -42,21 +41,20 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
-  // --- NEW FUNCTION: FETCHES EVERYTHING ON LOAD ---
+  // --- FETCHES EVERYTHING ON LOAD ---
   const loadAllData = (userId) => {
     fetch(`${API_URL}/all-data/${userId}`)
       .then(res => res.json())
       .then(allData => {
         const newStore = {};
         
-        // Transform the flat database array into your { Year: { Month: Data } } structure
         allData.forEach(doc => {
           if (!newStore[doc.year]) newStore[doc.year] = {};
           newStore[doc.year][doc.month] = doc.habits;
         });
 
-        // --- REMOVED AUTOMATIC YEAR CREATION HERE ---
-        // This stops 2026 from reappearing automatically after you delete it.
+        // REMOVED: The logic that forced the current year to appear is gone.
+        // Now, the app only shows what is actually in the database or what you create manually.
 
         setStore(newStore);
       })
@@ -73,18 +71,17 @@ export default function App() {
   const addYear = (year) => {
     if (!year || store[year]) return;
     setStore(prev => ({ ...prev, [year]: {} }));
-    // We don't save to DB yet; data is saved when the first habit is added
     showToast(`Year ${year} created!`);
   };
 
-  // --- UPDATED DELETE FUNCTION ---
+  // --- DELETE FUNCTION ---
   const deleteYear = (yearToDelete) => {
     if (!window.confirm(`Are you sure you want to delete ${yearToDelete}? This will remove ALL habits for that year.`)) {
       return;
     }
 
-    // 1. Optimistic Update (Remove from UI immediately)
-    const previousStore = { ...store }; // Keep backup in case of error
+    // 1. Optimistic Update
+    const previousStore = { ...store };
     const newStore = { ...store };
     delete newStore[yearToDelete];
     setStore(newStore);
@@ -95,7 +92,6 @@ export default function App() {
         method: 'DELETE',
       })
       .then(async (res) => {
-        // CHECK IF REQUEST FAILED
         if (!res.ok) {
           const err = await res.json();
           throw new Error(err.error || 'Failed to delete');
@@ -105,20 +101,17 @@ export default function App() {
       .catch((err) => {
         console.error("Delete failed:", err);
         showToast("Sync Error: Server didn't delete the year", "error");
-        // Revert UI if server failed
         setStore(previousStore);
       });
     }
   };
 
   const handleTrackerUpdate = (updatedHabitsList) => {
-    // 1. Update Local State immediately
     setStore(prev => ({
       ...prev,
       [view.year]: { ...prev[view.year], [view.month]: updatedHabitsList }
     }));
 
-    // 2. Save to Backend
     if (user) {
       fetch(`${API_URL}/habits/${user.uid}/${view.year}/${view.month}`, {
         method: 'POST',
@@ -213,7 +206,7 @@ export default function App() {
               years={Object.keys(store)} 
               store={store} 
               onAddYear={addYear}
-              onDeleteYear={deleteYear} /* PASSED THE DELETE FUNCTION HERE */
+              onDeleteYear={deleteYear}
               onSelectYear={(y) => setView({ screen: 'months', year: y, month: null })} 
             />
           )}
