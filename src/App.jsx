@@ -78,26 +78,36 @@ export default function App() {
     showToast(`Year ${year} created!`);
   };
 
-  // --- DELETE YEAR FUNCTION ---
+  // --- UPDATED DELETE FUNCTION ---
   const deleteYear = (yearToDelete) => {
     if (!window.confirm(`Are you sure you want to delete ${yearToDelete}? This will remove ALL habits for that year.`)) {
       return;
     }
 
-    // 1. Update Local State (Immediate UI removal)
+    // 1. Optimistic Update (Remove from UI immediately)
+    const previousStore = { ...store }; // Keep backup in case of error
     const newStore = { ...store };
     delete newStore[yearToDelete];
     setStore(newStore);
 
-    // 2. Call Backend to remove from DB
+    // 2. Call Backend
     if (user) {
       fetch(`${API_URL}/years/${user.uid}/${yearToDelete}`, {
         method: 'DELETE',
       })
-      .then(() => showToast(`Year ${yearToDelete} deleted`))
-      .catch(() => {
-        showToast("Failed to delete from server", "error"); 
-        // Optional: you could reload data here if needed
+      .then(async (res) => {
+        // CHECK IF REQUEST FAILED
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.error || 'Failed to delete');
+        }
+        showToast(`Year ${yearToDelete} deleted`);
+      })
+      .catch((err) => {
+        console.error("Delete failed:", err);
+        showToast("Sync Error: Server didn't delete the year", "error");
+        // Revert UI if server failed
+        setStore(previousStore);
       });
     }
   };
