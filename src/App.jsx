@@ -53,9 +53,6 @@ export default function App() {
           newStore[doc.year][doc.month] = doc.habits;
         });
 
-        // REMOVED: The logic that forced the current year to appear is gone.
-        // Now, the app only shows what is actually in the database or what you create manually.
-
         setStore(newStore);
       })
       .catch(() => showToast("Failed to load history", "error"));
@@ -68,13 +65,27 @@ export default function App() {
       .catch(() => console.error("Streak sync failed"));
   };
 
+  // --- FIXED ADD YEAR FUNCTION ---
+  // Now saves to DB immediately so it persists after refresh
   const addYear = (year) => {
     if (!year || store[year]) return;
+    
+    // 1. Update Local State
     setStore(prev => ({ ...prev, [year]: {} }));
-    showToast(`Year ${year} created!`);
+
+    // 2. SAVE TO SERVER (The missing piece)
+    // We create an empty "January" so the DB has a record of this year
+    if (user) {
+      fetch(`${API_URL}/habits/${user.uid}/${year}/January`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ habits: [] }) 
+      })
+      .then(() => showToast(`Year ${year} created!`))
+      .catch(() => showToast("Failed to save year", "error"));
+    }
   };
 
-  // --- DELETE FUNCTION ---
   const deleteYear = (yearToDelete) => {
     if (!window.confirm(`Are you sure you want to delete ${yearToDelete}? This will remove ALL habits for that year.`)) {
       return;
@@ -141,7 +152,6 @@ export default function App() {
         </div>
       )}
 
-      {/* --- SLIM NAVBAR --- */}
       <header className="slim-navbar">
         <div className="nav-inner">
           <div className="nav-left">
@@ -198,7 +208,6 @@ export default function App() {
         </div>
       </header>
 
-      {/* --- MAIN CONTENT --- */}
       <main className="main-scroll-area">
         <div className="content-max-width">
           {view.screen === 'years' && (
