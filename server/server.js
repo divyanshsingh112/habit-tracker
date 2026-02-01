@@ -9,7 +9,11 @@ const app = express();
 // --- 1. CORS CONFIGURATION ---
 // Update this with your actual Vercel URL once deployed
 app.use(cors({
-  origin: ["https://divyanshsingh112.github.io", "http://localhost:5173", /\.vercel\.app$/],
+  origin: [
+    "http://localhost:5173", 
+    "https://divyanshsingh112.github.io",
+    "https://habit-tracker-kooi.vercel.app/" // <--- ADD YOUR NEW VERCEL DOMAIN HERE
+  ],
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   credentials: true
 }));
