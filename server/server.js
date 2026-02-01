@@ -93,6 +93,17 @@ app.get('/streak/:userId', async (req, res) => {
   }
 });
 
+app.get('/all-data/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    // Find EVERY document belonging to this user
+    const allData = await MonthData.find({ userId });
+    res.json(allData);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get('/', (req, res) => res.send('Habit Tracker API Running'));
 
 // --- 4. RENDER DYNAMIC PORT ---

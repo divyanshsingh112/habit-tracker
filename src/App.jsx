@@ -8,6 +8,7 @@ import MonthView from './components/MonthView';
 import TrackerView from './components/TrackerView';
 import './App.css';
 
+// MAKE SURE THIS IS YOUR RENDER URL
 const API_URL = 'https://habit-tracker-2-12x6.onrender.com'; 
 
 export default function App() {
@@ -28,7 +29,8 @@ export default function App() {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       if (currentUser) {
-        loadYears(currentUser.uid);
+        // CHANGED: Load ALL data immediately, not just year names
+        loadAllData(currentUser.uid);
         fetchGlobalStreak(currentUser.uid);
       } else {
         setStore({});
@@ -40,6 +42,28 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
+  // --- NEW FUNCTION: FETCHES EVERYTHING ON LOAD ---
+  const loadAllData = (userId) => {
+    fetch(`${API_URL}/all-data/${userId}`)
+      .then(res => res.json())
+      .then(allData => {
+        const newStore = {};
+        
+        // Transform the flat database array into your { Year: { Month: Data } } structure
+        allData.forEach(doc => {
+          if (!newStore[doc.year]) newStore[doc.year] = {};
+          newStore[doc.year][doc.month] = doc.habits;
+        });
+
+        // Ensure current year exists even if empty, so the user can see it
+        const currentYear = new Date().getFullYear().toString();
+        if (!newStore[currentYear]) newStore[currentYear] = {};
+
+        setStore(newStore);
+      })
+      .catch(() => showToast("Failed to load history", "error"));
+  };
+
   const fetchGlobalStreak = (userId) => {
     fetch(`${API_URL}/streak/${userId}`)
       .then(res => res.json())
@@ -47,56 +71,26 @@ export default function App() {
       .catch(() => console.error("Streak sync failed"));
   };
 
-  const loadYears = (userId) => {
-    fetch(`${API_URL}/years/${userId}`)
-      .then(res => res.json())
-      .then(yearsList => {
-        const newStore = {};
-        yearsList.forEach(y => { newStore[y] = {} });
-        setStore(newStore);
-      })
-      .catch(() => showToast("Failed to load history", "error"));
-  };
-
-  useEffect(() => {
-    if (user && view.screen === 'tracker' && view.year && view.month) {
-      setLoading(true);
-      fetch(`${API_URL}/habits/${user.uid}/${view.year}/${view.month}`)
-        .then(res => res.json())
-        .then(data => {
-          setStore(prev => ({
-            ...prev,
-            [view.year]: { ...prev[view.year], [view.month]: data }
-          }));
-          setLoading(false);
-        })
-        .catch(() => {
-          showToast("Network Error: Could not sync habits", "error");
-          setLoading(false); 
-        });
-    }
-  }, [view.screen, view.year, view.month, user]);
+  // Note: We don't need the old useEffect for fetching specific months anymore
+  // because loadAllData got everything. 
+  // However, we KEEP the logic to Sync updates back to the server.
 
   const addYear = (year) => {
     if (!year || store[year]) return;
     setStore(prev => ({ ...prev, [year]: {} }));
-    if (user) {
-      fetch(`${API_URL}/habits/${user.uid}/${year}/January`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ habits: [] }) 
-      })
-      .then(() => showToast(`Year ${year} created!`))
-      .catch(() => showToast("Failed to save year", "error"));
-    }
+    // No DB call needed yet, it creates the structure locally. 
+    // Data saves when they add a habit.
+    showToast(`Year ${year} created!`);
   };
 
   const handleTrackerUpdate = (updatedHabitsList) => {
+    // 1. Update Local State immediately (for UI speed)
     setStore(prev => ({
       ...prev,
       [view.year]: { ...prev[view.year], [view.month]: updatedHabitsList }
     }));
 
+    // 2. Save to Backend
     if (user) {
       fetch(`${API_URL}/habits/${user.uid}/${view.year}/${view.month}`, {
         method: 'POST',
@@ -126,11 +120,9 @@ export default function App() {
         </div>
       )}
 
-      {/* --- SLIM NAVBAR (Edge-to-Edge) --- */}
+      {/* --- SLIM NAVBAR --- */}
       <header className="slim-navbar">
         <div className="nav-inner">
-          
-          {/* LEFT: Logo + Breadcrumbs */}
           <div className="nav-left">
             <div className="brand-section">
               <LayoutDashboard className="app-logo-icon" size={24} />
@@ -166,7 +158,6 @@ export default function App() {
             </nav>
           </div>
 
-          {/* RIGHT: Stats + User */}
           <div className="nav-right">
             {globalStreak > 0 && (
               <div className="streak-pill">
@@ -186,7 +177,7 @@ export default function App() {
         </div>
       </header>
 
-      {/* --- MAIN CONTENT (Scrolls independently) --- */}
+      {/* --- MAIN CONTENT --- */}
       <main className="main-scroll-area">
         <div className="content-max-width">
           {view.screen === 'years' && (
@@ -207,7 +198,6 @@ export default function App() {
           )}
 
           {view.screen === 'tracker' && (
-            loading ? <div className="loading-container">Loading...</div> : 
             <TrackerView 
               year={view.year} 
               month={view.month} 
