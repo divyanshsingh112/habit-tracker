@@ -8,7 +8,6 @@ import MonthView from './components/MonthView';
 import TrackerView from './components/TrackerView';
 import './App.css';
 
-// REPLACE THIS with your actual Render Backend URL
 const API_URL = 'https://habit-tracker-2-12x6.onrender.com'; 
 
 export default function App() {
@@ -18,8 +17,6 @@ export default function App() {
   const [view, setView] = useState({ screen: 'years', year: null, month: null });
   const [loading, setLoading] = useState(false);
   const [globalStreak, setGlobalStreak] = useState(0);
-  
-  // TOAST STATE
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
 
   const showToast = (message, type = 'success') => {
@@ -106,10 +103,8 @@ export default function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ habits: updatedHabitsList })
       })
-      .then(() => {
-        fetchGlobalStreak(user.uid);
-      })
-      .catch(() => showToast("Sync Failed: Check Connection", "error"));
+      .then(() => fetchGlobalStreak(user.uid))
+      .catch(() => showToast("Sync Failed", "error"));
     }
   };
 
@@ -122,7 +117,7 @@ export default function App() {
   if (!user) return <Login onLogin={setUser} />;
 
   return (
-    <div className="dashboard-wrapper">
+    <div className="app-container">
       {toast.show && (
         <div className={`toast-notification ${toast.type} animate-slide-in`}>
           {toast.type === 'success' ? <CheckCircle size={18} /> : <AlertTriangle size={18} />}
@@ -131,41 +126,96 @@ export default function App() {
         </div>
       )}
 
-      {/* --- NEW STICKY NAVBAR CONTAINER --- */}
-      <div className="sticky-navbar-box">
-        <header className="main-header">
-          <div className="header-left">
-            <div className="icon-bg"><LayoutDashboard size={28} /></div>
-            <div className="header-text">
-              <div className="title-row">
-                <h1>Habit Tracker</h1>
-                {globalStreak > 0 && (
-                  <div className="global-streak-tag"><Flame size={16} fill="#ff9800" stroke="#ff9800" /><span>{globalStreak} DAY STREAK</span></div>
-                )}
-              </div>
-              <p>Welcome, {user.displayName || user.email}</p>
+      {/* --- SLIM NAVBAR (Edge-to-Edge) --- */}
+      <header className="slim-navbar">
+        <div className="nav-inner">
+          
+          {/* LEFT: Logo + Breadcrumbs */}
+          <div className="nav-left">
+            <div className="brand-section">
+              <LayoutDashboard className="app-logo-icon" size={24} />
+              <h1>Habit Tracker</h1>
             </div>
+
+            <nav className="inline-breadcrumbs">
+              <button 
+                className={`crumb-btn ${view.screen === 'years' ? 'crumb-active' : ''}`}
+                onClick={() => setView({ screen: 'years', year: null, month: null })}
+              >
+                Years
+              </button>
+              
+              {view.year && (
+                <>
+                  <ChevronRight size={14} className="crumb-separator" />
+                  <button 
+                     className={`crumb-btn ${view.screen === 'months' ? 'crumb-active' : ''}`}
+                     onClick={() => setView({ ...view, screen: 'months', month: null })}
+                  >
+                    {view.year}
+                  </button>
+                </>
+              )}
+              
+              {view.month && (
+                <>
+                  <ChevronRight size={14} className="crumb-separator" />
+                  <span className="crumb-btn crumb-active">{view.month}</span>
+                </>
+              )}
+            </nav>
           </div>
-          <button onClick={handleLogout} className="logout-button"><LogOut size={18} /> Logout</button>
-        </header>
 
-        <nav className="breadcrumbs-container">
-          <button onClick={() => setView({ screen: 'years', year: null, month: null })}><Home size={16} /> <span>Years</span></button>
-          {view.year && <><ChevronRight size={14} className="crumb-arrow" /><button onClick={() => setView({ ...view, screen: 'months', month: null })}>{view.year}</button></>}
-          {view.month && <><ChevronRight size={14} className="crumb-arrow" /><span className="current-crumb">{view.month}</span></>}
-        </nav>
-      </div>
-      {/* --- END STICKY NAVBAR --- */}
+          {/* RIGHT: Stats + User */}
+          <div className="nav-right">
+            {globalStreak > 0 && (
+              <div className="streak-pill">
+                <Flame size={14} fill="#ea580c" stroke="#ea580c" />
+                <span>{globalStreak} DAYS</span>
+              </div>
+            )}
+            
+            <div className="user-welcome">
+              <span>{user.displayName || user.email.split('@')[0]}</span>
+            </div>
 
+            <button onClick={handleLogout} className="logout-link">
+              <LogOut size={16} /> Logout
+            </button>
+          </div>
+        </div>
+      </header>
 
-      {/* CONTENT AREA (Only this part scrolls now) */}
-      <main className="content-area">
-        {view.screen === 'years' && <YearView years={Object.keys(store)} store={store} onAddYear={addYear} onSelectYear={(y) => setView({ screen: 'months', year: y, month: null })} />}
-        {view.screen === 'months' && <MonthView year={view.year} store={store} onSelectMonth={(m) => setView({ screen: 'tracker', year: view.year, month: m })} />}
-        {view.screen === 'tracker' && (
-          loading ? <div className="loading-state">Syncing...</div> : 
-          <TrackerView year={view.year} month={view.month} habits={store[view.year]?.[view.month] || []} onUpdate={handleTrackerUpdate} />
-        )}
+      {/* --- MAIN CONTENT (Scrolls independently) --- */}
+      <main className="main-scroll-area">
+        <div className="content-max-width">
+          {view.screen === 'years' && (
+            <YearView 
+              years={Object.keys(store)} 
+              store={store} 
+              onAddYear={addYear} 
+              onSelectYear={(y) => setView({ screen: 'months', year: y, month: null })} 
+            />
+          )}
+
+          {view.screen === 'months' && (
+            <MonthView 
+              year={view.year} 
+              store={store}
+              onSelectMonth={(m) => setView({ screen: 'tracker', year: view.year, month: m })} 
+            />
+          )}
+
+          {view.screen === 'tracker' && (
+            loading ? <div className="loading-container">Loading...</div> : 
+            <TrackerView 
+              year={view.year} 
+              month={view.month} 
+              habits={store[view.year]?.[view.month] || []} 
+              onUpdate={handleTrackerUpdate} 
+            />
+          )}
+        </div>
       </main>
     </div>
   );
