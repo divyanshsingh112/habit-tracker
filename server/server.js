@@ -7,11 +7,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// --- MONGODB CONNECTION ---
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-}).then(() => console.log("MongoDB Connected"))
+// --- MONGODB CONNECTION (Cleaned) ---
+// Removed deprecated options to fix the warnings
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log("MongoDB Connected"))
   .catch(err => console.error("MongoDB Error:", err));
 
 // --- SCHEMA DEFINITION ---
@@ -33,7 +32,7 @@ const MonthData = mongoose.model('MonthData', monthSchema);
 
 // --- ROUTES ---
 
-// 1. GET ALL DATA (Eager Loading)
+// 1. GET ALL DATA
 app.get('/all-data/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
@@ -47,15 +46,13 @@ app.get('/all-data/:userId', async (req, res) => {
 // 2. GET STREAK
 app.get('/streak/:userId', async (req, res) => {
   try {
-    // Simple mock streak - calculating real streak requires complex logic
-    // For now, we return 0 or calculate basic stats if needed
     res.json({ streak: 0 }); 
   } catch (err) {
     res.json({ streak: 0 });
   }
 });
 
-// 3. GET SPECIFIC MONTH (Fallback)
+// 3. GET SPECIFIC MONTH
 app.get('/habits/:userId/:year/:month', async (req, res) => {
   try {
     const { userId, year, month } = req.params;
@@ -66,7 +63,7 @@ app.get('/habits/:userId/:year/:month', async (req, res) => {
   }
 });
 
-// 4. SAVE/UPDATE HABITS
+// 4. SAVE HABITS
 app.post('/habits/:userId/:year/:month', async (req, res) => {
   try {
     const { userId, year, month } = req.params;
@@ -83,19 +80,26 @@ app.post('/habits/:userId/:year/:month', async (req, res) => {
   }
 });
 
-// 5. DELETE YEAR (The Missing Piece!)
+// 5. DELETE YEAR (With Debug Logs)
 app.delete('/years/:userId/:year', async (req, res) => {
   try {
     const { userId, year } = req.params;
+    
+    console.log(`Attempting to delete year: ${year} for user: ${userId}`); // DEBUG LOG
+
     // Delete ALL month records for this specific year
-    await MonthData.deleteMany({ userId, year });
-    res.json({ message: 'Year deleted successfully' });
+    const result = await MonthData.deleteMany({ userId, year });
+    
+    console.log(`Deleted count: ${result.deletedCount}`); // DEBUG LOG
+
+    res.json({ message: 'Year deleted successfully', deletedCount: result.deletedCount });
   } catch (err) {
+    console.error("Delete Error:", err);
     res.status(500).json({ error: err.message });
   }
 });
 
-// 6. LOAD YEARS LIST
+// 6. LOAD YEARS
 app.get('/years/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
@@ -106,7 +110,6 @@ app.get('/years/:userId', async (req, res) => {
   }
 });
 
-// Root Route
 app.get('/', (req, res) => res.send('Habit Tracker API Running'));
 
 const PORT = process.env.PORT || 5000;
