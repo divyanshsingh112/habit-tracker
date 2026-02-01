@@ -112,7 +112,7 @@ html, body {
 .content-max-width { max-width: 1400px; margin: 0 auto; }
 
 /* =========================================
-   LOGIN PAGE (FIXED)
+   LOGIN PAGE
    ========================================= */
 .login-container {
   position: fixed;
@@ -163,7 +163,7 @@ html, body {
 }
 .primary-auth-btn:hover { background: var(--primary-hover); }
 
-/* --- FIXED GOOGLE BUTTON --- */
+/* Google Button */
 .google-btn {
   width: 100%; padding: 12px; background: white;
   border: 1px solid var(--border); border-radius: 12px;
@@ -171,15 +171,10 @@ html, body {
   display: flex; align-items: center; justify-content: center; 
   gap: 12px;
 }
-
-/* This fixes the giant Google icon */
-.google-btn img {
-  width: 24px;
-  height: 24px;
-}
+.google-btn img { width: 24px; height: 24px; }
 
 /* =========================================
-   TRACKER GRID (FIXED)
+   TRACKER GRID
    ========================================= */
 
 .tracker-container { max-width: 100%; }
@@ -213,59 +208,42 @@ html, body {
   text-transform: uppercase;
 }
 
-.habit-row {
-  padding: 14px 0; border-bottom: 1px solid var(--bg);
-}
+.habit-row { padding: 14px 0; border-bottom: 1px solid var(--bg); }
 
-/* --- COLUMN 1: HABIT INFO (FIXED ALIGNMENT) --- */
-/* Forces Name, Tag, and Trash to be in a ROW, not stacked */
+/* --- COLUMN 1: HABIT INFO --- */
 .h-col { 
   display: flex; 
-  flex-direction: row; /* FIX: Prevents stacking */
+  flex-direction: row; /* Forces horizontal alignment */
   align-items: center; 
   gap: 12px;
   overflow: hidden; 
   width: 100%;
 }
-
 .habit-title { 
   font-weight: 600; font-size: 14px; color: var(--text-main); 
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
 }
-
-/* Delete button styling */
 .delete-btn {
   background: transparent; border: none; color: #cbd5e1; cursor: pointer;
   flex-shrink: 0; padding: 4px;
 }
 .delete-btn:hover { color: var(--danger); }
 
-/* --- COLUMN 2: DAYS (SCROLLABLE) --- */
+/* --- COLUMN 2: DAYS --- */
 .d-col {
-  display: flex; 
-  gap: 4px; 
-  overflow-x: auto;
-  scrollbar-width: none;
-  justify-content: flex-start;
+  display: flex; gap: 4px; overflow-x: auto;
+  scrollbar-width: none; justify-content: flex-start;
 }
 
-/* Header Numbers */
 .grid-head .d-col span {
-  width: 24px; 
-  min-width: 24px;
-  text-align: center;
-  display: inline-block;
+  width: 24px; min-width: 24px;
+  text-align: center; display: inline-block;
 }
 
-/* Checkboxes */
 .check-box {
-  width: 24px; 
-  min-width: 24px;
-  height: 24px;
-  border: 2px solid var(--border);
-  border-radius: 6px;
-  cursor: pointer;
-  flex-shrink: 0;
+  width: 24px; min-width: 24px; height: 24px;
+  border: 2px solid var(--border); border-radius: 6px;
+  cursor: pointer; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
   transition: all 0.1s;
 }
@@ -275,19 +253,64 @@ html, body {
 /* --- COLUMN 3: SUCCESS % --- */
 .s-col { text-align: right; font-weight: 700; font-size: 12px; color: var(--text-main); }
 
-/* --- OTHER VIEWS --- */
-.year-view-split { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; min-height: 50vh; }
-.view-header h2 { font-size: 28px; margin-bottom: 12px; }
-.input-group-modern { background: white; padding: 4px; border-radius: 12px; border: 1px solid var(--border); display: flex; gap: 4px; box-shadow: var(--shadow-sm); max-width: 340px; }
-.input-group-modern input { border: none; outline: none; padding: 10px 16px; flex: 1; }
-.input-group-modern button { background: var(--primary); color: white; border: none; padding: 8px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; }
 
+/* =========================================
+   YEAR VIEW & HOME PAGE (RESTORED)
+   ========================================= */
+
+.year-view-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: center;
+  min-height: 60vh;
+}
+
+/* This fixes the hero image layout */
+.year-right-column {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* This controls the image size and animation */
+.hero-illustration {
+  width: 100%;
+  max-width: 450px;
+  height: auto;
+  object-fit: contain;
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-15px); }
+}
+
+.view-header h2 { font-size: 28px; margin-bottom: 12px; }
+
+/* Modern Input Group (Select Year) */
+.input-group-modern {
+  background: white; padding: 4px; border-radius: 12px;
+  border: 1px solid var(--border); display: flex; gap: 4px;
+  box-shadow: var(--shadow-sm); max-width: 340px;
+}
+.input-group-modern input { border: none; outline: none; padding: 10px 16px; flex: 1; font-size: 14px; }
+.input-group-modern button {
+  background: var(--primary); color: white; border: none;
+  padding: 8px 20px; border-radius: 8px; font-weight: 600; cursor: pointer;
+}
+
+/* Year & Month Cards */
 .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
 .year-card, .month-card { background: white; border-radius: 16px; border: 1px solid var(--border); padding: 24px; cursor: pointer; transition: all 0.2s; }
 .year-card:hover, .month-card:hover { border-color: var(--primary); transform: translateY(-3px); box-shadow: var(--shadow-md); }
 
+/* Stats Grid */
 .stats-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 20px; margin-bottom: 24px; }
 .card { background: white; padding: 20px; border-radius: 16px; border: 1px solid var(--border); }
+
+/* Filter Controls */
 .controls-row { display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
 .search-box { flex: 1; position: relative; min-width: 200px; }
 .search-box input { width: 100%; padding: 10px 10px 10px 40px; border-radius: 10px; border: 1px solid var(--border); outline: none; }
