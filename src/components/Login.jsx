@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 import { loginWithGoogle, loginWithEmail, registerWithEmail } from '../firebase';
-import logoImg from '../assets/logo.png'
 
 export default function Login({ onLogin }) {
-  const [isSignUp, setIsSignUp] = useState(false); // Toggle between Login and Sign Up
+  const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [name, setName] = useState(''); // Only for Sign Up
+  const [name, setName] = useState(''); 
   const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
@@ -15,16 +14,13 @@ export default function Login({ onLogin }) {
     
     try {
       if (isSignUp) {
-        // Create new account
         const user = await registerWithEmail(email, password, name);
         if (user) onLogin(user);
       } else {
-        // Log in existing account
         const user = await loginWithEmail(email, password);
         if (user) onLogin(user);
       }
     } catch (err) {
-      // Clean up error messages for the user
       if (err.code === 'auth/invalid-credential') setError("Incorrect email or password.");
       else if (err.code === 'auth/email-already-in-use') setError("Email already exists.");
       else if (err.code === 'auth/weak-password') setError("Password should be at least 6 characters.");
@@ -42,12 +38,19 @@ export default function Login({ onLogin }) {
   };
 
   return (
-    <div className="login-container">
-      <div className="login-card">
-        <img src={logoImg} alt="Logo" className="login-logo" />
-        
-        <h1>{isSignUp ? "Create Account" : "Welcome"}</h1>
-        <p>{isSignUp ? "Start your journey today." : "Track your habits, achieve your goals."}</p>
+    <div className="login-page-wrapper">
+      {/* Decorative background blobs for the blur effect */}
+      <div className="bg-blob blob-1"></div>
+      <div className="bg-blob blob-2"></div>
+      
+      <div className="login-card glass animate-fade">
+        <div className="brand-header">
+          <div className="logo-icon-container">
+            <img src="/logo.png" alt="Logo" className="login-logo" />
+          </div>
+          <h1>{isSignUp ? "Create Account" : "Welcome"}</h1>
+          <p>{isSignUp ? "Start your journey today." : "Consistency is no longer a problem."}</p>
+        </div>
 
         {error && <div className="error-message">{error}</div>}
 

@@ -2,13 +2,14 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const MonthData = require('../models/MonthData'); // ADJUSTED PATH: Go up one level to find models
+const MonthData = require('./models/MonthData');
 
 const app = express();
 
 // --- 1. CORS CONFIGURATION ---
+// Update this with your actual Vercel URL once deployed
 app.use(cors({
-  origin: ["https://divyanshsingh112.github.io", "http://localhost:5173"],
+  origin: ["https://divyanshsingh112.github.io", "http://localhost:5173", /\.vercel\.app$/],
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   credentials: true
 }));
@@ -20,9 +21,7 @@ mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('✅ MongoDB Connected'))
   .catch(err => console.error('❌ MongoDB Connection Error:', err));
 
-// --- 3. ROUTES (REMOVED /api TO MATCH FRONTEND) ---
-
-// GET ALL YEARS
+// --- 3. ROUTES ---
 app.get('/years/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
@@ -33,7 +32,6 @@ app.get('/years/:userId', async (req, res) => {
   }
 });
 
-// GET HABITS
 app.get('/habits/:userId/:year/:month', async (req, res) => {
   const { userId, year, month } = req.params;
   try {
@@ -44,7 +42,6 @@ app.get('/habits/:userId/:year/:month', async (req, res) => {
   }
 });
 
-// SAVE HABITS
 app.post('/habits/:userId/:year/:month', async (req, res) => {
   const { userId, year, month } = req.params;
   const { habits } = req.body;
@@ -62,5 +59,8 @@ app.post('/habits/:userId/:year/:month', async (req, res) => {
 
 app.get('/', (req, res) => res.send('Habit Tracker API Running'));
 
-// --- 4. EXPORT FOR VERCEL ---
+// --- 4. RENDER DYNAMIC PORT ---
+const PORT = process.env.PORT || 5000; // Render sets the PORT env variable automatically
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+
 module.exports = app;

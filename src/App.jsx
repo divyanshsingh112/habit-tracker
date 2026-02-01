@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronRight, Home, LayoutDashboard, LogOut } from 'lucide-react';
+import { ChevronRight, Home, LayoutDashboard, LogOut, Flame, X, CheckCircle, AlertTriangle } from 'lucide-react';
 import { auth, logout } from './firebase'; 
 import { onAuthStateChanged } from 'firebase/auth';
 import Login from './components/Login';
@@ -12,30 +12,43 @@ const API_URL = 'https://habit-tracker-ot9frxl5s-divyanshsingh112s-projects.verc
 
 export default function App() {
   const [user, setUser] = useState(null);
-  const [authLoading, setAuthLoading] = useState(true); // <--- NEW: Loading state for Auth
+  const [authLoading, setAuthLoading] = useState(true);
   const [store, setStore] = useState({});
   const [view, setView] = useState({ screen: 'years', year: null, month: null });
-  const [loading, setLoading] = useState(false); // This is for data loading
+  const [loading, setLoading] = useState(false);
+  const [globalStreak, setGlobalStreak] = useState(0);
+  
+  // TOAST STATE
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
 
-  // --- 1. AUTH CHECK & INITIAL LOAD ---
+  const showToast = (message, type = 'success') => {
+    setToast({ show: true, message, type });
+    setTimeout(() => setToast({ ...toast, show: false }), 3000);
+  };
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       if (currentUser) {
-        // User is logged in, load their data
         loadYears(currentUser.uid);
+        fetchGlobalStreak(currentUser.uid);
       } else {
-        // User is logged out, clear data
         setStore({});
         setView({ screen: 'years', year: null, month: null });
+        setGlobalStreak(0);
       }
-      // CRITICAL FIX: Tell the app we are done checking auth
       setAuthLoading(false);
     });
     return () => unsubscribe();
   }, []);
 
-  // --- 2. LOAD YEARS FUNCTION ---
+  const fetchGlobalStreak = (userId) => {
+    fetch(`${API_URL}/streak/${userId}`)
+      .then(res => res.json())
+      .then(data => setGlobalStreak(data.streak || 0))
+      .catch(() => console.error("Streak sync failed"));
+  };
+
   const loadYears = (userId) => {
     fetch(`${API_URL}/years/${userId}`)
       .then(res => res.json())
@@ -44,18 +57,14 @@ export default function App() {
         yearsList.forEach(y => { newStore[y] = {} });
         setStore(newStore);
       })
-      .catch(err => console.error("Failed to load years:", err));
+      .catch(() => showToast("Failed to load history", "error"));
   };
 
-  // --- 3. LOAD HABITS (User Specific) ---
   useEffect(() => {
     if (user && view.screen === 'tracker' && view.year && view.month) {
       setLoading(true);
       fetch(`${API_URL}/habits/${user.uid}/${view.year}/${view.month}`)
-        .then(res => {
-          if (!res.ok) throw new Error("Failed to fetch");
-          return res.json();
-        })
+        .then(res => res.json())
         .then(data => {
           setStore(prev => ({
             ...prev,
@@ -63,30 +72,24 @@ export default function App() {
           }));
           setLoading(false);
         })
-        .catch(err => {
-          console.error("Error fetching habits:", err);
+        .catch(() => {
+          showToast("Network Error: Could not sync habits", "error");
           setLoading(false); 
         });
     }
   }, [view.screen, view.year, view.month, user]);
 
-  // --- ACTIONS ---
-
   const addYear = (year) => {
     if (!year || store[year]) return;
-    
-    // 1. Update UI Immediately
-    setStore({ ...store, [year]: {} });
-
-    // 2. SAVE TO DB
+    setStore(prev => ({ ...prev, [year]: {} }));
     if (user) {
       fetch(`${API_URL}/habits/${user.uid}/${year}/January`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ habits: [] }) 
       })
-      .then(() => console.log(`Year ${year} created`))
-      .catch(err => console.error("Failed to save year:", err));
+      .then(() => showToast(`Year ${year} created!`))
+      .catch(() => showToast("Failed to save year", "error"));
     }
   };
 
@@ -101,112 +104,62 @@ export default function App() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ habits: updatedHabitsList })
-      }).catch(err => console.error("Error saving habits:", err));
+      })
+      .then(() => {
+        fetchGlobalStreak(user.uid);
+        // Optional: showToast("Progress Saved", "success");
+      })
+      .catch(() => showToast("Sync Failed: Check Connection", "error"));
     }
   };
 
   const handleLogout = async () => {
     await logout();
-    setUser(null);
+    showToast("Logged out safely");
   };
 
-  // --- RENDER 1: SHOW PRETTY LOADING SCREEN ---
-  if (authLoading) {
-    return (
-      <div className="loading-container">
-        <div className="loading-spinner"></div>
-        <div className="loading-text">Loading your tracker...</div>
-      </div>
-    );
-  }
+  if (authLoading) return <div className="loading-container"><div className="loading-spinner"></div></div>;
+  if (!user) return <Login onLogin={setUser} />;
 
-  // --- RENDER 2: SHOW LOGIN IF NO USER ---
-  if (!user) {
-    return <Login onLogin={setUser} />;
-  }
-
-  // --- RENDER 3: SHOW DASHBOARD ---
   return (
     <div className="dashboard-wrapper">
-      
-      {/* HEADER */}
-      <header className="main-header" style={{display:'flex', justifyContent:'space-between', alignItems:'flex-start'}}>
+      {/* TOAST COMPONENT */}
+      {toast.show && (
+        <div className={`toast-notification ${toast.type} animate-slide-in`}>
+          {toast.type === 'success' ? <CheckCircle size={18} /> : <AlertTriangle size={18} />}
+          <span>{toast.message}</span>
+          <X size={14} className="close-toast" onClick={() => setToast({ ...toast, show: false })} />
+        </div>
+      )}
+
+      <header className="main-header">
         <div className="header-left">
-          <div className="icon-bg">
-            <LayoutDashboard className="header-icon" size={28} />
-          </div>
+          <div className="icon-bg"><LayoutDashboard size={28} /></div>
           <div className="header-text">
             <div className="title-row">
               <h1>Habit Tracker</h1>
+              {globalStreak > 0 && (
+                <div className="global-streak-tag"><Flame size={16} fill="#ff9800" stroke="#ff9800" /><span>{globalStreak} DAY STREAK</span></div>
+              )}
             </div>
             <p>Welcome, {user.displayName || user.email}</p>
           </div>
         </div>
-        
-        <button 
-          onClick={handleLogout} 
-          className="breadcrumbs-container" 
-          style={{border:'none', background:'transparent', color:'var(--danger)', padding:'8px'}}
-        >
-          <LogOut size={18} /> Logout
-        </button>
+        <button onClick={handleLogout} className="logout-button"><LogOut size={18} /> Logout</button>
       </header>
 
-      {/* BREADCRUMBS */}
       <nav className="breadcrumbs-container">
-        <button onClick={() => setView({ screen: 'years', year: null, month: null })}>
-          <Home size={16} /> <span style={{marginLeft: 6}}>Years</span>
-        </button>
-        
-        {view.year && (
-          <>
-            <ChevronRight size={14} className="crumb-arrow" />
-            <button onClick={() => setView({ ...view, screen: 'months', month: null })}>
-              {view.year}
-            </button>
-          </>
-        )}
-        
-        {view.month && (
-          <>
-            <ChevronRight size={14} className="crumb-arrow" />
-            <span className="current-crumb">{view.month}</span>
-          </>
-        )}
+        <button onClick={() => setView({ screen: 'years', year: null, month: null })}><Home size={16} /> <span>Years</span></button>
+        {view.year && <><ChevronRight size={14} className="crumb-arrow" /><button onClick={() => setView({ ...view, screen: 'months', month: null })}>{view.year}</button></>}
+        {view.month && <><ChevronRight size={14} className="crumb-arrow" /><span className="current-crumb">{view.month}</span></>}
       </nav>
 
-      {/* MAIN CONTENT */}
       <main className="content-area">
-        {view.screen === 'years' && (
-          <YearView 
-            years={Object.keys(store)} 
-            onAddYear={addYear} 
-            onSelectYear={(y) => setView({ screen: 'months', year: y, month: null })} 
-          />
-        )}
-
-        {view.screen === 'months' && (
-          <MonthView 
-            year={view.year} 
-            onSelectMonth={(m) => setView({ screen: 'tracker', year: view.year, month: m })} 
-          />
-        )}
-
+        {view.screen === 'years' && <YearView years={Object.keys(store)} store={store} onAddYear={addYear} onSelectYear={(y) => setView({ screen: 'months', year: y, month: null })} />}
+        {view.screen === 'months' && <MonthView year={view.year} store={store} onSelectMonth={(m) => setView({ screen: 'tracker', year: view.year, month: m })} />}
         {view.screen === 'tracker' && (
-          <>
-            {loading ? (
-               <div style={{textAlign:'center', padding: 40, color: '#64748b'}}>
-                 Loading data...
-               </div>
-            ) : (
-              <TrackerView 
-                year={view.year} 
-                month={view.month} 
-                habits={store[view.year]?.[view.month] || []} 
-                onUpdate={handleTrackerUpdate} 
-              />
-            )}
-          </>
+          loading ? <div className="loading-state">Syncing...</div> : 
+          <TrackerView year={view.year} month={view.month} habits={store[view.year]?.[view.month] || []} onUpdate={handleTrackerUpdate} />
         )}
       </main>
     </div>
