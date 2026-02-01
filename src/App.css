@@ -26,7 +26,7 @@
 html, body {
   margin: 0;
   height: 100%;
-  overflow: hidden; /* Lock global scroll */
+  overflow: hidden;
   background: var(--bg);
   font-family: 'Inter', sans-serif;
   color: var(--text-main);
@@ -50,7 +50,7 @@ html, body {
   border-bottom: 1px solid var(--border);
   z-index: 100;
   padding: 0 24px;
-  height: 60px; /* Slim height */
+  height: 60px;
   display: flex;
   justify-content: center;
   box-shadow: var(--shadow-sm);
@@ -117,14 +117,13 @@ html, body {
 .login-container {
   position: fixed;
   inset: 0;
-  z-index: 9999; /* Force top */
+  z-index: 9999;
   display: flex;
   align-items: center;
   justify-content: center;
   background: #f8fafc;
 }
 
-/* Background Blobs */
 .bg-blob {
   position: absolute;
   width: 500px; height: 500px;
@@ -164,11 +163,13 @@ html, body {
 }
 .primary-auth-btn:hover { background: var(--primary-hover); }
 
+/* FIXED GOOGLE BUTTON ALIGNMENT */
 .google-btn {
   width: 100%; padding: 12px; background: white;
   border: 1px solid var(--border); border-radius: 12px;
   font-weight: 600; color: var(--text-main); cursor: pointer;
-  display: flex; align-items: center; justify-content: center; gap: 10px;
+  display: flex; align-items: center; justify-content: center; 
+  gap: 12px; /* Ensures space between G-icon and text */
 }
 
 /* =========================================
@@ -177,41 +178,29 @@ html, body {
 
 .tracker-container { max-width: 100%; }
 
-/* Add Habit Form - Clean Layout */
 .add-habit-form {
   display: flex; gap: 12px; margin-bottom: 24px;
   background: white; padding: 16px; border-radius: 16px;
   border: 1px solid var(--border); box-shadow: var(--shadow-sm);
 }
-.add-habit-form input {
-  flex: 2; padding: 12px; border-radius: 10px;
-  border: 1px solid var(--border); outline: none;
-}
-.add-habit-form select {
-  flex: 0.5; padding: 12px; border-radius: 10px;
-  border: 1px solid var(--border); outline: none; background: white;
-}
-.add-habit-form button {
-  background: var(--primary); color: white; border: none;
-  padding: 0 24px; border-radius: 10px; font-weight: 600;
-  cursor: pointer; display: flex; align-items: center; gap: 8px;
-}
+.add-habit-form input { flex: 2; padding: 12px; border-radius: 10px; border: 1px solid var(--border); outline: none; }
+.add-habit-form select { flex: 0.5; padding: 12px; border-radius: 10px; border: 1px solid var(--border); outline: none; background: white; }
+.add-habit-form button { background: var(--primary); color: white; border: none; padding: 0 24px; border-radius: 10px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; }
 
-/* The Grid Container */
 .grid-card {
   background: white; padding: 24px; border-radius: 16px;
   border: 1px solid var(--border); overflow-x: auto;
   box-shadow: var(--shadow-sm);
 }
 
-/* GRID ALIGNMENT FIX 
-   We use a fixed 220px for the name, 1fr for the days, and 60px for the % 
+/* STRICT GRID COLUMNS 
+   250px for Title/Cat, 1fr for days, 50px for % 
 */
 .grid-head, .habit-row {
   display: grid;
-  grid-template-columns: 220px 1fr 60px;
+  grid-template-columns: 250px 1fr 50px;
   align-items: center;
-  gap: 20px;
+  gap: 24px;
 }
 
 .grid-head {
@@ -224,43 +213,73 @@ html, body {
   padding: 14px 0; border-bottom: 1px solid var(--bg);
 }
 
-/* Column: Habit Name */
-.h-col { display: flex; align-items: center; justify-content: space-between; overflow: hidden; }
-.habit-title { font-weight: 600; font-size: 14px; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-/* Column: Days (The Scrollable Part) */
-.d-col {
-  display: flex; gap: 4px; overflow-x: auto;
-  scrollbar-width: none; /* Hide scrollbar for cleaner look */
+/* --- COLUMN 1: HABIT INFO --- */
+.h-col { 
+  display: flex; 
+  align-items: center; 
+  justify-content: space-between; /* Pushes delete button to right */
+  gap: 10px;
+  overflow: hidden; 
+  width: 100%; /* Fill the 250px grid slot */
 }
 
-/* Header Numbers Alignment */
-.grid-head .d-col span {
-  width: 28px; /* EXACT match to checkbox width */
-  text-align: center;
+/* Title and Tag Group */
+.habit-title-group {
+  display: flex; 
+  flex-direction: column; 
+  align-items: flex-start; 
+  gap: 4px;
+  overflow: hidden;
+}
+
+.habit-title { 
+  font-weight: 600; font-size: 14px; color: var(--text-main); 
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
+  max-width: 100%;
+}
+
+.delete-btn {
+  background: transparent; border: none; color: #cbd5e1; cursor: pointer;
   flex-shrink: 0;
+}
+.delete-btn:hover { color: var(--danger); }
+
+/* --- COLUMN 2: DAYS (SCROLLABLE) --- */
+.d-col {
+  display: flex; 
+  gap: 4px; /* Fixed gap */
+  overflow-x: auto;
+  scrollbar-width: none;
+  justify-content: flex-start; /* Ensures items start from left */
+}
+
+/* Header Numbers - EXACTLY 24px width */
+.grid-head .d-col span {
+  width: 24px; 
+  min-width: 24px;
+  text-align: center;
   display: inline-block;
 }
 
-/* Checkboxes */
+/* Checkboxes - EXACTLY 24px width */
 .check-box {
-  width: 28px;  /* EXACT match to header number width */
-  height: 28px;
+  width: 24px; 
+  min-width: 24px; /* Critical to prevent squishing */
+  height: 24px;
   border: 2px solid var(--border);
   border-radius: 6px;
   cursor: pointer;
   flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
-  transition: all 0.15s;
+  transition: all 0.1s;
 }
 .check-box:hover { border-color: var(--primary); }
 .check-box.active { background: var(--primary); border-color: var(--primary); }
 
-/* Success % Column */
+/* --- COLUMN 3: SUCCESS % --- */
 .s-col { text-align: right; font-weight: 700; font-size: 12px; color: var(--text-main); }
-.progress-pill { background: var(--bg); padding: 4px 10px; border-radius: 20px; }
 
-/* --- OTHER VIEWS (Year/Month) --- */
+/* --- VIEW STYLES (Year/Month) --- */
 .year-view-split { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; min-height: 50vh; }
 .view-header h2 { font-size: 28px; margin-bottom: 12px; }
 .input-group-modern { background: white; padding: 4px; border-radius: 12px; border: 1px solid var(--border); display: flex; gap: 4px; box-shadow: var(--shadow-sm); max-width: 340px; }
@@ -282,14 +301,19 @@ html, body {
 .filter-pill { background: white; border: 1px solid var(--border); padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; color: var(--text-sub); cursor: pointer; white-space: nowrap; }
 .filter-pill.active { background: var(--primary); color: white; border-color: var(--primary); }
 
+.cat-tag { font-size: 10px; padding: 2px 8px; border-radius: 6px; font-weight: 700; text-transform: uppercase; display: inline-block; }
+.cat-health { background: #dcfce7; color: var(--cat-health); }
+.cat-mind { background: #e0f2fe; color: var(--cat-mind); }
+.cat-work { background: #ffedd5; color: var(--cat-work); }
+.cat-personal { background: #f3e8ff; color: var(--cat-personal); }
+
 /* Utilities */
 .animate-fade { animation: fadeIn 0.4s ease-out forwards; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-/* Mobile */
 @media (max-width: 1024px) {
   .stats-grid { grid-template-columns: 1fr; }
   .year-view-split { grid-template-columns: 1fr; text-align: center; }
   .grid-head, .habit-row { grid-template-columns: 140px 1fr 50px; }
-  .brand-section h1 { display: none; } /* Hide text on mobile to save space */
+  .brand-section h1 { display: none; }
 }
