@@ -29,7 +29,7 @@ export default function App() {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       if (currentUser) {
-        // CHANGED: Load ALL data immediately, not just year names
+        // Load ALL data immediately so consistency stats work instantly
         loadAllData(currentUser.uid);
         fetchGlobalStreak(currentUser.uid);
       } else {
@@ -71,20 +71,39 @@ export default function App() {
       .catch(() => console.error("Streak sync failed"));
   };
 
-  // Note: We don't need the old useEffect for fetching specific months anymore
-  // because loadAllData got everything. 
-  // However, we KEEP the logic to Sync updates back to the server.
-
   const addYear = (year) => {
     if (!year || store[year]) return;
     setStore(prev => ({ ...prev, [year]: {} }));
-    // No DB call needed yet, it creates the structure locally. 
-    // Data saves when they add a habit.
+    // We don't save to DB yet; data is saved when the first habit is added
     showToast(`Year ${year} created!`);
   };
 
+  // --- DELETE YEAR FUNCTION ---
+  const deleteYear = (yearToDelete) => {
+    if (!window.confirm(`Are you sure you want to delete ${yearToDelete}? This will remove ALL habits for that year.`)) {
+      return;
+    }
+
+    // 1. Update Local State (Immediate UI removal)
+    const newStore = { ...store };
+    delete newStore[yearToDelete];
+    setStore(newStore);
+
+    // 2. Call Backend to remove from DB
+    if (user) {
+      fetch(`${API_URL}/years/${user.uid}/${yearToDelete}`, {
+        method: 'DELETE',
+      })
+      .then(() => showToast(`Year ${yearToDelete} deleted`))
+      .catch(() => {
+        showToast("Failed to delete from server", "error"); 
+        // Optional: you could reload data here if needed
+      });
+    }
+  };
+
   const handleTrackerUpdate = (updatedHabitsList) => {
-    // 1. Update Local State immediately (for UI speed)
+    // 1. Update Local State immediately
     setStore(prev => ({
       ...prev,
       [view.year]: { ...prev[view.year], [view.month]: updatedHabitsList }
@@ -184,7 +203,8 @@ export default function App() {
             <YearView 
               years={Object.keys(store)} 
               store={store} 
-              onAddYear={addYear} 
+              onAddYear={addYear}
+              onDeleteYear={deleteYear} /* PASSED THE DELETE FUNCTION HERE */
               onSelectYear={(y) => setView({ screen: 'months', year: y, month: null })} 
             />
           )}

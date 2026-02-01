@@ -104,6 +104,17 @@ app.get('/all-data/:userId', async (req, res) => {
   }
 });
 
+app.delete('/years/:userId/:year', async (req, res) => {
+  try {
+    const { userId, year } = req.params;
+    // Delete ALL month records for this specific year
+    await MonthData.deleteMany({ userId, year });
+    res.json({ message: 'Year deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get('/', (req, res) => res.send('Habit Tracker API Running'));
 
 // --- 4. RENDER DYNAMIC PORT ---
