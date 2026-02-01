@@ -182,6 +182,91 @@ body {
    ========================================= */
 
 /* Generic container for views like MonthView */
+
+.year-view-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  align-items: center; /* Centers items vertically */
+  min-height: 60vh;
+}
+
+.view-header h2 {
+  font-size: 2rem;
+  margin-bottom: 24px;
+  color: var(--text-main);
+}
+
+/* New Clean Input Styling */
+.input-group-modern {
+  background: white;
+  padding: 6px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  display: flex;
+  gap: 8px;
+  box-shadow: var(--shadow-md);
+  max-width: 380px;
+  transition: box-shadow 0.3s ease;
+}
+
+.input-group-modern:focus-within {
+  box-shadow: 0 0 0 4px var(--primary-light);
+  border-color: var(--primary);
+}
+
+.input-group-modern input {
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 12px 16px;
+  font-size: 16px;
+  flex: 1;
+  color: var(--text-main);
+}
+
+.input-group-modern button {
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.input-group-modern button:hover {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
+/* Fix for the Hero Image */
+.year-right-column {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.hero-illustration {
+  width: 100%;
+  max-width: 500px; /* Prevents it from getting too huge */
+  height: auto;
+  object-fit: contain;
+  /* Optional: Adds a subtle float animation */
+  animation: float 6s ease-in-out infinite; 
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-15px); }
+}
+
+
 .view-container {
   display: flex;
   flex-direction: column;
@@ -268,6 +353,79 @@ body {
 /* =========================================
    4. TRACKER & CHARTS
    ========================================= */
+
+.controls-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  gap: 16px;
+  flex-wrap: wrap; /* Prevents squishing on mobile */
+}
+
+.search-box {
+  position: relative;
+  flex: 1;
+  min-width: 250px;
+}
+
+.search-box input {
+  width: 100%;
+  padding: 12px 16px 12px 48px; /* Room for the icon */
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: white;
+  outline: none;
+  font-size: 14px;
+  transition: all 0.2s;
+  box-shadow: var(--shadow-sm);
+}
+
+.search-box input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px var(--primary-light);
+}
+
+.search-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-sub);
+  pointer-events: none;
+}
+
+.filter-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.filter-pill {
+  padding: 8px 16px;
+  border-radius: 50px;
+  border: 1px solid var(--border);
+  background: white;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-sub);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap; /* Keeps text on one line */
+}
+
+.filter-pill:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  transform: translateY(-1px);
+}
+
+.filter-pill.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+  box-shadow: 0 4px 6px -1px rgba(76, 175, 80, 0.3);
+}
 
 .stats-grid {
   display: grid;

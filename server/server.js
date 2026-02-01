@@ -61,6 +61,38 @@ app.post('/habits/:userId/:year/:month', async (req, res) => {
   }
 });
 
+app.get('/streak/:userId', async (req, res) => {
+  const { userId } = req.params;
+  const now = new Date();
+  const currentYear = now.getFullYear().toString();
+  const months = ["January", "February", "March", "April", "May", "June", 
+                  "July", "August", "September", "October", "November", "December"];
+  const currentMonth = months[now.getMonth()];
+  const today = now.getDate();
+
+  try {
+    const data = await MonthData.findOne({ userId, year: currentYear, month: currentMonth });
+    if (!data) return res.json({ streak: 0 });
+
+    let globalStreak = 0;
+    // Count backwards from today to find consecutive active days
+    for (let d = today; d > 0; d--) {
+      // Check if ANY habit was completed on day 'd'
+      const anyCompleted = data.habits.some(h => h.completedDays && h.completedDays.get(d.toString()));
+      if (anyCompleted) {
+        globalStreak++;
+      } else if (d === today) {
+        continue; // Streak isn't broken yet if today isn't finished
+      } else {
+        break;
+      }
+    }
+    res.json({ streak: globalStreak });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get('/', (req, res) => res.send('Habit Tracker API Running'));
 
 // --- 4. RENDER DYNAMIC PORT ---
