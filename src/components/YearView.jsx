@@ -89,7 +89,7 @@ export default function YearView({ years, store, onAddYear, onSelectYear, onDele
         {/* HERO IMAGE */}
         <div className="year-right-column">
           {/* Replace src with your actual image path or variable */}
-          <img src="https://cdni.iconscout.com/illustration/premium/thumb/habit-tracker-illustration-download-in-svg-png-gif-file-formats--routine-checklist-daily-task-business-pack-illustrations-3693863.png" alt="Hero" className="hero-illustration" />
+          <img src="public\hero.png" alt="Hero" className="hero-illustration" />
         </div>
       </div>
     </div>
