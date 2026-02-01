@@ -55,9 +55,8 @@ export default function App() {
           newStore[doc.year][doc.month] = doc.habits;
         });
 
-        // Ensure current year exists even if empty, so the user can see it
-        const currentYear = new Date().getFullYear().toString();
-        if (!newStore[currentYear]) newStore[currentYear] = {};
+        // --- REMOVED AUTOMATIC YEAR CREATION HERE ---
+        // This stops 2026 from reappearing automatically after you delete it.
 
         setStore(newStore);
       })
