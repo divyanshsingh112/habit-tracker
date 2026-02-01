@@ -1,105 +1,96 @@
 import React, { useState } from 'react';
-import { Plus, Calendar, ArrowRight, Target } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react'; // Import Trash2
+import illustration from '../assets/hero_ill.png'; // Ensure you have this or remove the image tag
 
-/**
- * YearView Component
- * Enhanced with Progress Bars to visualize yearly consistency.
- */
-export default function YearView({ years, store, onAddYear, onSelectYear }) {
-  const [input, setInput] = useState('');
+export default function YearView({ years, store, onAddYear, onSelectYear, onDeleteYear }) {
+  const [newYear, setNewYear] = useState('');
 
-  // Calculate the average completion for a specific year based on store data
-  const getYearlyProgress = (year) => {
+  // Calculate annual consistency for the card
+  const getYearProgress = (year) => {
     const yearData = store[year];
-    if (!yearData || Object.keys(yearData).length === 0) return 0;
-
-    let totalPercentage = 0;
-    let monthsWithData = 0;
-
-    Object.values(yearData).forEach(monthHabits => {
-      if (Array.isArray(monthHabits) && monthHabits.length > 0) {
-        let monthCompletion = 0;
-        monthHabits.forEach(h => {
-          const daysInMonth = 30; // Approximation for overview
-          const completed = Object.keys(h.completedDays || {}).length;
-          monthCompletion += (completed / daysInMonth);
-        });
-        totalPercentage += (monthCompletion / monthHabits.length);
-        monthsWithData++;
-      }
+    if (!yearData) return 0;
+    
+    let totalHabits = 0;
+    let totalCompleted = 0;
+    
+    Object.values(yearData).forEach(habits => {
+      habits.forEach(h => {
+        totalHabits += 30; // Approx baseline
+        totalCompleted += Object.keys(h.completedDays || {}).length;
+      });
     });
 
-    return monthsWithData > 0 ? Math.round((totalPercentage / monthsWithData) * 100) : 0;
+    return totalHabits === 0 ? 0 : Math.round((totalCompleted / totalHabits) * 100);
   };
 
   return (
-    <div className="year-view-split animate-fade">
-      {/* LEFT SIDE: INPUTS AND GRID */}
-      <div className="year-left-column">
-        <header className="view-header">
-          <h2>Select Year</h2>
-          <div className="input-group-modern">
-            <input 
-              type="number" 
-              placeholder="YYYY" 
-              value={input} 
-              onChange={e => setInput(e.target.value)} 
-            />
-            <button onClick={() => { onAddYear(input); setInput(''); }}>
-              <Plus size={18}/> Create
-            </button>
-          </div>
-        </header>
-        
-        <div className="card-grid">
-          {years.sort().reverse().map(y => {
-            const progress = getYearlyProgress(y);
-            return (
-              <div key={y} className="year-card" onClick={() => onSelectYear(y)}>
-                <div className="year-card-content">
-                  <div className="year-card-top">
-                    <div className="year-icon-box">
-                      <Calendar size={28} />
+    <div className="view-container animate-fade">
+      
+      {/* HERO SECTION */}
+      <div className="year-view-split">
+        <div className="year-left-column">
+          <header className="view-header">
+            <h2>Select Year</h2>
+            <div className="input-group-modern">
+              <input 
+                type="number" 
+                placeholder="YYYY" 
+                value={newYear}
+                onChange={(e) => setNewYear(e.target.value)}
+              />
+              <button onClick={() => { if(newYear) onAddYear(newYear); setNewYear(''); }}>
+                <Plus size={18} /> Create
+              </button>
+            </div>
+          </header>
+
+          {/* YEAR CARDS GRID */}
+          <div className="card-grid">
+            {years.sort((a,b) => b-a).map(year => {
+              const progress = getYearProgress(year);
+              return (
+                <div key={year} className="year-card" onClick={() => onSelectYear(year)}>
+                  <div className="year-card-content">
+                    <div className="year-card-top">
+                      <h3>{year}</h3>
+                      
+                      {/* DELETE BUTTON */}
+                      <button 
+                        className="delete-year-icon"
+                        onClick={(e) => { 
+                          e.stopPropagation(); // Stop click from opening the year
+                          onDeleteYear(year); 
+                        }}
+                        title="Delete Year"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+
                     </div>
-                    {progress > 50 && (
-                      <div className="trending-tag">
-                        <Target size={12} /> High Focus
-                      </div>
-                    )}
-                  </div>
-                  <h3>{y}</h3>
-                  
-                  {/* Progress Indicator */}
-                  <div className="year-progress-container">
-                    <div className="progress-labels">
+                    
+                    <div className="year-stats">
                       <span>Annual Consistency</span>
-                      <span>{progress}%</span>
+                      <span style={{fontWeight:'700'}}>{progress}%</span>
                     </div>
                     <div className="year-progress-bar">
-                      <div 
-                        className="year-progress-fill" 
-                        style={{ width: `${progress}%` }}
-                      ></div>
+                      <div className="year-progress-fill" style={{width: `${progress}%`}}></div>
                     </div>
                   </div>
+                  
+                  <div className="year-card-action">
+                    <span>View Details</span>
+                  </div>
                 </div>
-                <div className="year-card-action">
-                  <span>View Details</span>
-                  <ArrowRight size={20} />
-                </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
-      </div>
 
-      {/* RIGHT SIDE: HERO IMAGE */}
-      <div className="year-right-column">
-        <img 
-          src="/hero.png" 
-          alt="Habit Tracker Hero" 
-          className="hero-illustration"
-        />
+        {/* HERO IMAGE */}
+        <div className="year-right-column">
+          {/* Replace src with your actual image path or variable */}
+          <img src="https://cdni.iconscout.com/illustration/premium/thumb/habit-tracker-illustration-download-in-svg-png-gif-file-formats--routine-checklist-daily-task-business-pack-illustrations-3693863.png" alt="Hero" className="hero-illustration" />
+        </div>
       </div>
     </div>
   );

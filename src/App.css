@@ -305,6 +305,41 @@ html, body {
 .legend-item .warning { color: #f59e0b; }
 .legend-item .critical { color: var(--danger); }
 
+.year-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.year-card-top h3 {
+  margin: 0;
+  font-size: 22px;
+  color: var(--text-main);
+}
+
+.delete-year-icon {
+  color: var(--text-sub);
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s;
+  opacity: 0.6;
+}
+
+.delete-year-icon:hover {
+  background: #fee2e2;
+  color: var(--danger);
+  opacity: 1;
+}
+
+.year-stats {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--text-sub);
+  margin-bottom: 8px;
+}
+
 .year-view-split {
   display: grid;
   grid-template-columns: 1fr 1fr;
