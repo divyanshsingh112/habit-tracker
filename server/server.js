@@ -12,7 +12,7 @@ app.use(cors({
   origin: [
     "http://localhost:5173", 
     "https://divyanshsingh112.github.io",
-    "https://habit-tracker-kooi.vercel.app/" // <--- ADD YOUR NEW VERCEL DOMAIN HERE
+    "https://habit-tracker-kooi.vercel.app" // <--- ADD YOUR NEW VERCEL DOMAIN HERE
   ],
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   credentials: true

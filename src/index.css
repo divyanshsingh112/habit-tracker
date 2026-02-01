@@ -14,7 +14,8 @@
 body {
   margin: 0;
   padding: 0;
-  display: block;
+  /* 'block' fixes the weird side-alignment issues caused by 'flex' */
+  display: block; 
   min-width: 320px;
   min-height: 100vh;
   background-color: #f8fafc; /* Matches your App.css bg */

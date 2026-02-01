@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
 import { loginWithGoogle, loginWithEmail, registerWithEmail } from '../firebase';
+import logoImg from '../assets/logo.png';
 
 export default function Login({ onLogin }) {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [name, setName] = useState(''); 
+  const [name, setName] = useState('');
   const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    
     try {
       if (isSignUp) {
         const user = await registerWithEmail(email, password, name);
@@ -38,19 +38,17 @@ export default function Login({ onLogin }) {
   };
 
   return (
-    <div className="login-page-wrapper">
-      {/* Decorative background blobs for the blur effect */}
+    <div className="login-container">
+      {/* Background Blobs for the 'Glass' effect */}
       <div className="bg-blob blob-1"></div>
       <div className="bg-blob blob-2"></div>
-      
+
+      {/* Added 'glass' class here for the visual effect */}
       <div className="login-card glass animate-fade">
-        <div className="brand-header">
-          <div className="logo-icon-container">
-            <img src="/logo.png" alt="Logo" className="login-logo" />
-          </div>
-          <h1>{isSignUp ? "Create Account" : "Welcome"}</h1>
-          <p>{isSignUp ? "Start your journey today." : "Consistency is no longer a problem."}</p>
-        </div>
+        <img src={logoImg} alt="Logo" className="login-logo" />
+        
+        <h1>{isSignUp ? "Create Account" : "Welcome"}</h1>
+        <p>{isSignUp ? "Start your journey today." : "Consistency is no longer a problem."}</p>
 
         {error && <div className="error-message">{error}</div>}
 
