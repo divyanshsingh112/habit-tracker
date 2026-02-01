@@ -27,58 +27,44 @@
   box-sizing: border-box;
 }
 
-body {
+/* --- NEW LAYOUT STRUCTURE (Stops global scrolling) --- */
+html, body {
   margin: 0;
+  height: 100%; /* Force full height */
+  overflow: hidden; /* Disable body scroll */
   background: var(--bg);
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   color: var(--text-main);
   -webkit-font-smoothing: antialiased;
 }
 
+#root { height: 100%; }
+
 .dashboard-wrapper {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 40px 24px;
-}
-
-/* =========================================
-   1. TOAST NOTIFICATIONS
-   ========================================= */
-
-.toast-notification {
-  position: fixed;
-  top: 24px;
-  right: 24px;
-  z-index: 3000;
+  height: 100vh; /* Fill viewport height */
   display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 20px;
-  border-radius: 12px;
-  background: #1e293b;
-  color: white;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
-  min-width: 280px;
-}
-
-.toast-notification.error {
-  border-left: 4px solid var(--danger);
-}
-
-.toast-notification.success {
-  border-left: 4px solid var(--primary);
-}
-
-.close-toast {
-  margin-left: auto;
-  cursor: pointer;
-  opacity: 0.5;
+  flex-direction: column; /* Stack nav and content vertically */
+  /* Remove padding here, we'll add it to inner containers */
 }
 
 /* =========================================
-   2. HEADER & NAVIGATION
+   1. STICKY NAVBAR BOX (New Container)
    ========================================= */
 
+.sticky-navbar-box {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(248, 250, 252, 0.95); /* Semi-transparent BG matching body */
+  backdrop-filter: blur(12px); /* Glass effect */
+  padding: 24px 24px 16px 24px;
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Main Header inside the sticky box */
 .main-header {
   display: flex; 
   justify-content: space-between; 
@@ -100,349 +86,114 @@ body {
   display: flex;
 }
 
-.header-text {
-  display: flex;
-  flex-direction: column;
-}
+.header-text { display: flex; flex-direction: column; }
 
-.title-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
+.title-row { display: flex; align-items: center; gap: 12px; }
 
-.main-header h1 {
-  margin: 0;
-  font-size: 26px;
-  font-weight: 800;
-  color: #0f172a;
-}
+.main-header h1 { margin: 0; font-size: 26px; font-weight: 800; color: #0f172a; }
 
 .global-streak-tag {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: #fff4e5;
-  color: #ef6c00;
-  padding: 4px 12px;
-  border-radius: 50px;
-  font-size: 12px;
-  font-weight: 800;
-  border: 1px solid #ffe0b2;
-  box-shadow: var(--shadow-sm);
-  animation: pulse-streak 2s infinite;
+  display: flex; align-items: center; gap: 6px;
+  background: #fff4e5; color: #ef6c00; padding: 4px 12px; border-radius: 50px;
+  font-size: 12px; font-weight: 800; border: 1px solid #ffe0b2;
+  box-shadow: var(--shadow-sm); animation: pulse-streak 2s infinite;
 }
 
 @keyframes pulse-streak {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.03); }
-  100% { transform: scale(1); }
+  0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); }
 }
 
 .logout-button {
-  border: none;
-  background: transparent;
-  color: var(--danger);
-  padding: 8px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: opacity 0.2s;
+  border: none; background: transparent; color: var(--danger);
+  padding: 8px; display: flex; align-items: center; gap: 8px;
+  cursor: pointer; font-weight: 600; transition: opacity 0.2s;
 }
-
 .logout-button:hover { opacity: 0.7; }
 
+/* Breadcrumbs inside the sticky box */
 .breadcrumbs-container {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 40px;
-  padding-left: 2px;
+  display: flex; align-items: center; gap: 8px; padding-left: 2px;
+  /* Removed bottom margin as the box handles spacing now */
 }
 
 .breadcrumbs-container button {
-  background: white;
-  border: 1px solid var(--border);
-  color: var(--text-sub);
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  border-radius: 50px;
-  font-size: 13px;
+  background: white; border: 1px solid var(--border); color: var(--text-sub);
+  font-weight: 600; cursor: pointer; display: flex; align-items: center;
+  gap: 8px; padding: 8px 16px; border-radius: 50px; font-size: 13px;
   transition: all 0.2s;
+}
+
+/* =========================================
+   2. SCROLLABLE CONTENT AREA
+   ========================================= */
+
+.content-area {
+  flex: 1; /* Takes remaining height */
+  overflow-y: auto; /* Makes ONLY this area scrollable */
+  padding: 30px 24px; /* Add padding here instead of wrapper */
+  scroll-behavior: smooth;
 }
 
 /* =========================================
    3. YEAR & MONTH VIEWS
    ========================================= */
 
-/* Generic container for views like MonthView */
+.view-container { display: flex; flex-direction: column; gap: 24px; }
 
-.year-view-split {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 40px;
-  align-items: center; /* Centers items vertically */
-  min-height: 60vh;
-}
-
-.view-header h2 {
-  font-size: 2rem;
-  margin-bottom: 24px;
-  color: var(--text-main);
-}
-
-/* New Clean Input Styling */
-.input-group-modern {
-  background: white;
-  padding: 6px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  display: flex;
-  gap: 8px;
-  box-shadow: var(--shadow-md);
-  max-width: 380px;
-  transition: box-shadow 0.3s ease;
-}
-
-.input-group-modern:focus-within {
-  box-shadow: 0 0 0 4px var(--primary-light);
-  border-color: var(--primary);
-}
-
-.input-group-modern input {
-  background: transparent;
-  border: none;
-  outline: none;
-  padding: 12px 16px;
-  font-size: 16px;
-  flex: 1;
-  color: var(--text-main);
-}
-
-.input-group-modern button {
-  background: var(--primary);
-  color: white;
-  border: none;
-  padding: 10px 24px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: all 0.2s;
-}
-
-.input-group-modern button:hover {
-  background: var(--primary-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
-}
-
-/* Fix for the Hero Image */
-.year-right-column {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.hero-illustration {
-  width: 100%;
-  max-width: 500px; /* Prevents it from getting too huge */
-  height: auto;
-  object-fit: contain;
-  /* Optional: Adds a subtle float animation */
-  animation: float 6s ease-in-out infinite; 
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-15px); }
-}
-
-
-.view-container {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
+/* Header in YearView - Added Spacing */
+.view-header {
+  margin-bottom: 40px; /* Adds space between input section and grid */
 }
 
 .year-view-split {
-  display: grid;
-  grid-template-columns: 1.5fr 1fr;
-  gap: 60px;
+  display: grid; grid-template-columns: 1.5fr 1fr; gap: 60px;
   align-items: start;
 }
 
+/* Adjusted Hero Image Alignment */
+.year-right-column {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start; /* Shifts hero up */
+  padding-top: 40px;
+}
+.hero-illustration { width: 100%; max-width: 450px; height: auto; }
+
+
 .year-card {
-  background: white;
-  border-radius: 20px;
-  box-shadow: var(--shadow-sm);
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  margin-bottom: 16px;
+  background: white; border-radius: 20px; box-shadow: var(--shadow-sm);
+  cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex; flex-direction: column; overflow: hidden; margin-bottom: 20px;
 }
 
-.year-card:hover {
-  transform: translateY(-6px);
-  box-shadow: var(--shadow-lg);
-}
-
-.year-card-content {
-  padding: 24px;
-}
-
-.year-card-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 12px;
-}
-
-.year-card-action {
-  background: #f8fafc;
-  padding: 12px 24px;
-  border-top: 1px solid #f1f5f9;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  color: var(--text-sub);
-  font-size: 12px;
-  font-weight: 600;
-}
+.year-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); }
+.year-card-content { padding: 24px; }
+.year-card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+.year-card-action { background: #f8fafc; padding: 12px 24px; border-top: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; color: var(--text-sub); font-size: 12px; font-weight: 600; }
 
 /* Month Cards Grid */
-.card-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 20px;
-}
-
-.month-card {
-  height: 140px;
-  text-align: left;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 24px;
-  background: white;
-  border-radius: 16px;
-  box-shadow: var(--shadow-sm);
-  cursor: pointer;
-  transition: all 0.2s;
-  border: 1px solid var(--border);
-}
-
+.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+.month-card { height: 140px; text-align: left; display: flex; flex-direction: column; justify-content: center; padding: 24px; background: white; border-radius: 16px; box-shadow: var(--shadow-sm); cursor: pointer; transition: all 0.2s; border: 1px solid var(--border); }
 .month-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); border-color: var(--primary); }
-
-.month-card h3 {
-  margin: 0;
-  font-size: 18px;
-  color: var(--text-main);
-}
+.month-card h3 { margin: 0; font-size: 18px; color: var(--text-main); }
 
 /* =========================================
-   4. TRACKER & CHARTS
+   4. TRACKER CONTROLS & GRID
    ========================================= */
+/* (Kept from previous fix) */
+.controls-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; gap: 16px; flex-wrap: wrap; }
+.search-box { position: relative; flex: 1; min-width: 250px; }
+.search-box input { width: 100%; padding: 12px 16px 12px 48px; border-radius: 12px; border: 1px solid var(--border); background: white; outline: none; font-size: 14px; transition: all 0.2s; box-shadow: var(--shadow-sm); }
+.search-box input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px var(--primary-light); }
+.search-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--text-sub); pointer-events: none; }
+.filter-group { display: flex; gap: 8px; flex-wrap: wrap; }
+.filter-pill { padding: 8px 16px; border-radius: 50px; border: 1px solid var(--border); background: white; font-size: 13px; font-weight: 600; color: var(--text-sub); cursor: pointer; transition: all 0.2s ease; white-space: nowrap; }
+.filter-pill:hover { border-color: var(--primary); color: var(--primary); transform: translateY(-1px); }
+.filter-pill.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 4px 6px -1px rgba(76, 175, 80, 0.3); }
 
-.controls-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-  gap: 16px;
-  flex-wrap: wrap; /* Prevents squishing on mobile */
-}
-
-.search-box {
-  position: relative;
-  flex: 1;
-  min-width: 250px;
-}
-
-.search-box input {
-  width: 100%;
-  padding: 12px 16px 12px 48px; /* Room for the icon */
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  background: white;
-  outline: none;
-  font-size: 14px;
-  transition: all 0.2s;
-  box-shadow: var(--shadow-sm);
-}
-
-.search-box input:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 4px var(--primary-light);
-}
-
-.search-icon {
-  position: absolute;
-  left: 16px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--text-sub);
-  pointer-events: none;
-}
-
-.filter-group {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.filter-pill {
-  padding: 8px 16px;
-  border-radius: 50px;
-  border: 1px solid var(--border);
-  background: white;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-sub);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  white-space: nowrap; /* Keeps text on one line */
-}
-
-.filter-pill:hover {
-  border-color: var(--primary);
-  color: var(--primary);
-  transform: translateY(-1px);
-}
-
-.filter-pill.active {
-  background: var(--primary);
-  color: white;
-  border-color: var(--primary);
-  box-shadow: 0 4px 6px -1px rgba(76, 175, 80, 0.3);
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: 1.5fr 1fr 1fr;
-  gap: 24px;
-  margin-bottom: 30px;
-}
-
-.card {
-  background: var(--card);
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--border);
-}
-
-.grid-card { overflow-x: auto; background: white; padding: 24px; border-radius: 16px; box-shadow: var(--shadow-sm); }
+/* =========================================
+   5. TRACKER & CHARTS (Standard)
+   ========================================= */
 
 .grid-head {
   display: grid;
@@ -455,6 +206,23 @@ body {
   text-transform: uppercase;
 }
 
+/* Update this existing class */
+.d-col {
+  display: flex;
+  gap: 4px;
+  padding: 0 10px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+/* This forces the day numbers to match the checkbox size perfectly */
+.grid-head .d-col span {
+  width: 26px;        /* Match the width of .check-box */
+  text-align: center; /* Center the number */
+  flex-shrink: 0;     /* Stop the numbers from squishing */
+  display: inline-block;
+}
+/* -------------------------- */
+
 .habit-row {
   display: grid;
   grid-template-columns: 240px 1fr 90px;
@@ -463,13 +231,8 @@ body {
   border-bottom: 1px solid var(--bg);
 }
 
-.h-col { display: flex; align-items: center; justify-content: space-between; padding-right: 20px; }
-.habit-title { font-weight: 600; font-size: 14px; color: var(--text-main); }
-.d-col { display: flex; gap: 4px; padding: 0 10px; overflow-x: auto; scrollbar-width: none; }
-.s-col { text-align: center; }
-
 .check-box {
-  width: 26px;
+  width: 26px;        /* Ensure this matches the span width above */
   height: 26px;
   border: 2px solid var(--border);
   border-radius: 6px;
@@ -481,118 +244,46 @@ body {
   justify-content: center;
 }
 
-.check-box.active {
-  background-color: var(--primary);
-  border-color: var(--primary);
-}
-
-.progress-pill {
-  background: var(--bg);
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--text-sub);
-}
-
-/* Category Tags */
+.stats-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 24px; margin-bottom: 30px; }
+.card { background: var(--card); border-radius: 16px; padding: 24px; box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
+.grid-card { overflow-x: auto; background: white; padding: 24px; border-radius: 16px; box-shadow: var(--shadow-sm); }
+.grid-head { display: grid; grid-template-columns: 240px 1fr 90px; padding-bottom: 16px; border-bottom: 2px solid var(--bg); font-weight: 700; font-size: 11px; color: var(--text-sub); text-transform: uppercase; }
+.habit-row { display: grid; grid-template-columns: 240px 1fr 90px; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--bg); }
+.h-col { display: flex; align-items: center; justify-content: space-between; padding-right: 20px; }
+.habit-title { font-weight: 600; font-size: 14px; color: var(--text-main); }
+.d-col { display: flex; gap: 4px; padding: 0 10px; overflow-x: auto; scrollbar-width: none; }
+.s-col { text-align: center; }
+.check-box { width: 26px; height: 26px; border: 2px solid var(--border); border-radius: 6px; cursor: pointer; flex-shrink: 0; transition: all 0.15s; display: flex; align-items: center; justify-content: center; }
+.check-box.active { background-color: var(--primary); border-color: var(--primary); }
+.progress-pill { background: var(--bg); padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; color: var(--text-sub); }
 .cat-tag { font-size: 10px; padding: 2px 8px; border-radius: 6px; font-weight: 700; text-transform: uppercase; margin-top: 4px; display: inline-block; }
 .cat-health { background: #dcfce7; color: var(--cat-health); }
 .cat-mind { background: #e0f2fe; color: var(--cat-mind); }
 .cat-work { background: #ffedd5; color: var(--cat-work); }
 .cat-personal { background: #f3e8ff; color: var(--cat-personal); }
-
-/* Add Habit Form */
-.add-habit-form {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 24px;
-  background: white;
-  padding: 16px;
-  border-radius: 16px;
-  border: 1px solid var(--border);
-}
-
+.add-habit-form { display: flex; gap: 12px; margin-bottom: 24px; background: white; padding: 16px; border-radius: 16px; border: 1px solid var(--border); }
 .add-habit-form input { flex: 2; padding: 10px; border-radius: 8px; border: 1px solid var(--border); }
 .add-habit-form select { flex: 0.5; padding: 10px; border-radius: 8px; border: 1px solid var(--border); }
 .add-habit-form button { background: var(--primary); color: white; border: none; padding: 0 20px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: 600;}
 
 /* =========================================
-   5. LOGIN PAGE (FIXED)
+   6. LOGIN PAGE & UTILITIES
    ========================================= */
-
-/* MATCHES Login.jsx 'login-container' */
-.login-container {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #fdfdfd;
-  overflow: hidden;
-}
-
-/* MATCHES Login.jsx 'login-card' */
-.login-card {
-  z-index: 10;
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  padding: 40px;
-  border-radius: 24px;
-  width: 100%;
-  max-width: 420px;
-  text-align: center;
-  box-shadow: var(--shadow-lg);
-}
-
+.login-container { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: #fdfdfd; overflow: hidden; }
+.login-card { z-index: 10; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.3); padding: 40px; border-radius: 24px; width: 100%; max-width: 420px; text-align: center; box-shadow: var(--shadow-lg); }
 .login-logo { width: 60px; height: auto; margin-bottom: 20px; }
-
 .auth-form { display: flex; flex-direction: column; gap: 12px; margin: 24px 0; }
 .auth-form input { padding: 14px; border-radius: 12px; border: 1px solid var(--border); background: white; }
 .primary-auth-btn { background: var(--primary); color: white; border: none; padding: 14px; border-radius: 12px; font-weight: 700; cursor: pointer; }
-
-.google-btn {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 12px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  background: white;
-  cursor: pointer;
-  font-weight: 600;
-  color: var(--text-main);
-}
-
+.google-btn { width: 100%; display: flex; align-items: center; justify-content: center; gap: 12px; padding: 12px; border-radius: 12px; border: 1px solid var(--border); background: white; cursor: pointer; font-weight: 600; color: var(--text-main); }
 .divider { display: flex; align-items: center; margin: 20px 0; color: var(--text-sub); font-size: 12px; }
 .divider::before, .divider::after { content: ""; flex: 1; border-bottom: 1px solid var(--border); }
 .divider span { padding: 0 10px; }
-
 .toggle-auth { margin-top: 20px; font-size: 14px; color: var(--text-sub); }
 .toggle-auth span { color: var(--primary); font-weight: 700; cursor: pointer; margin-left: 5px; }
-
-/* =========================================
-   6. UTILITIES
-   ========================================= */
-
 .animate-fade { animation: fadeIn 0.4s ease-out forwards; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-.loading-container {
-  height: 100vh; display: flex; flex-direction: column; 
-  align-items: center; justify-content: center; color: var(--text-sub);
-}
-.loading-spinner {
-  width: 40px; height: 40px; border: 4px solid #e2e8f0; 
-  border-top-color: var(--primary); border-radius: 50%; 
-  animation: spin 1s linear infinite; margin-bottom: 16px;
-}
+.loading-container { height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-sub); }
+.loading-spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 16px; }
 @keyframes spin { to { transform: rotate(360deg); } }
-
-@media (max-width: 1024px) {
-  .stats-grid { grid-template-columns: 1fr; }
-  .grid-head, .habit-row { grid-template-columns: 160px 1fr 60px; }
-}
+@media (max-width: 1024px) { .stats-grid { grid-template-columns: 1fr; } .grid-head, .habit-row { grid-template-columns: 160px 1fr 60px; } .controls-row { flex-direction: column; align-items: stretch; } }

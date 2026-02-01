@@ -8,7 +8,8 @@ import MonthView from './components/MonthView';
 import TrackerView from './components/TrackerView';
 import './App.css';
 
-const API_URL = 'https://habit-tracker-2-12x6.onrender.com';
+// REPLACE THIS with your actual Render Backend URL
+const API_URL = 'https://habit-tracker-2-12x6.onrender.com'; 
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -107,7 +108,6 @@ export default function App() {
       })
       .then(() => {
         fetchGlobalStreak(user.uid);
-        // Optional: showToast("Progress Saved", "success");
       })
       .catch(() => showToast("Sync Failed: Check Connection", "error"));
     }
@@ -123,7 +123,6 @@ export default function App() {
 
   return (
     <div className="dashboard-wrapper">
-      {/* TOAST COMPONENT */}
       {toast.show && (
         <div className={`toast-notification ${toast.type} animate-slide-in`}>
           {toast.type === 'success' ? <CheckCircle size={18} /> : <AlertTriangle size={18} />}
@@ -132,28 +131,34 @@ export default function App() {
         </div>
       )}
 
-      <header className="main-header">
-        <div className="header-left">
-          <div className="icon-bg"><LayoutDashboard size={28} /></div>
-          <div className="header-text">
-            <div className="title-row">
-              <h1>Habit Tracker</h1>
-              {globalStreak > 0 && (
-                <div className="global-streak-tag"><Flame size={16} fill="#ff9800" stroke="#ff9800" /><span>{globalStreak} DAY STREAK</span></div>
-              )}
+      {/* --- NEW STICKY NAVBAR CONTAINER --- */}
+      <div className="sticky-navbar-box">
+        <header className="main-header">
+          <div className="header-left">
+            <div className="icon-bg"><LayoutDashboard size={28} /></div>
+            <div className="header-text">
+              <div className="title-row">
+                <h1>Habit Tracker</h1>
+                {globalStreak > 0 && (
+                  <div className="global-streak-tag"><Flame size={16} fill="#ff9800" stroke="#ff9800" /><span>{globalStreak} DAY STREAK</span></div>
+                )}
+              </div>
+              <p>Welcome, {user.displayName || user.email}</p>
             </div>
-            <p>Welcome, {user.displayName || user.email}</p>
           </div>
-        </div>
-        <button onClick={handleLogout} className="logout-button"><LogOut size={18} /> Logout</button>
-      </header>
+          <button onClick={handleLogout} className="logout-button"><LogOut size={18} /> Logout</button>
+        </header>
 
-      <nav className="breadcrumbs-container">
-        <button onClick={() => setView({ screen: 'years', year: null, month: null })}><Home size={16} /> <span>Years</span></button>
-        {view.year && <><ChevronRight size={14} className="crumb-arrow" /><button onClick={() => setView({ ...view, screen: 'months', month: null })}>{view.year}</button></>}
-        {view.month && <><ChevronRight size={14} className="crumb-arrow" /><span className="current-crumb">{view.month}</span></>}
-      </nav>
+        <nav className="breadcrumbs-container">
+          <button onClick={() => setView({ screen: 'years', year: null, month: null })}><Home size={16} /> <span>Years</span></button>
+          {view.year && <><ChevronRight size={14} className="crumb-arrow" /><button onClick={() => setView({ ...view, screen: 'months', month: null })}>{view.year}</button></>}
+          {view.month && <><ChevronRight size={14} className="crumb-arrow" /><span className="current-crumb">{view.month}</span></>}
+        </nav>
+      </div>
+      {/* --- END STICKY NAVBAR --- */}
 
+
+      {/* CONTENT AREA (Only this part scrolls now) */}
       <main className="content-area">
         {view.screen === 'years' && <YearView years={Object.keys(store)} store={store} onAddYear={addYear} onSelectYear={(y) => setView({ screen: 'months', year: y, month: null })} />}
         {view.screen === 'months' && <MonthView year={view.year} store={store} onSelectMonth={(m) => setView({ screen: 'tracker', year: view.year, month: m })} />}
