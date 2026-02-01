@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 
-// --- BROKEN IMPORT REMOVED --- 
-
 export default function YearView({ years, store, onAddYear, onSelectYear, onDeleteYear }) {
   const [newYear, setNewYear] = useState('');
 
@@ -81,11 +79,11 @@ export default function YearView({ years, store, onAddYear, onSelectYear, onDele
           </div>
         </div>
 
-        {/* HERO IMAGE (Uses online URL, so no import needed) */}
+        {/* HERO IMAGE FIXED: Points to public/hero.png */}
         <div className="year-right-column">
           <img 
-            src="https://cdni.iconscout.com/illustration/premium/thumb/habit-tracker-illustration-download-in-svg-png-gif-file-formats--routine-checklist-daily-task-business-pack-illustrations-3693863.png" 
-            alt="Hero" 
+            src="/hero.png" 
+            alt="Hero Illustration" 
             className="hero-illustration" 
           />
         </div>
