@@ -165,8 +165,6 @@ html, body {
 .grid-card {
   background: white; padding: 16px; border-radius: 16px;
   border: 1px solid var(--border); box-shadow: var(--shadow-sm);
-  /* Note: We removed overflow-x: auto here to prevent the whole card from scrolling.
-     We want only the days to scroll. */
 }
 
 @media (min-width: 768px) {
@@ -443,3 +441,29 @@ html, body {
   display: flex; align-items: center; justify-content: center; gap: 12px;
 }
 .google-btn img { width: 24px; height: 24px; }
+
+
+/* =========================================
+   6. MOBILE ALIGNMENT FIX (ADDED)
+   ========================================= */
+@media (max-width: 640px) {
+  
+  /* 1. Force header numbers to have EXACT width as checkboxes */
+  .grid-head .d-col span {
+    width: 28px !important;      /* Matches .check-box width */
+    min-width: 28px !important;  /* Prevents shrinking */
+    text-align: center;          /* Centers number relative to the box */
+    display: inline-flex;        
+    justify-content: center;
+    /* Optional: Font tweaks to make it look cleaner */
+    font-size: 12px;
+  }
+
+  /* 2. Force identical gap and alignment for header and rows */
+  .grid-head .d-col, 
+  .habit-row .d-col {
+    gap: 4px !important;         /* Consistent spacing */
+    justify-content: flex-start; /* Align left so they don't drift */
+    padding-left: 2px;           /* Minor visual nudge */
+  }
+}
