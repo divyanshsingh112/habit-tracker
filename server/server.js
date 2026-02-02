@@ -7,13 +7,14 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// --- MONGODB CONNECTION (Cleaned) ---
-// Removed deprecated options to fix the warnings
+// --- MONGODB CONNECTION ---
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB Connected"))
   .catch(err => console.error("MongoDB Error:", err));
 
-// --- SCHEMA DEFINITION ---
+// --- SCHEMAS ---
+
+// 1. Habit Data Schema
 const habitSchema = new mongoose.Schema({
   id: Number,
   name: String,
@@ -30,9 +31,19 @@ const monthSchema = new mongoose.Schema({
 
 const MonthData = mongoose.model('MonthData', monthSchema);
 
+// 2. NEW: User Stats Schema (Gamification)
+const userStatsSchema = new mongoose.Schema({
+  userId: { type: String, required: true, unique: true },
+  xp: { type: Number, default: 0 },
+  level: { type: Number, default: 1 },
+  coins: { type: Number, default: 0 }
+});
+
+const UserStats = mongoose.model('UserStats', userStatsSchema);
+
 // --- ROUTES ---
 
-// 1. GET ALL DATA
+// 1. GET ALL DATA (Habits)
 app.get('/all-data/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
@@ -46,7 +57,7 @@ app.get('/all-data/:userId', async (req, res) => {
 // 2. GET STREAK
 app.get('/streak/:userId', async (req, res) => {
   try {
-    res.json({ streak: 0 }); 
+    res.json({ streak: 0 }); // Placeholder for now
   } catch (err) {
     res.json({ streak: 0 });
   }
@@ -80,31 +91,51 @@ app.post('/habits/:userId/:year/:month', async (req, res) => {
   }
 });
 
-// 5. DELETE YEAR (With Debug Logs)
+// 5. DELETE YEAR
 app.delete('/years/:userId/:year', async (req, res) => {
   try {
     const { userId, year } = req.params;
-    
-    console.log(`Attempting to delete year: ${year} for user: ${userId}`); // DEBUG LOG
-
-    // Delete ALL month records for this specific year
     const result = await MonthData.deleteMany({ userId, year });
-    
-    console.log(`Deleted count: ${result.deletedCount}`); // DEBUG LOG
-
     res.json({ message: 'Year deleted successfully', deletedCount: result.deletedCount });
   } catch (err) {
-    console.error("Delete Error:", err);
     res.status(500).json({ error: err.message });
   }
 });
 
-// 6. LOAD YEARS
-app.get('/years/:userId', async (req, res) => {
+// 6. NEW: GAMIFICATION ROUTES
+
+// Get Stats
+app.get('/stats/:userId', async (req, res) => {
   try {
-    const { userId } = req.params;
-    const distinctYears = await MonthData.find({ userId }).distinct('year');
-    res.json(distinctYears);
+    let stats = await UserStats.findOne({ userId: req.params.userId });
+    if (!stats) {
+      stats = await UserStats.create({ userId: req.params.userId });
+    }
+    res.json(stats);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Update Stats (Add XP)
+app.post('/stats/:userId', async (req, res) => {
+  try {
+    const { xpEarned } = req.body;
+    
+    let stats = await UserStats.findOne({ userId: req.params.userId });
+    if (!stats) stats = await UserStats.create({ userId: req.params.userId });
+
+    stats.xp += xpEarned || 0;
+    
+    // Level Up Logic: Level * 100 XP needed
+    const xpNeeded = stats.level * 100;
+    if (stats.xp >= xpNeeded) {
+      stats.level += 1;
+      stats.xp -= xpNeeded; 
+    }
+
+    await stats.save();
+    res.json(stats);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

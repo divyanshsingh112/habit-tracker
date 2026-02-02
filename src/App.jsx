@@ -1,7 +1,8 @@
-import React, { useState, useEffect, Suspense, lazy } from 'react'; // <--- Added Suspense & lazy
-import { ChevronRight, LayoutDashboard, LogOut, Flame, X, CheckCircle, AlertTriangle } from 'lucide-react';
+import React, { useState, useEffect, Suspense, lazy } from 'react'; 
+import { ChevronRight, LayoutDashboard, LogOut, Flame, X, CheckCircle, AlertTriangle, Zap } from 'lucide-react';
 import { auth, logout } from './firebase'; 
 import { onAuthStateChanged } from 'firebase/auth';
+import confetti from 'canvas-confetti'; // <--- NEW IMPORT
 import Login from './components/Login';
 import YearView from './components/YearView';
 import MonthView from './components/MonthView';
@@ -11,23 +12,13 @@ import './App.css';
 import { getAllLocalData, saveMonthLocally, getPendingSyncs } from './db';
 import { syncData } from './syncManager';
 
-// --- LAZY LOAD OPTIMIZATION ---
-// Instead of importing TrackerView at the top, we lazy load it.
-// This saves ~300kb from the initial mobile load.
 const TrackerView = lazy(() => import('./components/TrackerView'));
 
 const API_URL = 'https://habit-tracker-2-12x6.onrender.com'; 
 
-// Simple Loading Spinner for the transition
+// Loading Spinner
 const PageLoader = () => (
-  <div style={{
-    display: 'flex', 
-    justifyContent: 'center', 
-    alignItems: 'center', 
-    height: '300px', 
-    width: '100%',
-    color: '#94a3b8'
-  }}>
+  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '300px', width: '100%', color: '#94a3b8' }}>
     <div className="loading-spinner"></div>
   </div>
 );
@@ -39,12 +30,16 @@ export default function App() {
   const [view, setView] = useState({ screen: 'years', year: null, month: null });
   const [globalStreak, setGlobalStreak] = useState(0);
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+  
+  // NEW: Gamification State
+  const [userStats, setUserStats] = useState({ xp: 0, level: 1, coins: 0 });
 
   const showToast = (message, type = 'success') => {
     setToast({ show: true, message, type });
     setTimeout(() => setToast({ ...toast, show: false }), 3000);
   };
 
+  // Helper to rebuild store from DB
   const rehydrateStore = (dataArray) => {
     const newStore = {};
     dataArray.forEach(doc => {
@@ -54,31 +49,31 @@ export default function App() {
     setStore(prev => ({ ...prev, ...newStore }));
   };
 
-  // --- SMART MERGE LOGIC (Preserved) ---
+  // --- SYNC & MERGE LOGIC ---
   const fetchAndSyncServer = async (userId) => {
     try {
-      // A. Get Data from Server
+      // 1. Get Habits
       const res = await fetch(`${API_URL}/all-data/${userId}`);
       const serverData = await res.json();
-
-      // B. Check what is waiting to Sync (Your local changes)
       const pendingItems = await getPendingSyncs();
-      
       const pendingKeys = new Set(pendingItems.map(item => `${item.year}-${item.month}`));
 
-      // C. SMART FILTER
       const validServerData = serverData.filter(doc => {
         const key = `${doc.year}-${doc.month}`;
-        const isDirty = pendingKeys.has(key);
-        if (isDirty) console.log(`[Merge] Ignoring server data for ${key}`);
-        return !isDirty; 
+        return !pendingKeys.has(key); 
       });
 
       rehydrateStore(validServerData);
 
+      // 2. Get Streak
       fetch(`${API_URL}/streak/${userId}`)
         .then(r => r.json())
         .then(d => setGlobalStreak(d.streak || 0));
+
+      // 3. NEW: Get Gamification Stats
+      fetch(`${API_URL}/stats/${userId}`)
+        .then(r => r.json())
+        .then(stats => setUserStats(stats));
 
     } catch (err) {
       console.log("Offline or Server Error: Keeping local data");
@@ -89,13 +84,8 @@ export default function App() {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       if (currentUser) {
-        // 1. Load Local Data Immediately
         const localData = await getAllLocalData();
-        if (localData && localData.length > 0) {
-          rehydrateStore(localData);
-        }
-
-        // 2. Fetch Latest from Server
+        if (localData && localData.length > 0) rehydrateStore(localData);
         fetchAndSyncServer(currentUser.uid);
       } else {
         setStore({});
@@ -104,12 +94,8 @@ export default function App() {
       setAuthLoading(false);
     });
 
-    const syncInterval = setInterval(() => {
-      if (navigator.onLine) syncData();
-    }, 10000);
-
+    const syncInterval = setInterval(() => { if (navigator.onLine) syncData(); }, 10000);
     window.addEventListener('online', syncData);
-
     return () => {
       unsubscribe();
       clearInterval(syncInterval);
@@ -117,14 +103,50 @@ export default function App() {
     };
   }, []);
 
+  // --- CORE UPDATE FUNCTION (Includes Gamification) ---
   const handleTrackerUpdate = async (updatedHabitsList) => {
+    // 1. Optimistic UI Update
     setStore(prev => ({
       ...prev,
       [view.year]: { ...prev[view.year], [view.month]: updatedHabitsList }
     }));
 
+    // 2. NEW: Gamification Logic (Instant Gratification)
+    // We assume any update might be a completion, so we trigger a small reward
+    // For a real app, you'd check if (completed > prevCompleted)
+    confetti({
+      particleCount: 50,
+      spread: 60,
+      origin: { y: 0.7 },
+      colors: ['#4caf50', '#ff9800', '#2196f3'],
+      disableForReducedMotion: true
+    });
+
+    // Award XP Locally
+    setUserStats(prev => {
+        const xpNeeded = prev.level * 100;
+        let newXp = prev.xp + 10;
+        let newLevel = prev.level;
+        if (newXp >= xpNeeded) {
+            newXp -= xpNeeded;
+            newLevel += 1;
+            showToast(`Level Up! You are now Level ${newLevel}`, 'success');
+        }
+        return { ...prev, xp: newXp, level: newLevel };
+    });
+
     if (user) {
+      // 3. Save Habit Data (Offline First)
       await saveMonthLocally(user.uid, view.year, view.month, updatedHabitsList);
+      
+      // 4. Save XP Data (Fire and Forget)
+      fetch(`${API_URL}/stats/${user.uid}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ xpEarned: 10 })
+      }).catch(e => console.log("XP Sync skipped (Offline)"));
+
+      // 5. Trigger Habit Sync
       syncData(); 
     }
   };
@@ -132,7 +154,6 @@ export default function App() {
   const addYear = (year) => {
     if (!year || store[year]) return;
     setStore(prev => ({ ...prev, [year]: {} }));
-    
     if (user) {
       saveMonthLocally(user.uid, year, "January", []);
       syncData();
@@ -145,21 +166,19 @@ export default function App() {
       const newStore = { ...store };
       delete newStore[yearToDelete];
       setStore(newStore);
-
       if (user) {
         fetch(`${API_URL}/years/${user.uid}/${yearToDelete}`, { method: 'DELETE' })
-        .then(() => showToast(`Year ${yearToDelete} deleted`))
         .catch(() => showToast("Sync Error", "error"));
       }
   };
 
-  const handleLogout = async () => {
-    await logout();
-    showToast("Logged out");
-  };
+  const handleLogout = async () => { await logout(); showToast("Logged out"); };
 
   if (authLoading) return <div className="loading-container"><div className="loading-spinner"></div></div>;
   if (!user) return <Login onLogin={setUser} />;
+
+  // XP Bar Calculation
+  const xpPercentage = Math.min((userStats.xp / (userStats.level * 100)) * 100, 100);
 
   return (
     <div className="app-container">
@@ -180,35 +199,19 @@ export default function App() {
             </div>
 
             <nav className="inline-breadcrumbs">
-              <button 
-                className={`crumb-btn ${view.screen === 'years' ? 'crumb-active' : ''}`}
-                onClick={() => setView({ screen: 'years', year: null, month: null })}
-              >
-                Years
-              </button>
-              
-              {view.year && (
-                <>
-                  <ChevronRight size={14} className="crumb-separator" />
-                  <button 
-                     className={`crumb-btn ${view.screen === 'months' ? 'crumb-active' : ''}`}
-                     onClick={() => setView({ ...view, screen: 'months', month: null })}
-                  >
-                    {view.year}
-                  </button>
-                </>
-              )}
-              
-              {view.month && (
-                <>
-                  <ChevronRight size={14} className="crumb-separator" />
-                  <span className="crumb-btn crumb-active">{view.month}</span>
-                </>
-              )}
+              <button className={`crumb-btn ${view.screen === 'years' ? 'crumb-active' : ''}`} onClick={() => setView({ screen: 'years', year: null, month: null })}>Years</button>
+              {view.year && <><ChevronRight size={14} className="crumb-separator" /><button className={`crumb-btn ${view.screen === 'months' ? 'crumb-active' : ''}`} onClick={() => setView({ ...view, screen: 'months', month: null })}>{view.year}</button></>}
+              {view.month && <><ChevronRight size={14} className="crumb-separator" /><span className="crumb-btn crumb-active">{view.month}</span></>}
             </nav>
           </div>
 
           <div className="nav-right">
+             {/* --- NEW: LEVEL INDICATOR --- */}
+            <div className="streak-pill" style={{ background: '#e0f2fe', color: '#0284c7', border: '1px solid #bae6fd', marginRight: '8px' }}>
+              <Zap size={14} fill="#0284c7" stroke="#0284c7" />
+              <span>LVL {userStats.level}</span>
+            </div>
+
             {globalStreak > 0 && (
               <div className="streak-pill">
                 <Flame size={14} fill="#ea580c" stroke="#ea580c" />
@@ -219,44 +222,23 @@ export default function App() {
             <div className="user-welcome">
               <span>{user.displayName || user.email.split('@')[0]}</span>
             </div>
-
-            <button onClick={handleLogout} className="logout-link">
-              <LogOut size={16} /> Logout
-            </button>
+            <button onClick={handleLogout} className="logout-link"><LogOut size={16} /> Logout</button>
           </div>
+        </div>
+        
+        {/* --- NEW: XP PROGRESS BAR (Bottom of Navbar) --- */}
+        <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '3px', background: '#f1f5f9' }}>
+           <div style={{ width: `${xpPercentage}%`, height: '100%', background: '#4caf50', transition: 'width 0.5s ease' }}></div>
         </div>
       </header>
 
       <main className="main-scroll-area">
         <div className="content-max-width">
-          {view.screen === 'years' && (
-            <YearView 
-              years={Object.keys(store)} 
-              store={store} 
-              onAddYear={addYear}
-              onDeleteYear={deleteYear}
-              onSelectYear={(y) => setView({ screen: 'months', year: y, month: null })} 
-            />
-          )}
-
-          {view.screen === 'months' && (
-            <MonthView 
-              year={view.year} 
-              store={store}
-              onSelectMonth={(m) => setView({ screen: 'tracker', year: view.year, month: m })} 
-            />
-          )}
-
+          {view.screen === 'years' && <YearView years={Object.keys(store)} store={store} onAddYear={addYear} onDeleteYear={deleteYear} onSelectYear={(y) => setView({ screen: 'months', year: y, month: null })} />}
+          {view.screen === 'months' && <MonthView year={view.year} store={store} onSelectMonth={(m) => setView({ screen: 'tracker', year: view.year, month: m })} />}
           {view.screen === 'tracker' && (
-            // WRAP TRACKER IN SUSPENSE
-            // This shows the loader while the heavy code downloads
             <Suspense fallback={<PageLoader />}>
-              <TrackerView 
-                year={view.year} 
-                month={view.month} 
-                habits={store[view.year]?.[view.month] || []} 
-                onUpdate={handleTrackerUpdate} 
-              />
+              <TrackerView year={view.year} month={view.month} habits={store[view.year]?.[view.month] || []} onUpdate={handleTrackerUpdate} />
             </Suspense>
           )}
         </div>
