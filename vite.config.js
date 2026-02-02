@@ -31,12 +31,26 @@ export default defineConfig({
         ]
       },
       workbox: {
-        // This is the magic setting that caches your files
         globPatterns: ['**/*.{js,css,html,ico,png,svg}']
       }
     })
   ],
   build: {
-    chunkSizeWarningLimit: 1600,
+    // --- OPTIMIZATION START ---
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          // Break large libraries into separate files
+          if (id.includes('node_modules')) {
+            if (id.includes('recharts')) return 'recharts'; // Heavy charts
+            if (id.includes('firebase')) return 'firebase'; // Heavy Auth
+            if (id.includes('lucide')) return 'icons';      // Icons
+            return 'vendor'; // Everything else
+          }
+        },
+      },
+    },
+    chunkSizeWarningLimit: 1000,
+    // --- OPTIMIZATION END ---
   },
 });
