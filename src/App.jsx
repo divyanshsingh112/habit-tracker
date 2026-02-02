@@ -115,11 +115,12 @@ export default function App() {
     // We assume any update might be a completion, so we trigger a small reward
     // For a real app, you'd check if (completed > prevCompleted)
     confetti({
-      particleCount: 50,
-      spread: 60,
-      origin: { y: 0.7 },
+      particleCount: 100,            // More particles
+      spread: 70,                    // Wider burst
+      origin: { y: 0.6 },            // Start higher up
       colors: ['#4caf50', '#ff9800', '#2196f3'],
-      disableForReducedMotion: true
+      zIndex: 9999,                  // <--- CRITICAL: Forces it on top of everything
+      disableForReducedMotion: false // <--- CRITICAL: Forces it even if phone is in power saver mode
     });
 
     // Award XP Locally
