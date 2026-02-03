@@ -21,7 +21,7 @@ const Analytics = lazy(() => import('./components/Analytics'));
 const Leaderboard = lazy(() => import('./components/Leaderboard'));
 const Guild = lazy(() => import('./components/Guild')); // <-- NEW IMPORT
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://habit-tracker-2-12x6.onrender.com'; 
+const API_URL = import.meta.env.VITE_API_URL || 'https://habit-tracker-m9uw.onrender.com'; 
 const PageLoader = () => <div className="loading-spinner" style={{margin: '100px auto'}}></div>;
 
 function Dashboard({ user, showToast, handleLogout }) {
