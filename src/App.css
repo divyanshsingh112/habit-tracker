@@ -332,3 +332,8 @@ img { max-width: 100%; display: block; } /* PREVENTS GIANT IMAGES */
 .leader-row .rank { font-weight: 800; color: #a855f7; width: 24px; }
 .leader-row .name { flex: 1; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-right: 8px; }
 .leader-row .count { background: #f3e8ff; color: #7e22ce; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 800; }
+
+
+/* =========================================
+  new fixes
+   ========================================= */
