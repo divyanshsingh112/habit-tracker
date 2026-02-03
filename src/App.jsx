@@ -2,7 +2,7 @@ import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { ChevronRight, LayoutDashboard, LogOut, Flame, X, CheckCircle, AlertTriangle, Zap } from 'lucide-react';
 import { auth, logout } from './firebase'; 
 import { onAuthStateChanged } from 'firebase/auth';
-import confetti from 'canvas-confetti'; // <--- NEW IMPORT
+import confetti from 'canvas-confetti'; 
 import Login from './components/Login';
 import YearView from './components/YearView';
 import MonthView from './components/MonthView';
@@ -16,7 +16,6 @@ const TrackerView = lazy(() => import('./components/TrackerView'));
 
 const API_URL = 'https://habit-tracker-2-12x6.onrender.com'; 
 
-// Loading Spinner
 const PageLoader = () => (
   <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '300px', width: '100%', color: '#94a3b8' }}>
     <div className="loading-spinner"></div>
@@ -30,8 +29,6 @@ export default function App() {
   const [view, setView] = useState({ screen: 'years', year: null, month: null });
   const [globalStreak, setGlobalStreak] = useState(0);
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
-  
-  // NEW: Gamification State
   const [userStats, setUserStats] = useState({ xp: 0, level: 1, coins: 0 });
 
   const showToast = (message, type = 'success') => {
@@ -39,7 +36,6 @@ export default function App() {
     setTimeout(() => setToast({ ...toast, show: false }), 3000);
   };
 
-  // Helper to rebuild store from DB
   const rehydrateStore = (dataArray) => {
     const newStore = {};
     dataArray.forEach(doc => {
@@ -49,10 +45,8 @@ export default function App() {
     setStore(prev => ({ ...prev, ...newStore }));
   };
 
-  // --- SYNC & MERGE LOGIC ---
   const fetchAndSyncServer = async (userId) => {
     try {
-      // 1. Get Habits
       const res = await fetch(`${API_URL}/all-data/${userId}`);
       const serverData = await res.json();
       const pendingItems = await getPendingSyncs();
@@ -65,12 +59,10 @@ export default function App() {
 
       rehydrateStore(validServerData);
 
-      // 2. Get Streak
       fetch(`${API_URL}/streak/${userId}`)
         .then(r => r.json())
         .then(d => setGlobalStreak(d.streak || 0));
 
-      // 3. NEW: Get Gamification Stats
       fetch(`${API_URL}/stats/${userId}`)
         .then(r => r.json())
         .then(stats => setUserStats(stats));
@@ -103,51 +95,81 @@ export default function App() {
     };
   }, []);
 
-  // --- CORE UPDATE FUNCTION (Includes Gamification) ---
+  // Helper to count checks
+  const countChecks = (habitsList) => {
+    return habitsList.reduce((total, habit) => {
+      return total + (habit.completedDays ? Object.keys(habit.completedDays).length : 0);
+    }, 0);
+  };
+
+  // --- UPDATED TRACKER LOGIC (Fixes Infinite XP Glitch) ---
   const handleTrackerUpdate = async (updatedHabitsList) => {
-    // 1. Optimistic UI Update
+    // 1. Calculate Score Difference (Did we gain or lose checks?)
+    const currentMonthData = store[view.year]?.[view.month] || [];
+    const oldScore = countChecks(currentMonthData);
+    const newScore = countChecks(updatedHabitsList);
+    const diff = newScore - oldScore;
+
+    // 2. Optimistic UI Update
     setStore(prev => ({
       ...prev,
       [view.year]: { ...prev[view.year], [view.month]: updatedHabitsList }
     }));
 
-    // 2. NEW: Gamification Logic (Instant Gratification)
-    // We assume any update might be a completion, so we trigger a small reward
-    // For a real app, you'd check if (completed > prevCompleted)
-    confetti({
-      particleCount: 100,            // More particles
-      spread: 70,                    // Wider burst
-      origin: { y: 0.6 },            // Start higher up
-      colors: ['#4caf50', '#ff9800', '#2196f3'],
-      zIndex: 9999,                  // <--- CRITICAL: Forces it on top of everything
-      disableForReducedMotion: false // <--- CRITICAL: Forces it even if phone is in power saver mode
-    });
+    // 3. XP Logic (Only if score changed)
+    if (diff !== 0) {
+      const xpChange = diff * 10; // +10 or -10
+      
+      // CONFETTI ONLY IF GAINING
+      if (diff > 0) {
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ['#4caf50', '#ff9800', '#2196f3'],
+          zIndex: 9999,
+          disableForReducedMotion: false
+        });
+      }
 
-    // Award XP Locally
-    setUserStats(prev => {
-        const xpNeeded = prev.level * 100;
-        let newXp = prev.xp + 10;
+      // Update Stats Locally (Simulate Level Up/Down)
+      setUserStats(prev => {
+        let newXp = prev.xp + xpChange;
         let newLevel = prev.level;
-        if (newXp >= xpNeeded) {
-            newXp -= xpNeeded;
-            newLevel += 1;
-            showToast(`Level Up! You are now Level ${newLevel}`, 'success');
+
+        // Simulate Up
+        while (newXp >= newLevel * 100) {
+          newXp -= newLevel * 100;
+          newLevel++;
+          showToast(`Level Up! You are now Level ${newLevel}`, 'success');
+        }
+
+        // Simulate Down
+        while (newXp < 0) {
+          if (newLevel > 1) {
+            newLevel--;
+            newXp += newLevel * 100;
+          } else {
+            newXp = 0;
+            break;
+          }
         }
         return { ...prev, xp: newXp, level: newLevel };
-    });
+      });
 
+      // Send XP Change to Server
+      if (user) {
+        fetch(`${API_URL}/stats/${user.uid}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ xpEarned: xpChange })
+        }).catch(e => console.log("XP Sync skipped (Offline)"));
+      }
+    }
+
+    // 4. Save Habit Data
     if (user) {
-      // 3. Save Habit Data (Offline First)
       await saveMonthLocally(user.uid, view.year, view.month, updatedHabitsList);
-      
-      // 4. Save XP Data (Fire and Forget)
-      fetch(`${API_URL}/stats/${user.uid}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ xpEarned: 10 })
-      }).catch(e => console.log("XP Sync skipped (Offline)"));
-
-      // 5. Trigger Habit Sync
       syncData(); 
     }
   };
@@ -178,7 +200,6 @@ export default function App() {
   if (authLoading) return <div className="loading-container"><div className="loading-spinner"></div></div>;
   if (!user) return <Login onLogin={setUser} />;
 
-  // XP Bar Calculation
   const xpPercentage = Math.min((userStats.xp / (userStats.level * 100)) * 100, 100);
 
   return (
@@ -207,7 +228,6 @@ export default function App() {
           </div>
 
           <div className="nav-right">
-             {/* --- NEW: LEVEL INDICATOR --- */}
             <div className="streak-pill" style={{ background: '#e0f2fe', color: '#0284c7', border: '1px solid #bae6fd', marginRight: '8px' }}>
               <Zap size={14} fill="#0284c7" stroke="#0284c7" />
               <span>LVL {userStats.level}</span>
@@ -227,7 +247,6 @@ export default function App() {
           </div>
         </div>
         
-        {/* --- NEW: XP PROGRESS BAR (Bottom of Navbar) --- */}
         <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '3px', background: '#f1f5f9' }}>
            <div style={{ width: `${xpPercentage}%`, height: '100%', background: '#4caf50', transition: 'width 0.5s ease' }}></div>
         </div>

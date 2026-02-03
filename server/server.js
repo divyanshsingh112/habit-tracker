@@ -31,7 +31,7 @@ const monthSchema = new mongoose.Schema({
 
 const MonthData = mongoose.model('MonthData', monthSchema);
 
-// 2. NEW: User Stats Schema (Gamification)
+// 2. User Stats Schema (Gamification)
 const userStatsSchema = new mongoose.Schema({
   userId: { type: String, required: true, unique: true },
   xp: { type: Number, default: 0 },
@@ -102,7 +102,7 @@ app.delete('/years/:userId/:year', async (req, res) => {
   }
 });
 
-// 6. NEW: GAMIFICATION ROUTES
+// 6. GAMIFICATION ROUTES
 
 // Get Stats
 app.get('/stats/:userId', async (req, res) => {
@@ -117,21 +117,34 @@ app.get('/stats/:userId', async (req, res) => {
   }
 });
 
-// Update Stats (Add XP)
+// Update Stats (Smart Level Up/Down Logic)
 app.post('/stats/:userId', async (req, res) => {
   try {
-    const { xpEarned } = req.body;
+    const { xpEarned } = req.body; // Can be positive (10) or negative (-10)
     
     let stats = await UserStats.findOne({ userId: req.params.userId });
     if (!stats) stats = await UserStats.create({ userId: req.params.userId });
 
+    // 1. Apply the Change
     stats.xp += xpEarned || 0;
     
-    // Level Up Logic: Level * 100 XP needed
-    const xpNeeded = stats.level * 100;
-    if (stats.xp >= xpNeeded) {
+    // 2. LEVEL UP LOOP (While XP is too high, go up)
+    while (stats.xp >= stats.level * 100) {
+      stats.xp -= stats.level * 100;
       stats.level += 1;
-      stats.xp -= xpNeeded; 
+    }
+
+    // 3. LEVEL DOWN LOOP (While XP is negative, go down)
+    while (stats.xp < 0) {
+      if (stats.level > 1) {
+        stats.level -= 1;
+        // When dropping a level, you reclaim the XP cap of the lower level
+        stats.xp += stats.level * 100; 
+      } else {
+        // If Level 1 and XP < 0, just cap at 0
+        stats.xp = 0;
+        break;
+      }
     }
 
     await stats.save();
