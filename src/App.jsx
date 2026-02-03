@@ -1,6 +1,5 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react'; 
 import { ChevronRight, LayoutDashboard, LogOut, Flame, X, CheckCircle, AlertTriangle, Zap } from 'lucide-react';
-import { SpeedInsights } from '@vercel/speed-insights/react';
 import { auth, logout } from './firebase'; 
 import { onAuthStateChanged } from 'firebase/auth';
 import confetti from 'canvas-confetti'; 
@@ -30,7 +29,6 @@ export default function App() {
   const [view, setView] = useState({ screen: 'years', year: null, month: null });
   const [globalStreak, setGlobalStreak] = useState(0);
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
-  
   const [userStats, setUserStats] = useState({ 
     xp: 0, level: 1, coins: 0, stats: { str: 0, int: 0, wis: 0, cha: 0 } 
   });
@@ -108,29 +106,22 @@ export default function App() {
     }, 0);
   };
 
-  // --- NEW: Calculate Discipline (Perfect Days) ---
-  // A "Perfect Day" is when ALL habits for that month are checked for that specific day.
+  // --- CALCULATE DISCIPLINE (Perfect Days) ---
   const calculateDisciplineScore = () => {
     const habits = store[view.year]?.[view.month] || [];
     if (habits.length === 0) return 0;
 
     let perfectDays = 0;
-    const daysToCheck = new Date().getDate(); // Check up to today
+    const daysToCheck = new Date().getDate(); 
 
     for (let day = 1; day <= daysToCheck; day++) {
-      // Check if every habit in the list has this 'day' key in completedDays
       const allDone = habits.every(h => h.completedDays && h.completedDays[day]);
       if (allDone) perfectDays++;
     }
-    
-    // Scale this up for the chart (e.g. 5 points per perfect day)
-    return perfectDays * 5; 
+    return perfectDays * 5; // Scaling factor
   };
 
   const handleTrackerUpdate = async (updatedHabitsList, habitAttribute) => {
-    // 1. Update Global Streak (Passed from TrackerView usually, but here we update UI)
-    // Note: TrackerView handles the complex calculation, we just sync here if needed.
-    
     const currentMonthData = store[view.year]?.[view.month] || [];
     const oldScore = countChecks(currentMonthData);
     const newScore = countChecks(updatedHabitsList);
@@ -159,7 +150,6 @@ export default function App() {
         let newXp = prev.xp + xpChange;
         let newLevel = prev.level;
         
-        // Optimistic Stats Update
         const newStats = { ...prev.stats };
         if (diff > 0 && habitAttribute) {
              const key = habitAttribute.toLowerCase();
@@ -206,10 +196,8 @@ export default function App() {
       attribute, 
       completedDays: {}
     };
-
     const currentHabits = store[view.year]?.[view.month] || [];
     const updatedHabits = [...currentHabits, newHabit];
-
     await handleTrackerUpdate(updatedHabits);
     showToast(`Quest "${name}" Created!`, 'success');
   };
@@ -327,7 +315,6 @@ export default function App() {
         </div>
       </main>
 
-      {/* 4. THE STATS CHART MODAL - Passing Calculated Discipline */}
       <StatsModal 
         isOpen={isStatsOpen} 
         onClose={() => setIsStatsOpen(false)} 
