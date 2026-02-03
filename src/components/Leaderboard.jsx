@@ -6,7 +6,7 @@ export default function Leaderboard({ currentUser }) {
   const [loading, setLoading] = useState(true);
 
   // Use the environment variable for API URL
-  const API_URL = import.meta.env.VITE_API_URL || 'https://habit-tracker-2-12x6.onrender.com';
+  const API_URL = import.meta.env.VITE_API_URL || 'https://habit-tracker-m9uw.onrender.com';
 
   useEffect(() => {
     fetch(`${API_URL}/leaderboard`)

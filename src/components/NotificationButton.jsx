@@ -3,7 +3,7 @@ import { Bell, BellOff } from 'lucide-react';
 
 export default function NotificationButton({ user }) {
   const [isSubscribed, setIsSubscribed] = useState(Notification.permission === 'granted');
-  const API_URL = import.meta.env.VITE_API_URL || 'https://habit-tracker-2-12x6.onrender.com';
+  const API_URL = import.meta.env.VITE_API_URL || 'https://habit-tracker-m9uw.onrender.com';
   // MUST match the Public Key from Step 2
   const VAPID_PUBLIC_KEY = 'YOUR_PUBLIC_KEY_FROM_STEP_2'; 
 
