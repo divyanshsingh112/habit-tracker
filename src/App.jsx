@@ -13,11 +13,13 @@ import { saveMonthLocally } from './db';
 import { syncData } from './syncManager';
 import './App.css';
 
+// Lazy Load Components
 const YearView = lazy(() => import('./components/YearView'));
 const MonthView = lazy(() => import('./components/MonthView'));
 const TrackerView = lazy(() => import('./components/TrackerView'));
 const Analytics = lazy(() => import('./components/Analytics'));
-const Leaderboard = lazy(() => import('./components/Leaderboard')); // <-- NEW IMPORT
+const Leaderboard = lazy(() => import('./components/Leaderboard'));
+const Guild = lazy(() => import('./components/Guild')); // <-- NEW IMPORT
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://habit-tracker-2-12x6.onrender.com'; 
 const PageLoader = () => <div className="loading-spinner" style={{margin: '100px auto'}}></div>;
@@ -71,12 +73,15 @@ function Dashboard({ user, showToast, handleLogout }) {
       <main className="main-scroll-area">
         <div className="content-max-width">
           <Suspense fallback={<PageLoader />}>
+            
             {view.screen === 'years' && (
               <YearView years={Object.keys(store)} store={store} onAddYear={addYear} onDeleteYear={(y) => { const newStore = { ...store }; delete newStore[y]; setStore(newStore); }} onSelectYear={(y) => setView({ screen: 'months', year: y, month: null })} />
             )}
+            
             {view.screen === 'months' && (
               <MonthView year={view.year} store={store} onSelectMonth={(m) => setView({ screen: 'tracker', year: view.year, month: m })} />
             )}
+            
             {view.screen === 'tracker' && (
               <>
                  <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'flex-end' }}>
@@ -86,13 +91,20 @@ function Dashboard({ user, showToast, handleLogout }) {
                 <HabitModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSave={handleAddHabit} />
               </>
             )}
+            
             {view.screen === 'analytics' && (
               <Analytics userStats={userStats} store={store} />
             )}
-            {/* NEW: LEADERBOARD VIEW */}
+            
             {view.screen === 'leaderboard' && (
               <Leaderboard currentUser={user} />
             )}
+
+            {/* NEW: GUILD VIEW */}
+            {view.screen === 'guild' && (
+              <Guild user={user} />
+            )}
+
           </Suspense>
         </div>
       </main>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { LayoutDashboard, LogOut, Flame, Zap, ChevronRight, Coins, Menu, X, Activity, Trophy } from 'lucide-react';
+import { LayoutDashboard, LogOut, Flame, Zap, ChevronRight, Coins, Menu, X, Activity, Trophy, Users } from 'lucide-react';
 
 export default function Navbar({ 
   user, userStats, globalStreak, view, setView, onLogout, onOpenStats, onOpenShop
@@ -26,7 +26,6 @@ export default function Navbar({
             <span>Stats</span>
           </button>
 
-          {/* NEW: LEADERBOARD BUTTON */}
           <button 
             className={`crumb-btn ${view.screen === 'leaderboard' ? 'crumb-active' : ''}`}
             onClick={() => setView({ screen: 'leaderboard', year: null, month: null })}
@@ -36,16 +35,29 @@ export default function Navbar({
             <span>Ranks</span>
           </button>
 
+          {/* NEW: TEAM BUTTON */}
+          <button 
+            className={`crumb-btn ${view.screen === 'guild' ? 'crumb-active' : ''}`}
+            onClick={() => setView({ screen: 'guild', year: null, month: null })}
+            style={{ marginLeft: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}
+          >
+            <Users size={16} />
+            <span>Team</span>
+          </button>
+
           <nav className="inline-breadcrumbs">
-            {(view.screen === 'years' || view.screen === 'analytics' || view.screen === 'leaderboard') ? null : (
+            {/* Divider logic: Hide if on Years, Analytics, Leaderboard OR Guild */}
+            {(view.screen === 'years' || view.screen === 'analytics' || view.screen === 'leaderboard' || view.screen === 'guild') ? null : (
                <span style={{ color: 'var(--text-sub)', opacity: 0.5, margin: '0 4px' }}>|</span> 
             )}
+            
             <button 
               className={`crumb-btn ${view.screen === 'years' ? 'crumb-active' : ''}`} 
               onClick={() => setView({ screen: 'years', year: null, month: null })}
             >
               Years
             </button>
+            
             {view.year && (
               <>
                 <ChevronRight size={14} className="crumb-separator" />
@@ -57,6 +69,7 @@ export default function Navbar({
                 </button>
               </>
             )}
+            
             {view.month && (
               <>
                 <ChevronRight size={14} className="crumb-separator" />

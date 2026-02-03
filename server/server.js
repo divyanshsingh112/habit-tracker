@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const cron = require('node-cron'); // <-- IMPORT CRON
+const guildRoutes = require('./routes/guildRoutes');
 require('dotenv').config();
 
 const habitRoutes = require('./routes/habitRoutes');
@@ -20,6 +21,7 @@ mongoose.connect(process.env.MONGO_URI)
 app.use('/', habitRoutes);
 app.use('/', gamificationRoutes);
 app.use('/', notificationRoutes); // <-- USE ROUTES
+app.use('/', guildRoutes);
 
 // --- CRON JOB: Run every day at 9:00 AM ---
 // Syntax: 'Minute Hour * * *'
