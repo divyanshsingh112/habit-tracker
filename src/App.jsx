@@ -3,12 +3,12 @@ import { ChevronRight, LayoutDashboard, LogOut, Flame, X, CheckCircle, AlertTria
 import { auth, logout } from './firebase'; 
 import { onAuthStateChanged } from 'firebase/auth';
 import confetti from 'canvas-confetti'; 
-import { SpeedInsights } from '@vercel/speed-insights/react';
+import { SpeedInsights } from '@vercel/speed-insights/react'; 
 import Login from './components/Login';
 import YearView from './components/YearView';
 import MonthView from './components/MonthView';
 import HabitModal from './components/HabitModal'; 
-import StatsModal from './components/StatsModal'; // <--- 1. IMPORT STATS MODAL
+import StatsModal from './components/StatsModal'; 
 import './App.css';
 
 import { getAllLocalData, saveMonthLocally, getPendingSyncs } from './db';
@@ -31,16 +31,12 @@ export default function App() {
   const [globalStreak, setGlobalStreak] = useState(0);
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
   
-  // Initialize Stats with default values to prevent crash
   const [userStats, setUserStats] = useState({ 
-    xp: 0, 
-    level: 1, 
-    coins: 0, 
-    stats: { str: 0, int: 0, wis: 0, cha: 0 } 
+    xp: 0, level: 1, coins: 0, stats: { str: 0, int: 0, wis: 0, cha: 0 } 
   });
   
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isStatsOpen, setIsStatsOpen] = useState(false); // <--- 2. STATE FOR STATS MODAL
+  const [isStatsOpen, setIsStatsOpen] = useState(false);
 
   const showToast = (message, type = 'success') => {
     setToast({ show: true, message, type });
@@ -112,10 +108,44 @@ export default function App() {
     }, 0);
   };
 
+  // --- HELPER: Calculate Streak Logic for App (Matches TrackerView) ---
+  const calculateStreakLocally = (habitsList) => {
+    let maxStreak = 0;
+    habitsList.forEach(habit => {
+      if (!habit.completedDays) return;
+      const timestamps = Object.values(habit.completedDays);
+      const actionDates = new Set(timestamps.map(ts => new Date(ts).toDateString()));
+      
+      let currentStreak = 0;
+      const checkDate = new Date();
+      let hasDate = actionDates.has(checkDate.toDateString());
+      if (!hasDate) {
+         checkDate.setDate(checkDate.getDate() - 1);
+         hasDate = actionDates.has(checkDate.toDateString());
+      }
+
+      if (hasDate) {
+        currentStreak = 1;
+        while (true) {
+          checkDate.setDate(checkDate.getDate() - 1);
+          if (actionDates.has(checkDate.toDateString())) {
+            currentStreak++;
+          } else {
+            break;
+          }
+        }
+      }
+      if (currentStreak > maxStreak) maxStreak = currentStreak;
+    });
+    return maxStreak;
+  };
+
   const handleTrackerUpdate = async (updatedHabitsList, habitAttribute) => {
-    // Note: To support stats properly, we need to know WHICH habit changed.
-    // For now, we assume this update triggered global XP.
-    
+    // 1. Calculate and update Streak immediately
+    const newStreak = calculateStreakLocally(updatedHabitsList);
+    setGlobalStreak(newStreak);
+
+    // 2. XP & Stats Logic
     const currentMonthData = store[view.year]?.[view.month] || [];
     const oldScore = countChecks(currentMonthData);
     const newScore = countChecks(updatedHabitsList);
@@ -143,6 +173,13 @@ export default function App() {
       setUserStats(prev => {
         let newXp = prev.xp + xpChange;
         let newLevel = prev.level;
+        
+        // Optimistic Stats Update
+        const newStats = { ...prev.stats };
+        if (diff > 0 && habitAttribute) {
+             const key = habitAttribute.toLowerCase();
+             newStats[key] = (newStats[key] || 0) + (xpChange / 10);
+        }
 
         while (newXp >= newLevel * 100) {
           newXp -= newLevel * 100;
@@ -159,17 +196,14 @@ export default function App() {
             break;
           }
         }
-        return { ...prev, xp: newXp, level: newLevel };
+        return { ...prev, xp: newXp, level: newLevel, stats: newStats };
       });
 
       if (user) {
-        // We pass 'attribute' implicitly if we can. 
-        // For accurate tracking, TrackerView needs to pass the specific attribute back.
-        // For now, we send a generic update. To fix properly, we need more data flow.
         fetch(`${API_URL}/stats/${user.uid}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ xpEarned: xpChange }) 
+          body: JSON.stringify({ xpEarned: xpChange, attribute: habitAttribute }) 
         }).catch(e => console.log("XP Sync skipped (Offline)"));
       }
     }
@@ -249,7 +283,7 @@ export default function App() {
           </div>
 
           <div className="nav-right">
-            {/* 3. CLICKABLE LEVEL PILL */}
+            {/* CLICKABLE LEVEL PILL */}
             <div 
               className="streak-pill" 
               style={{ background: '#e0f2fe', color: '#0284c7', border: '1px solid #bae6fd', marginRight: '8px', cursor: 'pointer' }}
@@ -309,7 +343,6 @@ export default function App() {
         </div>
       </main>
 
-      {/* 4. THE STATS CHART MODAL */}
       <StatsModal 
         isOpen={isStatsOpen} 
         onClose={() => setIsStatsOpen(false)} 

@@ -6,53 +6,71 @@ import {
 
 export default function TrackerView({ year, month, habits, onUpdate }) {
   
-  // --- HELPER: Smart Streak Logic (Counts from Last Active Day) ---
+  // --- HELPER: Action-Based Streak Logic (Anti-Backfill) ---
   const globalStreak = useMemo(() => {
-    const activeDates = new Set();
-    let maxDay = 0;
+    let maxStreak = 0;
 
-    // 1. Find all active days and the latest day anyone checked a box
-    habits.forEach(h => {
-        if(h.completedDays) {
-            Object.keys(h.completedDays).forEach(day => {
-                const d = parseInt(day);
-                activeDates.add(d);
-                if (d > maxDay) maxDay = d; 
-            });
+    habits.forEach(habit => {
+      if (!habit.completedDays) return;
+
+      // 1. Extract TIMESTAMPS (When did you actually click the button?)
+      const timestamps = Object.values(habit.completedDays);
+      
+      // 2. Convert to Unique Dates (e.g., "Mon Feb 03 2026")
+      // This collapses multiple checks on the same day into ONE "Action Day"
+      const actionDates = new Set(
+        timestamps.map(ts => new Date(ts).toDateString())
+      );
+
+      // 3. Count Consecutive Action Days (Backwards from Today)
+      let currentStreak = 0;
+      const checkDate = new Date(); // Start with Today
+
+      // Check Today
+      let hasDate = actionDates.has(checkDate.toDateString());
+      
+      // If no action Today, check Yesterday (maybe you just haven't started yet today)
+      if (!hasDate) {
+         checkDate.setDate(checkDate.getDate() - 1);
+         hasDate = actionDates.has(checkDate.toDateString());
+      }
+
+      // If we found a start point (Today or Yesterday), count backwards
+      if (hasDate) {
+        currentStreak = 1;
+        while (true) {
+          checkDate.setDate(checkDate.getDate() - 1); // Go back 1 day
+          if (actionDates.has(checkDate.toDateString())) {
+            currentStreak++;
+          } else {
+            break; // Gap found, stop counting
+          }
         }
+      }
+
+      // The Global Streak is the BEST streak among all your habits
+      if (currentStreak > maxStreak) maxStreak = currentStreak;
     });
 
-    if (maxDay === 0) return 0;
-
-    // 2. Count backwards from the LAST ACTIVE DAY
-    let streak = 0;
-    let checkDay = maxDay; 
-
-    while (activeDates.has(checkDay)) {
-        streak++;
-        checkDay--;
-        if (checkDay < 1) break; 
-    }
-    return streak;
+    return maxStreak;
   }, [habits]);
 
-  // --- HELPER: Top 3 Leaderboard ---
+  // --- HELPER: Top 3 Leaderboard (By Total Count) ---
   const topQuests = useMemo(() => {
     return [...habits]
       .sort((a, b) => {
         const countA = a.completedDays ? Object.keys(a.completedDays).length : 0;
         const countB = b.completedDays ? Object.keys(b.completedDays).length : 0;
         
-        // 1. Primary Sort: Count (Descending)
+        // 1. Primary Sort: Total Days Completed (Descending)
         if (countB !== countA) return countB - countA;
         
-        // 2. Secondary Sort: Creation Date/ID (Ascending) - Older habits win ties
+        // 2. Secondary Sort: Creation Date (Ascending) - Older habits win ties
         return a.id - b.id; 
       })
-      .slice(0, 3); // Get Top 3
+      .slice(0, 3); 
   }, [habits]);
 
-  // --- HELPER: Random RPG Quote ---
   const quote = useMemo(() => {
     const quotes = [
       "A hero is made in the quiet moments.",
@@ -64,7 +82,6 @@ export default function TrackerView({ year, month, habits, onUpdate }) {
     return quotes[Math.floor(Math.random() * quotes.length)];
   }, []); 
 
-  // --- HELPER: Icon Mapping ---
   const getAttributeIcon = (attr) => {
     const safeAttr = (attr || 'str').toLowerCase(); 
     switch (safeAttr) {
@@ -79,19 +96,17 @@ export default function TrackerView({ year, month, habits, onUpdate }) {
   const daysInMonth = new Date(year, new Date(`${month} 1, 2000`).getMonth() + 1, 0).getDate();
   const daysArray = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
-  // --- MAIN LOGIC UPDATE: Passing Attribute ---
   const toggleDay = (habitId, day) => {
-    let activeAttribute = null; // Will store 'str', 'int', etc. if checked
+    let activeAttribute = null;
 
     const updated = habits.map(h => {
       if (h.id === habitId) {
         const newDays = { ...h.completedDays };
         if (newDays[day]) {
-            // Unchecking
             delete newDays[day];
         } else {
-            // Checking -> Capture Attribute to send to App.jsx
-            newDays[day] = new Date().toISOString();
+            // CRITICAL: We save the TIMESTAMP. This enables the "Action Streak".
+            newDays[day] = new Date().toISOString(); 
             activeAttribute = h.attribute || 'str'; 
         }
         return { ...h, completedDays: newDays };
@@ -99,7 +114,6 @@ export default function TrackerView({ year, month, habits, onUpdate }) {
       return h;
     });
     
-    // Pass BOTH the list and the attribute of the habit we just checked
     onUpdate(updated, activeAttribute);
   };
 
@@ -112,7 +126,7 @@ export default function TrackerView({ year, month, habits, onUpdate }) {
   return (
     <div className="tracker-wrapper animate-slide-up">
       
-      {/* 1. STATS LEGEND */}
+      {/* Stats Legend */}
       <div className="stats-legend-row">
         <div className="legend-pill warrior"><Sword size={12} /> <span>STR = Health</span></div>
         <div className="legend-pill mage"><Brain size={12} /> <span>INT = Learn</span></div>
@@ -120,32 +134,31 @@ export default function TrackerView({ year, month, habits, onUpdate }) {
         <div className="legend-pill bard"><MessageCircle size={12} /> <span>CHA = Social</span></div>
       </div>
 
-      {/* 2. DASHBOARD GRID */}
+      {/* Dashboard */}
       <div className="dashboard-grid">
         
-        {/* Quote Card */}
+        {/* Quote */}
         <div className="dash-card quote-card">
           <Quote size={20} className="quote-icon" />
           <p>"{quote}"</p>
         </div>
 
-        {/* Smart Streak Card */}
+        {/* Action Streak */}
         <div className={`dash-card streak-card ${globalStreak >= 3 ? 'active-streak' : ''}`}>
           <div className="card-icon-bg"><Flame size={20} /></div>
           <div style={{ flex: 1 }}>
-            <span className="card-label">Current Streak</span>
+            <span className="card-label">Consistency Streak</span>
             <div className="card-value">
               {globalStreak >= 3 ? `${globalStreak} Days` : <span style={{fontSize:'16px', color:'#94a3b8'}}>Igniting... ({globalStreak}/3)</span>}
             </div>
-            {/* Explainer Text */}
             <div className="streak-explainer">
               <Info size={10} style={{ marginRight: 4 }}/> 
-              Based on your last active day
+              Counts consecutive days you took action
             </div>
           </div>
         </div>
 
-        {/* Top 3 Leaderboard Card */}
+        {/* Leaderboard */}
         <div className="dash-card top-card">
            <div className="card-icon-bg purple"><Trophy size={20} /></div>
            <div style={{ width: '100%' }}>
@@ -170,7 +183,7 @@ export default function TrackerView({ year, month, habits, onUpdate }) {
         </div>
       </div>
 
-      {/* 3. THE TRACKER GRID */}
+      {/* Grid */}
       <div className="tracker-card">
         {habits.length === 0 ? (
           <div className="empty-state">
