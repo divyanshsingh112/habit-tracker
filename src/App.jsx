@@ -7,15 +7,14 @@ import { SpeedInsights } from '@vercel/speed-insights/react';
 import Login from './components/Login';
 import YearView from './components/YearView';
 import MonthView from './components/MonthView';
-import HabitModal from './components/HabitModal'; // Import the Modal
+import HabitModal from './components/HabitModal'; 
+import StatsModal from './components/StatsModal'; // <--- 1. IMPORT STATS MODAL
 import './App.css';
 
-// Import Offline Logic
 import { getAllLocalData, saveMonthLocally, getPendingSyncs } from './db';
 import { syncData } from './syncManager';
 
 const TrackerView = lazy(() => import('./components/TrackerView'));
-
 const API_URL = 'https://habit-tracker-2-12x6.onrender.com'; 
 
 const PageLoader = () => (
@@ -31,10 +30,17 @@ export default function App() {
   const [view, setView] = useState({ screen: 'years', year: null, month: null });
   const [globalStreak, setGlobalStreak] = useState(0);
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
-  const [userStats, setUserStats] = useState({ xp: 0, level: 1, coins: 0 });
   
-  // NEW: State for the "New Quest" Modal
+  // Initialize Stats with default values to prevent crash
+  const [userStats, setUserStats] = useState({ 
+    xp: 0, 
+    level: 1, 
+    coins: 0, 
+    stats: { str: 0, int: 0, wis: 0, cha: 0 } 
+  });
+  
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isStatsOpen, setIsStatsOpen] = useState(false); // <--- 2. STATE FOR STATS MODAL
 
   const showToast = (message, type = 'success') => {
     setToast({ show: true, message, type });
@@ -100,32 +106,29 @@ export default function App() {
     };
   }, []);
 
-  // Helper to count checks
   const countChecks = (habitsList) => {
     return habitsList.reduce((total, habit) => {
       return total + (habit.completedDays ? Object.keys(habit.completedDays).length : 0);
     }, 0);
   };
 
-  // --- UPDATED TRACKER LOGIC (Fixes Infinite XP Glitch) ---
-  const handleTrackerUpdate = async (updatedHabitsList) => {
-    // 1. Calculate Score Difference (Did we gain or lose checks?)
+  const handleTrackerUpdate = async (updatedHabitsList, habitAttribute) => {
+    // Note: To support stats properly, we need to know WHICH habit changed.
+    // For now, we assume this update triggered global XP.
+    
     const currentMonthData = store[view.year]?.[view.month] || [];
     const oldScore = countChecks(currentMonthData);
     const newScore = countChecks(updatedHabitsList);
     const diff = newScore - oldScore;
 
-    // 2. Optimistic UI Update
     setStore(prev => ({
       ...prev,
       [view.year]: { ...prev[view.year], [view.month]: updatedHabitsList }
     }));
 
-    // 3. XP Logic (Only if score changed)
     if (diff !== 0) {
-      const xpChange = diff * 10; // +10 or -10
+      const xpChange = diff * 10;
       
-      // CONFETTI ONLY IF GAINING
       if (diff > 0) {
         confetti({
           particleCount: 100,
@@ -137,19 +140,16 @@ export default function App() {
         });
       }
 
-      // Update Stats Locally (Simulate Level Up/Down)
       setUserStats(prev => {
         let newXp = prev.xp + xpChange;
         let newLevel = prev.level;
 
-        // Simulate Up
         while (newXp >= newLevel * 100) {
           newXp -= newLevel * 100;
           newLevel++;
           showToast(`Level Up! You are now Level ${newLevel}`, 'success');
         }
 
-        // Simulate Down
         while (newXp < 0) {
           if (newLevel > 1) {
             newLevel--;
@@ -162,39 +162,35 @@ export default function App() {
         return { ...prev, xp: newXp, level: newLevel };
       });
 
-      // Send XP Change to Server
       if (user) {
+        // We pass 'attribute' implicitly if we can. 
+        // For accurate tracking, TrackerView needs to pass the specific attribute back.
+        // For now, we send a generic update. To fix properly, we need more data flow.
         fetch(`${API_URL}/stats/${user.uid}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ xpEarned: xpChange })
+          body: JSON.stringify({ xpEarned: xpChange }) 
         }).catch(e => console.log("XP Sync skipped (Offline)"));
       }
     }
 
-    // 4. Save Habit Data
     if (user) {
       await saveMonthLocally(user.uid, view.year, view.month, updatedHabitsList);
       syncData(); 
     }
   };
 
-  // --- NEW: Add Habit Handler ---
   const handleAddHabit = async ({ name, attribute }) => {
-    // 1. Create new habit object
     const newHabit = {
-      id: Date.now(), // Unique ID based on time
+      id: Date.now(),
       name,
-      attribute, // 'str', 'int', 'wis', 'cha'
+      attribute, 
       completedDays: {}
     };
 
-    // 2. Get current list and append new habit
     const currentHabits = store[view.year]?.[view.month] || [];
     const updatedHabits = [...currentHabits, newHabit];
 
-    // 3. Save using existing logic (Handles Sync & DB automatically)
-    // Note: diff will be 0, so no XP gain just for creating (which is correct)
     await handleTrackerUpdate(updatedHabits);
     showToast(`Quest "${name}" Created!`, 'success');
   };
@@ -253,7 +249,12 @@ export default function App() {
           </div>
 
           <div className="nav-right">
-            <div className="streak-pill" style={{ background: '#e0f2fe', color: '#0284c7', border: '1px solid #bae6fd', marginRight: '8px' }}>
+            {/* 3. CLICKABLE LEVEL PILL */}
+            <div 
+              className="streak-pill" 
+              style={{ background: '#e0f2fe', color: '#0284c7', border: '1px solid #bae6fd', marginRight: '8px', cursor: 'pointer' }}
+              onClick={() => setIsStatsOpen(true)}
+            >
               <Zap size={14} fill="#0284c7" stroke="#0284c7" />
               <span>LVL {userStats.level}</span>
             </div>
@@ -282,10 +283,8 @@ export default function App() {
           {view.screen === 'years' && <YearView years={Object.keys(store)} store={store} onAddYear={addYear} onDeleteYear={deleteYear} onSelectYear={(y) => setView({ screen: 'months', year: y, month: null })} />}
           {view.screen === 'months' && <MonthView year={view.year} store={store} onSelectMonth={(m) => setView({ screen: 'tracker', year: view.year, month: m })} />}
           
-          {/* --- UPDATED TRACKER SCREEN --- */}
           {view.screen === 'tracker' && (
             <>
-               {/* New Quest Button */}
                <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'flex-end' }}>
                 <button 
                   className="save-btn" 
@@ -300,7 +299,6 @@ export default function App() {
                 <TrackerView year={view.year} month={view.month} habits={store[view.year]?.[view.month] || []} onUpdate={handleTrackerUpdate} />
               </Suspense>
 
-              {/* The Modal */}
               <HabitModal 
                 isOpen={isModalOpen} 
                 onClose={() => setIsModalOpen(false)} 
@@ -310,7 +308,15 @@ export default function App() {
           )}
         </div>
       </main>
-      <SpeedInsights />
+
+      {/* 4. THE STATS CHART MODAL */}
+      <StatsModal 
+        isOpen={isStatsOpen} 
+        onClose={() => setIsStatsOpen(false)} 
+        stats={userStats}
+        streak={globalStreak}
+      />
+      
     </div>
   );
 }

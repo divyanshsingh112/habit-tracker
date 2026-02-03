@@ -11,6 +11,7 @@ export default function TrackerView({ year, month, habits, onUpdate }) {
     const activeDates = new Set();
     let maxDay = 0;
 
+    // 1. Find all active days and the latest day anyone checked a box
     habits.forEach(h => {
         if(h.completedDays) {
             Object.keys(h.completedDays).forEach(day => {
@@ -23,6 +24,7 @@ export default function TrackerView({ year, month, habits, onUpdate }) {
 
     if (maxDay === 0) return 0;
 
+    // 2. Count backwards from the LAST ACTIVE DAY
     let streak = 0;
     let checkDay = maxDay; 
 
@@ -50,6 +52,7 @@ export default function TrackerView({ year, month, habits, onUpdate }) {
       .slice(0, 3); // Get Top 3
   }, [habits]);
 
+  // --- HELPER: Random RPG Quote ---
   const quote = useMemo(() => {
     const quotes = [
       "A hero is made in the quiet moments.",
@@ -61,6 +64,7 @@ export default function TrackerView({ year, month, habits, onUpdate }) {
     return quotes[Math.floor(Math.random() * quotes.length)];
   }, []); 
 
+  // --- HELPER: Icon Mapping ---
   const getAttributeIcon = (attr) => {
     const safeAttr = (attr || 'str').toLowerCase(); 
     switch (safeAttr) {
@@ -75,17 +79,28 @@ export default function TrackerView({ year, month, habits, onUpdate }) {
   const daysInMonth = new Date(year, new Date(`${month} 1, 2000`).getMonth() + 1, 0).getDate();
   const daysArray = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
+  // --- MAIN LOGIC UPDATE: Passing Attribute ---
   const toggleDay = (habitId, day) => {
+    let activeAttribute = null; // Will store 'str', 'int', etc. if checked
+
     const updated = habits.map(h => {
       if (h.id === habitId) {
         const newDays = { ...h.completedDays };
-        if (newDays[day]) delete newDays[day];
-        else newDays[day] = new Date().toISOString(); 
+        if (newDays[day]) {
+            // Unchecking
+            delete newDays[day];
+        } else {
+            // Checking -> Capture Attribute to send to App.jsx
+            newDays[day] = new Date().toISOString();
+            activeAttribute = h.attribute || 'str'; 
+        }
         return { ...h, completedDays: newDays };
       }
       return h;
     });
-    onUpdate(updated);
+    
+    // Pass BOTH the list and the attribute of the habit we just checked
+    onUpdate(updated, activeAttribute);
   };
 
   const deleteHabit = (id) => {
@@ -97,6 +112,7 @@ export default function TrackerView({ year, month, habits, onUpdate }) {
   return (
     <div className="tracker-wrapper animate-slide-up">
       
+      {/* 1. STATS LEGEND */}
       <div className="stats-legend-row">
         <div className="legend-pill warrior"><Sword size={12} /> <span>STR = Health</span></div>
         <div className="legend-pill mage"><Brain size={12} /> <span>INT = Learn</span></div>
@@ -104,23 +120,24 @@ export default function TrackerView({ year, month, habits, onUpdate }) {
         <div className="legend-pill bard"><MessageCircle size={12} /> <span>CHA = Social</span></div>
       </div>
 
+      {/* 2. DASHBOARD GRID */}
       <div className="dashboard-grid">
         
-        {/* Quote */}
+        {/* Quote Card */}
         <div className="dash-card quote-card">
           <Quote size={20} className="quote-icon" />
           <p>"{quote}"</p>
         </div>
 
-        {/* Smart Streak */}
+        {/* Smart Streak Card */}
         <div className={`dash-card streak-card ${globalStreak >= 3 ? 'active-streak' : ''}`}>
           <div className="card-icon-bg"><Flame size={20} /></div>
           <div style={{ flex: 1 }}>
             <span className="card-label">Current Streak</span>
             <div className="card-value">
-              {globalStreak >= 3 ? `${globalStreak} Days` : <span>Igniting... ({globalStreak}/3)</span>}
+              {globalStreak >= 3 ? `${globalStreak} Days` : <span style={{fontSize:'16px', color:'#94a3b8'}}>Igniting... ({globalStreak}/3)</span>}
             </div>
-            {/* NEW: Explanation Text */}
+            {/* Explainer Text */}
             <div className="streak-explainer">
               <Info size={10} style={{ marginRight: 4 }}/> 
               Based on your last active day
@@ -128,7 +145,7 @@ export default function TrackerView({ year, month, habits, onUpdate }) {
           </div>
         </div>
 
-        {/* Top 3 Leaderboard */}
+        {/* Top 3 Leaderboard Card */}
         <div className="dash-card top-card">
            <div className="card-icon-bg purple"><Trophy size={20} /></div>
            <div style={{ width: '100%' }}>
@@ -153,7 +170,7 @@ export default function TrackerView({ year, month, habits, onUpdate }) {
         </div>
       </div>
 
-      {/* Grid */}
+      {/* 3. THE TRACKER GRID */}
       <div className="tracker-card">
         {habits.length === 0 ? (
           <div className="empty-state">

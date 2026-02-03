@@ -14,12 +14,12 @@ mongoose.connect(process.env.MONGO_URI)
 
 // --- SCHEMAS ---
 
-// 1. Habit Data Schema (Updated for RPG Attributes)
+// 1. Habit Data Schema
 const habitSchema = new mongoose.Schema({
   id: Number,
   name: String,
-  category: String,   // General category (e.g. "Health")
-  attribute: String,  // RPG Attribute: 'str', 'int', 'wis', 'cha'
+  category: String,
+  attribute: String, // 'str', 'int', 'wis', 'cha'
   completedDays: Object 
 });
 
@@ -32,18 +32,18 @@ const monthSchema = new mongoose.Schema({
 
 const MonthData = mongoose.model('MonthData', monthSchema);
 
-// 2. User Stats Schema (Updated for RPG Stats)
+// 2. User Stats Schema (UPDATED FOR RPG CHART)
 const userStatsSchema = new mongoose.Schema({
   userId: { type: String, required: true, unique: true },
   xp: { type: Number, default: 0 },
   level: { type: Number, default: 1 },
   coins: { type: Number, default: 0 },
-  // RPG Stats Storage
+  // The RPG Stats
   stats: {
-    str: { type: Number, default: 0 }, // Strength
-    int: { type: Number, default: 0 }, // Intellect
-    wis: { type: Number, default: 0 }, // Wisdom
-    cha: { type: Number, default: 0 }  // Charisma
+    str: { type: Number, default: 0 }, // Warrior (Skills)
+    int: { type: Number, default: 0 }, // Mage (Intellect)
+    wis: { type: Number, default: 0 }, // Monk (Stamina)
+    cha: { type: Number, default: 0 }  // Bard (Charisma)
   }
 });
 
@@ -51,7 +51,7 @@ const UserStats = mongoose.model('UserStats', userStatsSchema);
 
 // --- ROUTES ---
 
-// 1. GET ALL DATA (Habits)
+// 1. GET ALL DATA
 app.get('/all-data/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
@@ -125,42 +125,39 @@ app.get('/stats/:userId', async (req, res) => {
   }
 });
 
-// Update Stats (Smart RPG Logic + Level Up/Down)
+// Update Stats (UPDATED LOGIC)
 app.post('/stats/:userId', async (req, res) => {
   try {
-    const { xpEarned, attribute } = req.body; // Receive Attribute (e.g. 'str')
+    const { xpEarned, attribute } = req.body; 
     
     let stats = await UserStats.findOne({ userId: req.params.userId });
     if (!stats) stats = await UserStats.create({ userId: req.params.userId });
 
-    // 1. Apply Global XP Change
+    // 1. Update Global XP
     stats.xp += xpEarned || 0;
-    
-    // 2. Update Specific RPG Stat (Only if Gaining XP)
+
+    // 2. Update Specific RPG Stat
     if (xpEarned > 0 && attribute) {
-       // Ensure stats object exists
        if (!stats.stats) stats.stats = { str: 0, int: 0, wis: 0, cha: 0 };
        
-       // Increment the correct stat (10 XP = 1 Stat Point)
-       if (stats.stats[attribute] !== undefined) {
-          stats.stats[attribute] += (xpEarned / 10); 
+       // Increment stat (10 XP = 1 Stat Point)
+       // Force attribute to lower case to match schema keys
+       const attrKey = attribute.toLowerCase();
+       if (stats.stats[attrKey] !== undefined) {
+          stats.stats[attrKey] += (xpEarned / 10); 
        }
     }
 
-    // 3. LEVEL UP LOOP (While XP is too high, go up)
+    // 3. Level Up/Down Logic
     while (stats.xp >= stats.level * 100) {
       stats.xp -= stats.level * 100;
       stats.level += 1;
     }
-
-    // 4. LEVEL DOWN LOOP (While XP is negative, go down)
     while (stats.xp < 0) {
       if (stats.level > 1) {
         stats.level -= 1;
-        // When dropping a level, reclaim the XP cap of the lower level
         stats.xp += stats.level * 100; 
       } else {
-        // If Level 1 and XP < 0, just cap at 0
         stats.xp = 0;
         break;
       }
