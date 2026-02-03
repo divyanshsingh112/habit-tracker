@@ -6,7 +6,17 @@ export default function Navbar({
 }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const xpPercentage = Math.min((userStats.xp / (userStats.level * 100)) * 100, 100);
-  const handleNav = (action) => { action(); setIsMobileMenuOpen(false); };
+  
+  // Helper to close menu after clicking an item
+  const handleNav = (screenName) => { 
+    setView({ screen: screenName, year: null, month: null });
+    setIsMobileMenuOpen(false); 
+  };
+
+  const handleAction = (action) => {
+    action();
+    setIsMobileMenuOpen(false);
+  };
 
   return (
     <header className="slim-navbar">
@@ -17,38 +27,35 @@ export default function Navbar({
             <h1>Habit Tracker</h1>
           </div>
 
-          <button 
-            className={`crumb-btn ${view.screen === 'analytics' ? 'crumb-active' : ''}`}
-            onClick={() => setView({ screen: 'analytics', year: null, month: null })}
-            style={{ marginLeft: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}
-          >
-            <Activity size={16} />
-            <span>Stats</span>
-          </button>
+          {/* DESKTOP NAV LINKS (Hidden on Mobile) */}
+          <div className="nav-links-group desktop-only">
+            <button 
+              className={`crumb-btn ${view.screen === 'analytics' ? 'crumb-active' : ''}`}
+              onClick={() => setView({ screen: 'analytics', year: null, month: null })}
+            >
+              <Activity size={16} /> <span>Stats</span>
+            </button>
 
-          <button 
-            className={`crumb-btn ${view.screen === 'leaderboard' ? 'crumb-active' : ''}`}
-            onClick={() => setView({ screen: 'leaderboard', year: null, month: null })}
-            style={{ marginLeft: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}
-          >
-            <Trophy size={16} />
-            <span>Ranks</span>
-          </button>
+            <button 
+              className={`crumb-btn ${view.screen === 'leaderboard' ? 'crumb-active' : ''}`}
+              onClick={() => setView({ screen: 'leaderboard', year: null, month: null })}
+            >
+              <Trophy size={16} /> <span>Ranks</span>
+            </button>
 
-          {/* NEW: TEAM BUTTON */}
-          <button 
-            className={`crumb-btn ${view.screen === 'guild' ? 'crumb-active' : ''}`}
-            onClick={() => setView({ screen: 'guild', year: null, month: null })}
-            style={{ marginLeft: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}
-          >
-            <Users size={16} />
-            <span>Team</span>
-          </button>
+            <button 
+              className={`crumb-btn ${view.screen === 'guild' ? 'crumb-active' : ''}`}
+              onClick={() => setView({ screen: 'guild', year: null, month: null })}
+            >
+              <Users size={16} /> <span>Team</span>
+            </button>
+          </div>
 
+          {/* BREADCRUMBS */}
           <nav className="inline-breadcrumbs">
-            {/* Divider logic: Hide if on Years, Analytics, Leaderboard OR Guild */}
+            {/* Divider logic: Hide if we are on a main page to avoid double bars */}
             {(view.screen === 'years' || view.screen === 'analytics' || view.screen === 'leaderboard' || view.screen === 'guild') ? null : (
-               <span style={{ color: 'var(--text-sub)', opacity: 0.5, margin: '0 4px' }}>|</span> 
+               <span className="crumb-separator desktop-only">|</span> 
             )}
             
             <button 
@@ -79,6 +86,7 @@ export default function Navbar({
           </nav>
         </div>
 
+        {/* DESKTOP RIGHT SIDE (Stats & Logout) */}
         <div className="nav-right desktop-only">
           <div 
             className="streak-pill" 
@@ -106,45 +114,68 @@ export default function Navbar({
           <button onClick={onLogout} className="logout-link"><LogOut size={16} /> Logout</button>
         </div>
 
+        {/* MOBILE HAMBURGER BUTTON */}
         <button className="mobile-menu-btn" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
           {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
       </div>
       
+      {/* MOBILE DROPDOWN MENU */}
       {isMobileMenuOpen && (
         <div className="mobile-menu-dropdown animate-slide-down">
+          
+          {/* 1. Navigation Links (Moved from top bar) */}
+          <div className="mobile-nav-section">
+            <button className="mobile-nav-item" onClick={() => handleNav('analytics')}>
+              <Activity size={18} /> Stats
+            </button>
+            <button className="mobile-nav-item" onClick={() => handleNav('leaderboard')}>
+              <Trophy size={18} /> Ranks / Leaderboard
+            </button>
+            <button className="mobile-nav-item" onClick={() => handleNav('guild')}>
+              <Users size={18} /> Team / Guild
+            </button>
+          </div>
+
+          <hr className="mobile-divider" />
+
+          {/* 2. User Stats Row */}
           <div className="mobile-stats-row">
             <div 
               className="streak-pill" 
               style={{ background: '#fffbeb', color: '#b45309', border: '1px solid #fcd34d' }}
-              onClick={() => handleNav(onOpenShop)} 
+              onClick={() => handleAction(onOpenShop)} 
             >
               <Coins size={14} fill="#f59e0b" stroke="#b45309" />
-              <span>{userStats.coins || 0}</span>
+              <span>{userStats.coins || 0} Coins</span>
             </div>
             <div 
               className="streak-pill" 
               style={{ background: '#e0f2fe', color: '#0284c7', border: '1px solid #bae6fd' }}
-              onClick={() => handleNav(onOpenStats)}
+              onClick={() => handleAction(onOpenStats)}
             >
               <Zap size={14} fill="#0284c7" stroke="#0284c7" />
-              <span>{userStats.level}</span>
+              <span>Lvl {userStats.level}</span>
             </div>
             {globalStreak > 0 && (
               <div className="streak-pill">
                 <Flame size={14} fill="#ea580c" stroke="#ea580c" />
-                <span>{globalStreak}d</span>
+                <span>{globalStreak}d Streak</span>
               </div>
             )}
           </div>
+          
           <hr className="mobile-divider" />
+          
+          {/* 3. User Info & Logout */}
           <div className="mobile-user-info">
-             <span>{user.email}</span>
+             <span style={{ fontSize: '12px' }}>{user.email}</span>
              <button onClick={onLogout} className="mobile-logout"><LogOut size={14} /> Logout</button>
           </div>
         </div>
       )}
 
+      {/* XP BAR AT BOTTOM */}
       <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '3px', background: '#f1f5f9' }}>
          <div style={{ width: `${xpPercentage}%`, height: '100%', background: '#4caf50', transition: 'width 0.5s ease' }}></div>
       </div>
