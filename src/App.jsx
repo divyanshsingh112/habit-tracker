@@ -1,9 +1,9 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react'; 
 import { ChevronRight, LayoutDashboard, LogOut, Flame, X, CheckCircle, AlertTriangle, Zap } from 'lucide-react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import { auth, logout } from './firebase'; 
 import { onAuthStateChanged } from 'firebase/auth';
 import confetti from 'canvas-confetti'; 
-import { SpeedInsights } from '@vercel/speed-insights/react'; 
 import Login from './components/Login';
 import YearView from './components/YearView';
 import MonthView from './components/MonthView';
@@ -108,44 +108,29 @@ export default function App() {
     }, 0);
   };
 
-  // --- HELPER: Calculate Streak Logic for App (Matches TrackerView) ---
-  const calculateStreakLocally = (habitsList) => {
-    let maxStreak = 0;
-    habitsList.forEach(habit => {
-      if (!habit.completedDays) return;
-      const timestamps = Object.values(habit.completedDays);
-      const actionDates = new Set(timestamps.map(ts => new Date(ts).toDateString()));
-      
-      let currentStreak = 0;
-      const checkDate = new Date();
-      let hasDate = actionDates.has(checkDate.toDateString());
-      if (!hasDate) {
-         checkDate.setDate(checkDate.getDate() - 1);
-         hasDate = actionDates.has(checkDate.toDateString());
-      }
+  // --- NEW: Calculate Discipline (Perfect Days) ---
+  // A "Perfect Day" is when ALL habits for that month are checked for that specific day.
+  const calculateDisciplineScore = () => {
+    const habits = store[view.year]?.[view.month] || [];
+    if (habits.length === 0) return 0;
 
-      if (hasDate) {
-        currentStreak = 1;
-        while (true) {
-          checkDate.setDate(checkDate.getDate() - 1);
-          if (actionDates.has(checkDate.toDateString())) {
-            currentStreak++;
-          } else {
-            break;
-          }
-        }
-      }
-      if (currentStreak > maxStreak) maxStreak = currentStreak;
-    });
-    return maxStreak;
+    let perfectDays = 0;
+    const daysToCheck = new Date().getDate(); // Check up to today
+
+    for (let day = 1; day <= daysToCheck; day++) {
+      // Check if every habit in the list has this 'day' key in completedDays
+      const allDone = habits.every(h => h.completedDays && h.completedDays[day]);
+      if (allDone) perfectDays++;
+    }
+    
+    // Scale this up for the chart (e.g. 5 points per perfect day)
+    return perfectDays * 5; 
   };
 
   const handleTrackerUpdate = async (updatedHabitsList, habitAttribute) => {
-    // 1. Calculate and update Streak immediately
-    const newStreak = calculateStreakLocally(updatedHabitsList);
-    setGlobalStreak(newStreak);
-
-    // 2. XP & Stats Logic
+    // 1. Update Global Streak (Passed from TrackerView usually, but here we update UI)
+    // Note: TrackerView handles the complex calculation, we just sync here if needed.
+    
     const currentMonthData = store[view.year]?.[view.month] || [];
     const oldScore = countChecks(currentMonthData);
     const newScore = countChecks(updatedHabitsList);
@@ -283,7 +268,6 @@ export default function App() {
           </div>
 
           <div className="nav-right">
-            {/* CLICKABLE LEVEL PILL */}
             <div 
               className="streak-pill" 
               style={{ background: '#e0f2fe', color: '#0284c7', border: '1px solid #bae6fd', marginRight: '8px', cursor: 'pointer' }}
@@ -343,11 +327,12 @@ export default function App() {
         </div>
       </main>
 
+      {/* 4. THE STATS CHART MODAL - Passing Calculated Discipline */}
       <StatsModal 
         isOpen={isStatsOpen} 
         onClose={() => setIsStatsOpen(false)} 
         stats={userStats}
-        streak={globalStreak}
+        discipline={calculateDisciplineScore()} 
       />
       
     </div>

@@ -4,19 +4,20 @@ import {
   Radar, RadarChart, PolarGrid, PolarAngleAxis, ResponsiveContainer
 } from 'recharts';
 
-export default function StatsModal({ isOpen, onClose, stats, streak }) {
+export default function StatsModal({ isOpen, onClose, stats, discipline }) {
   if (!isOpen) return null;
 
   // Normalize data for the chart (Cap visually at 100)
   const normalize = (val) => Math.min((val || 0) * 5, 100); 
 
-  // Mapping Backend Data -> Your Requested Labels
+  // Mapping Backend Data -> Specific Quest Labels
+  // Discipline is now "Perfect Days" score passed from App.jsx
   const data = [
-    { subject: 'Skills', A: normalize(stats.stats?.str), fullMark: 100 },    // Warrior (STR) -> Skills
-    { subject: 'Stamina', A: normalize(stats.stats?.wis), fullMark: 100 },   // Monk (WIS) -> Stamina
-    { subject: 'Discipline', A: normalize(streak * 5), fullMark: 100 },      // Streak -> Discipline
-    { subject: 'Charisma', A: normalize(stats.stats?.cha), fullMark: 100 },  // Bard (CHA) -> Charisma
-    { subject: 'Intellect', A: normalize(stats.stats?.int), fullMark: 100 }, // Mage (INT) -> Intellect
+    { subject: 'Skills', A: normalize(stats.stats?.str), fullMark: 100 },    // Warrior (STR)
+    { subject: 'Stamina', A: normalize(stats.stats?.wis), fullMark: 100 },   // Monk (WIS) -> User wanted this as Stamina
+    { subject: 'Discipline', A: normalize(discipline), fullMark: 100 },      // Calculated "Perfect Day" score
+    { subject: 'Charisma', A: normalize(stats.stats?.cha), fullMark: 100 },  // Bard (CHA)
+    { subject: 'Intellect', A: normalize(stats.stats?.int), fullMark: 100 }, // Mage (INT)
   ];
 
   return (

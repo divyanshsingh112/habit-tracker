@@ -36,7 +36,7 @@ html, body {
 
 #root { height: 100%; }
 
-img { max-width: 100%; display: block; } /* PREVENTS GIANT IMAGES */
+img { max-width: 100%; display: block; }
 
 .app-container {
   display: flex;
@@ -162,10 +162,9 @@ img { max-width: 100%; display: block; } /* PREVENTS GIANT IMAGES */
 @keyframes pulse-fire { 0% { box-shadow: 0 0 0 0 rgba(234, 88, 12, 0.4); } 70% { box-shadow: 0 0 0 10px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
 
 /* =========================================
-   3. YEAR & MONTH VIEWS (RESTORED GRIDS)
+   3. YEAR & MONTH VIEWS (WIDER BOXES FIX)
    ========================================= */
 
-/* Header Area */
 .view-header-split {
   display: flex; justify-content: space-between; align-items: flex-end;
   margin-bottom: 30px; flex-wrap: wrap; gap: 16px;
@@ -173,7 +172,6 @@ img { max-width: 100%; display: block; } /* PREVENTS GIANT IMAGES */
 .header-text-group h2 { font-size: 28px; margin: 0 0 8px 0; color: #1e293b; }
 .header-text-group p { margin: 0; color: #64748b; font-size: 16px; }
 
-/* Status Legend (Horizontal Fix) */
 .status-legend {
   display: flex; gap: 12px; background: white;
   padding: 8px 12px; border-radius: 50px;
@@ -185,10 +183,10 @@ img { max-width: 100%; display: block; } /* PREVENTS GIANT IMAGES */
 .legend-item .warning { color: #f59e0b; }
 .legend-item .critical { color: var(--danger); }
 
-/* The Grid System - Restoring 'years-grid' and 'months-grid' classes */
+/* GRID FIX: Increased min-width to 220px so text fits */
 .card-grid, .years-grid, .months-grid { 
   display: grid; 
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); 
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); 
   gap: 20px; 
 }
 
@@ -200,10 +198,9 @@ img { max-width: 100%; display: block; } /* PREVENTS GIANT IMAGES */
   border-color: var(--primary); transform: translateY(-4px); box-shadow: var(--shadow-md); 
 }
 
-/* Home / Select Year Split Layout */
 .year-view-split {
   display: grid; gap: 40px; align-items: center; min-height: 50vh;
-  grid-template-columns: 1fr; /* Mobile */
+  grid-template-columns: 1fr;
 }
 @media (min-width: 850px) {
   .year-view-split { grid-template-columns: 1fr 1fr; gap: 60px; }
@@ -213,12 +210,11 @@ img { max-width: 100%; display: block; } /* PREVENTS GIANT IMAGES */
 @media (min-width: 850px) { .hero-illustration { max-width: 480px; margin: 0; } }
 @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
 
-/* Input Group Fix */
 .input-group-modern {
   background: white; padding: 4px; border-radius: 12px;
   border: 1px solid var(--border); display: flex; gap: 4px;
   box-shadow: var(--shadow-sm); width: 100%; max-width: 340px;
-  margin: 0 auto; /* Center on mobile */
+  margin: 0 auto; 
 }
 @media (min-width: 850px) { .input-group-modern { margin: 0; } }
 
@@ -232,12 +228,11 @@ img { max-width: 100%; display: block; } /* PREVENTS GIANT IMAGES */
 
 .grid-row.header, .grid-row {
   display: grid; align-items: center; gap: 16px; padding: 0 16px;
-  grid-template-columns: 220px 1fr 60px; /* Desktop Default */
+  grid-template-columns: 220px 1fr 60px;
 }
 .grid-row.header { background: #f8fafc; height: 44px; font-size: 11px; font-weight: 700; color: #94a3b8; letter-spacing: 0.05em; }
 .grid-row { height: 60px; border-bottom: 1px solid #f1f5f9; }
 
-/* Responsive Grid */
 @media (max-width: 1024px) { .grid-row.header, .grid-row { grid-template-columns: 160px 1fr 50px; } }
 @media (max-width: 640px) { .grid-row.header, .grid-row { grid-template-columns: 110px 1fr 40px; padding: 0 10px; gap: 8px; } }
 
@@ -286,18 +281,13 @@ img { max-width: 100%; display: block; } /* PREVENTS GIANT IMAGES */
   width: 100%; max-width: 420px; text-align: center;
 }
 
-/* FIX: Giant Black Logo Box */
-.login-card img, .login-logo { 
-  width: 64px; height: auto; 
-  margin: 0 auto 20px auto; 
-  border-radius: 12px;
-}
+.login-card img, .login-logo { width: 64px; height: auto; margin: 0 auto 20px auto; border-radius: 12px; }
 
 .auth-form input { width: 100%; padding: 14px; margin-bottom: 12px; border: 1px solid var(--border); border-radius: 12px; outline: none; }
 .auth-form input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
 .primary-auth-btn { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; margin-top: 8px; }
 .google-btn { width: 100%; padding: 12px; background: white; border: 1px solid var(--border); border-radius: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 12px; }
-.google-btn img { width: 24px; margin: 0; } /* Reset size for google icon */
+.google-btn img { width: 24px; margin: 0; }
 
 /* =========================================
    6. MODAL & MISC
@@ -332,8 +322,3 @@ img { max-width: 100%; display: block; } /* PREVENTS GIANT IMAGES */
 .leader-row .rank { font-weight: 800; color: #a855f7; width: 24px; }
 .leader-row .name { flex: 1; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-right: 8px; }
 .leader-row .count { background: #f3e8ff; color: #7e22ce; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 800; }
-
-
-/* =========================================
-  new fixes
-   ========================================= */
