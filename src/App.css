@@ -444,7 +444,7 @@ html, body {
 
 
 /* =========================================
-   6. MOBILE ALIGNMENT FIX (ADDED)
+   6. MOBILE ALIGNMENT FIX
    ========================================= */
 @media (max-width: 640px) {
   
@@ -669,4 +669,123 @@ html, body {
   .col-name { padding: 0 8px; }
   .col-stats { padding: 0 4px; }
   .delete-mini-btn { opacity: 1; } /* Always show delete on mobile */
+}
+
+/* --- NEW DASHBOARD STYLES --- */
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+@media (min-width: 768px) {
+  .dashboard-grid {
+    grid-template-columns: 1.5fr 1fr 1fr; /* Quote is wider */
+  }
+}
+
+.dash-card {
+  background: white;
+  padding: 16px 20px;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Quote Card */
+.quote-card {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  color: white;
+  font-style: italic;
+  font-size: 14px;
+  border: none;
+}
+.quote-icon { opacity: 0.3; margin-right: 8px; flex-shrink: 0; }
+
+/* Streak Card */
+.streak-card .card-icon-bg {
+  background: #fff7ed; color: #cbd5e1; /* Grey when inactive */
+  width: 40px; height: 40px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.3s;
+}
+
+/* Active Streak (Day 3+) */
+.streak-card.active-streak .card-icon-bg {
+  background: #ffedd5; color: #ea580c; /* Orange when active */
+  box-shadow: 0 0 15px rgba(234, 88, 12, 0.4);
+  animation: pulse-fire 2s infinite;
+}
+
+.streak-card.active-streak .card-value {
+  color: #ea580c;
+}
+
+@keyframes pulse-fire {
+  0% { box-shadow: 0 0 0 0 rgba(234, 88, 12, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(234, 88, 12, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(234, 88, 12, 0); }
+}
+
+/* Top Quest Card */
+.top-card .card-icon-bg {
+  background: #f3e8ff; color: #9333ea;
+  width: 40px; height: 40px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+}
+.top-card.purple .card-icon-bg { background: #faf5ff; color: #7e22ce; }
+
+.card-label {
+  display: block; font-size: 11px; font-weight: 700; 
+  color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em;
+  margin-bottom: 2px;
+}
+.card-value {
+  font-size: 18px; font-weight: 800; color: #1e293b;
+}
+.card-value.small { font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
+
+/* Highlight Today's Column in Grid */
+.day-header.today {
+  background: #1e293b; color: white; border-radius: 6px;
+}
+
+/* --- COMPACT STATS LEGEND --- */
+.stats-legend-row {
+  display: flex;
+  justify-content: flex-end; /* Aligns to right */
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.legend-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 50px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  border: 1px solid transparent;
+  background: white;
+}
+
+.legend-pill.warrior { color: #ef4444; background: #fef2f2; border-color: #fecaca; }
+.legend-pill.mage { color: #3b82f6; background: #eff6ff; border-color: #bfdbfe; }
+.legend-pill.monk { color: #8b5cf6; background: #f5f3ff; border-color: #ddd6fe; }
+.legend-pill.bard { color: #f59e0b; background: #fffbeb; border-color: #fde68a; }
+
+@media (max-width: 640px) {
+  .stats-legend-row {
+    justify-content: center; /* Center on mobile */
+  }
 }
