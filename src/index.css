@@ -1,0 +1,31 @@
+:root {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  /* Force Light Mode variables so phone settings don't break the UI */
+  color-scheme: light; 
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  /* 'block' fixes the weird side-alignment issues caused by 'flex' */
+  display: block; 
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: #f8fafc; /* Matches your App.css bg */
+}
+
+/* Reset buttons to default so App.css can style them */
+button {
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
+}
