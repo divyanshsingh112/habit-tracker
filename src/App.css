@@ -468,7 +468,7 @@ html, body {
   }
 }
 
-/* Modal Styles */
+/* --- RPG MODAL STYLES --- */
 .modal-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -476,72 +476,66 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
-  backdrop-filter: blur(3px);
+  z-index: 2000;
+  backdrop-filter: blur(4px);
 }
 
 .modal-content {
   background: white;
-  padding: 24px;
-  border-radius: 20px;
+  padding: 25px;
+  border-radius: 24px;
   width: 90%;
-  max-width: 400px;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+  max-width: 420px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  border: 1px solid #e2e8f0;
 }
 
 .modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 25px;
+}
+.modal-header h3 { margin: 0; font-size: 1.2rem; color: #0f172a; }
+
+.input-group label, .attribute-selector label {
+  display: block; font-size: 0.9rem; font-weight: 600; color: #64748b; margin-bottom: 8px;
 }
 
 .input-group input {
-  width: 100%;
-  padding: 12px;
-  border: 2px solid #e2e8f0;
-  border-radius: 10px;
-  font-size: 16px;
-  margin-top: 8px;
+  width: 100%; padding: 14px;
+  border: 2px solid #e2e8f0; border-radius: 12px;
+  font-size: 1rem; margin-bottom: 20px; outline: none;
+  transition: border-color 0.2s;
 }
+.input-group input:focus { border-color: #4caf50; }
 
-/* RPG Class Grid */
+/* The RPG Class Grid */
 .class-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-top: 10px;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
 }
 
 .class-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 15px;
-  border: 2px solid #e2e8f0;
-  border-radius: 12px;
-  background: white;
-  cursor: pointer;
-  transition: all 0.2s;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 15px; border: 2px solid #f1f5f9; border-radius: 16px;
+  background: white; cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  color: #94a3b8;
 }
 
-.class-card span { font-weight: bold; margin-top: 5px; }
-.class-card small { font-size: 10px; opacity: 0.7; }
+.class-card:hover { transform: translateY(-2px); }
+.class-card span { font-weight: 700; font-size: 0.9rem; margin: 6px 0 2px; }
+.class-card small { font-size: 0.75rem; opacity: 0.8; }
 
-/* Class Colors */
-.warrior.selected { border-color: #ef4444; background: #fef2f2; color: #ef4444; }
-.mage.selected { border-color: #3b82f6; background: #eff6ff; color: #3b82f6; }
-.monk.selected { border-color: #8b5cf6; background: #f5f3ff; color: #8b5cf6; }
-.bard.selected { border-color: #f59e0b; background: #fffbeb; color: #f59e0b; }
+/* Colors for Classes */
+.warrior.selected { border-color: #ef4444; background: #fef2f2; color: #ef4444; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2); }
+.mage.selected { border-color: #3b82f6; background: #eff6ff; color: #3b82f6; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2); }
+.monk.selected { border-color: #8b5cf6; background: #f5f3ff; color: #8b5cf6; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2); }
+.bard.selected { border-color: #f59e0b; background: #fffbeb; color: #f59e0b; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2); }
 
 .save-btn {
-  width: 100%;
-  padding: 14px;
-  background: #1e293b;
-  color: white;
-  border: none;
-  border-radius: 10px;
-  font-weight: bold;
-  margin-top: 20px;
-  font-size: 16px;
+  width: 100%; padding: 16px;
+  background: #0f172a; color: white;
+  border: none; border-radius: 14px;
+  font-weight: 700; font-size: 1rem;
+  margin-top: 25px; cursor: pointer;
+  transition: transform 0.1s;
 }
+.save-btn:active { transform: scale(0.98); }

@@ -7,6 +7,7 @@ import { SpeedInsights } from '@vercel/speed-insights/react';
 import Login from './components/Login';
 import YearView from './components/YearView';
 import MonthView from './components/MonthView';
+import HabitModal from './components/HabitModal'; // Import the Modal
 import './App.css';
 
 // Import Offline Logic
@@ -31,6 +32,9 @@ export default function App() {
   const [globalStreak, setGlobalStreak] = useState(0);
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
   const [userStats, setUserStats] = useState({ xp: 0, level: 1, coins: 0 });
+  
+  // NEW: State for the "New Quest" Modal
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const showToast = (message, type = 'success') => {
     setToast({ show: true, message, type });
@@ -175,6 +179,26 @@ export default function App() {
     }
   };
 
+  // --- NEW: Add Habit Handler ---
+  const handleAddHabit = async ({ name, attribute }) => {
+    // 1. Create new habit object
+    const newHabit = {
+      id: Date.now(), // Unique ID based on time
+      name,
+      attribute, // 'str', 'int', 'wis', 'cha'
+      completedDays: {}
+    };
+
+    // 2. Get current list and append new habit
+    const currentHabits = store[view.year]?.[view.month] || [];
+    const updatedHabits = [...currentHabits, newHabit];
+
+    // 3. Save using existing logic (Handles Sync & DB automatically)
+    // Note: diff will be 0, so no XP gain just for creating (which is correct)
+    await handleTrackerUpdate(updatedHabits);
+    showToast(`Quest "${name}" Created!`, 'success');
+  };
+
   const addYear = (year) => {
     if (!year || store[year]) return;
     setStore(prev => ({ ...prev, [year]: {} }));
@@ -257,10 +281,32 @@ export default function App() {
         <div className="content-max-width">
           {view.screen === 'years' && <YearView years={Object.keys(store)} store={store} onAddYear={addYear} onDeleteYear={deleteYear} onSelectYear={(y) => setView({ screen: 'months', year: y, month: null })} />}
           {view.screen === 'months' && <MonthView year={view.year} store={store} onSelectMonth={(m) => setView({ screen: 'tracker', year: view.year, month: m })} />}
+          
+          {/* --- UPDATED TRACKER SCREEN --- */}
           {view.screen === 'tracker' && (
-            <Suspense fallback={<PageLoader />}>
-              <TrackerView year={view.year} month={view.month} habits={store[view.year]?.[view.month] || []} onUpdate={handleTrackerUpdate} />
-            </Suspense>
+            <>
+               {/* New Quest Button */}
+               <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'flex-end' }}>
+                <button 
+                  className="save-btn" 
+                  style={{ width: 'auto', padding: '10px 20px', marginTop: 0, background: '#1e293b', fontSize: '14px' }}
+                  onClick={() => setIsModalOpen(true)}
+                >
+                  + New Quest
+                </button>
+              </div>
+
+              <Suspense fallback={<PageLoader />}>
+                <TrackerView year={view.year} month={view.month} habits={store[view.year]?.[view.month] || []} onUpdate={handleTrackerUpdate} />
+              </Suspense>
+
+              {/* The Modal */}
+              <HabitModal 
+                isOpen={isModalOpen} 
+                onClose={() => setIsModalOpen(false)} 
+                onSave={handleAddHabit} 
+              />
+            </>
           )}
         </div>
       </main>

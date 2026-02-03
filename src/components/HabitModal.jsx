@@ -3,15 +3,20 @@ import { X, Sword, Brain, Sparkles, MessageCircle } from 'lucide-react';
 
 export default function HabitModal({ isOpen, onClose, onSave }) {
   const [name, setName] = useState('');
-  const [attribute, setAttribute] = useState('str'); // Default to Strength
+  const [attribute, setAttribute] = useState('str'); // Default: Strength
 
   if (!isOpen) return null;
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!name.trim()) return;
+    
+    // Pass the data back to App.jsx
     onSave({ name, attribute });
+    
+    // Reset form
     setName('');
+    setAttribute('str');
     onClose();
   };
 
@@ -19,8 +24,8 @@ export default function HabitModal({ isOpen, onClose, onSave }) {
     <div className="modal-overlay">
       <div className="modal-content animate-slide-up">
         <div className="modal-header">
-          <h3>New Quest</h3>
-          <button onClick={onClose} className="close-btn"><X size={20}/></button>
+          <h3>Create New Quest</h3>
+          <button type="button" onClick={onClose} className="close-btn"><X size={20}/></button>
         </div>
 
         <form onSubmit={handleSubmit}>
@@ -36,14 +41,14 @@ export default function HabitModal({ isOpen, onClose, onSave }) {
           </div>
 
           <div className="attribute-selector">
-            <label>Class Attribute</label>
+            <label>Choose Class Attribute</label>
             <div className="class-grid">
               
               <button type="button" 
                 className={`class-card warrior ${attribute === 'str' ? 'selected' : ''}`}
                 onClick={() => setAttribute('str')}
               >
-                <Sword size={20} />
+                <Sword size={24} />
                 <span>Warrior</span>
                 <small>+STR</small>
               </button>
@@ -52,7 +57,7 @@ export default function HabitModal({ isOpen, onClose, onSave }) {
                 className={`class-card mage ${attribute === 'int' ? 'selected' : ''}`}
                 onClick={() => setAttribute('int')}
               >
-                <Brain size={20} />
+                <Brain size={24} />
                 <span>Mage</span>
                 <small>+INT</small>
               </button>
@@ -61,7 +66,7 @@ export default function HabitModal({ isOpen, onClose, onSave }) {
                 className={`class-card monk ${attribute === 'wis' ? 'selected' : ''}`}
                 onClick={() => setAttribute('wis')}
               >
-                <Sparkles size={20} />
+                <Sparkles size={24} />
                 <span>Monk</span>
                 <small>+WIS</small>
               </button>
@@ -70,7 +75,7 @@ export default function HabitModal({ isOpen, onClose, onSave }) {
                 className={`class-card bard ${attribute === 'cha' ? 'selected' : ''}`}
                 onClick={() => setAttribute('cha')}
               >
-                <MessageCircle size={20} />
+                <MessageCircle size={24} />
                 <span>Bard</span>
                 <small>+CHA</small>
               </button>
