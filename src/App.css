@@ -539,3 +539,134 @@ html, body {
   transition: transform 0.1s;
 }
 .save-btn:active { transform: scale(0.98); }
+
+/* --- RPG TRACKER STYLES --- */
+
+.tracker-card {
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+}
+
+.grid-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.grid-row {
+  display: grid;
+  grid-template-columns: 180px 1fr 60px; /* Fixed Name, Scrollable Days, Fixed Stats */
+  border-bottom: 1px solid #f1f5f9;
+  align-items: center;
+}
+
+.grid-row.header {
+  background: #f8fafc;
+  padding: 10px 0;
+  font-size: 11px;
+  font-weight: 700;
+  color: #94a3b8;
+  letter-spacing: 0.05em;
+}
+
+.col-name {
+  padding: 0 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  overflow: hidden;
+}
+
+.habit-identity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.habit-text {
+  font-weight: 600;
+  font-size: 14px;
+  color: #334155;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* RPG Icons */
+.rpg-icon { padding: 4px; border-radius: 6px; flex-shrink: 0; }
+.rpg-icon.warrior { background: #fef2f2; color: #ef4444; }
+.rpg-icon.mage { background: #eff6ff; color: #3b82f6; }
+.rpg-icon.monk { background: #f5f3ff; color: #8b5cf6; }
+.rpg-icon.bard { background: #fffbeb; color: #f59e0b; }
+
+.col-days {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto; /* Allow horizontal scrolling */
+  padding: 12px 8px;
+  scrollbar-width: none; /* Hide scrollbar Firefox */
+}
+.col-days::-webkit-scrollbar { display: none; } /* Hide scrollbar Chrome */
+
+.day-header {
+  min-width: 32px;
+  text-align: center;
+}
+
+/* Checkboxes */
+.checkbox {
+  min-width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 2px solid #e2e8f0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  color: white;
+}
+
+.checkbox:hover { border-color: #cbd5e1; }
+
+/* Dynamic Colors for Checkboxes */
+.checkbox.checked.str, .checkbox.checked.undefined { background: #ef4444; border-color: #ef4444; box-shadow: 0 2px 5px rgba(239, 68, 68, 0.4); }
+.checkbox.checked.int { background: #3b82f6; border-color: #3b82f6; box-shadow: 0 2px 5px rgba(59, 130, 246, 0.4); }
+.checkbox.checked.wis { background: #8b5cf6; border-color: #8b5cf6; box-shadow: 0 2px 5px rgba(139, 92, 246, 0.4); }
+.checkbox.checked.cha { background: #f59e0b; border-color: #f59e0b; box-shadow: 0 2px 5px rgba(245, 158, 11, 0.4); }
+
+.col-stats {
+  padding: 0 16px;
+  text-align: center;
+}
+
+.mini-percent { font-size: 10px; font-weight: 700; color: #94a3b8; }
+.mini-progress-bar { height: 4px; width: 100%; background: #f1f5f9; border-radius: 2px; margin-bottom: 2px; }
+.mini-progress-fill.str { background: #ef4444; height: 100%; border-radius: 2px; }
+.mini-progress-fill.int { background: #3b82f6; height: 100%; border-radius: 2px; }
+.mini-progress-fill.wis { background: #8b5cf6; height: 100%; border-radius: 2px; }
+.mini-progress-fill.cha { background: #f59e0b; height: 100%; border-radius: 2px; }
+
+.delete-mini-btn {
+  opacity: 0;
+  border: none;
+  background: none;
+  color: #cbd5e1;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.grid-row:hover .delete-mini-btn { opacity: 1; }
+.delete-mini-btn:hover { color: #ef4444; }
+
+/* Mobile Responsiveness */
+@media (max-width: 640px) {
+  .grid-row { grid-template-columns: 130px 1fr 45px; }
+  .habit-text { font-size: 13px; }
+  .col-name { padding: 0 8px; }
+  .col-stats { padding: 0 4px; }
+  .delete-mini-btn { opacity: 1; } /* Always show delete on mobile */
+}

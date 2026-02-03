@@ -1,50 +1,36 @@
-import React, { useState } from 'react';
-import { Plus, Search, Trash2 } from 'lucide-react';
-import { 
-  BarChart, Bar, XAxis, Tooltip, ResponsiveContainer, 
-  PieChart, Pie, Cell 
-} from 'recharts';
-import HabitOverview from './HabitOverview';
-import HabitRow from './HabitRow';
-import WeeklyReport from './WeeklyReport';
-import { CATEGORIES, COLORS } from '../constants';
+import React from 'react';
+import { Check, Trash2, Sword, Brain, Sparkles, MessageCircle, HelpCircle } from 'lucide-react';
 
 export default function TrackerView({ year, month, habits, onUpdate }) {
-  const [newHabitName, setNewHabitName] = useState('');
-  const [category, setCategory] = useState('Health');
   
-  // Search & Filter State
-  const [searchQuery, setSearchQuery] = useState('');
-  const [activeCategory, setActiveCategory] = useState('All');
+  // --- 1. ICON HELPER (The Fix) ---
+  // We use (attr || 'str') to prevent the crash on old habits
+  const getAttributeIcon = (attr) => {
+    const safeAttr = (attr || 'str').toLowerCase(); 
+    
+    switch (safeAttr) {
+      case 'str': return <Sword size={16} className="rpg-icon warrior" />;
+      case 'int': return <Brain size={16} className="rpg-icon mage" />;
+      case 'wis': return <Sparkles size={16} className="rpg-icon monk" />;
+      case 'cha': return <MessageCircle size={16} className="rpg-icon bard" />;
+      default: return <Sword size={16} className="rpg-icon warrior" />;
+    }
+  };
 
-  const monthIndex = new Date(`${month} 1, ${year}`).getMonth();
-  const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+  const daysInMonth = new Date(year, new Date(`${month} 1, 2000`).getMonth() + 1, 0).getDate();
   const daysArray = Array.from({ length: daysInMonth }, (_, i) => i + 1);
-
-  // Filter Logic
-  const filteredHabits = habits.filter(h => {
-    const matchesSearch = h.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCat = activeCategory === 'All' || h.category === activeCategory;
-    return matchesSearch && matchesCat;
-  });
-
-  const dailyData = daysArray.map(day => ({
-    name: day.toString(),
-    completed: habits.filter(h => h.completedDays?.[day]).length
-  }));
-
-  const categoryData = CATEGORIES.map((cat, idx) => ({
-    name: cat,
-    value: habits.filter(h => h.category === cat).length,
-    color: COLORS[idx]
-  })).filter(d => d.value > 0);
 
   const toggleDay = (habitId, day) => {
     const updated = habits.map(h => {
       if (h.id === habitId) {
         const newDays = { ...h.completedDays };
-        if (newDays[day]) delete newDays[day];
-        else newDays[day] = true;
+        // Toggle Logic
+        if (newDays[day]) {
+           delete newDays[day];
+        } else {
+           // Save Timestamp for AI analysis later
+           newDays[day] = new Date().toISOString(); 
+        }
         return { ...h, completedDays: newDays };
       }
       return h;
@@ -52,116 +38,86 @@ export default function TrackerView({ year, month, habits, onUpdate }) {
     onUpdate(updated);
   };
 
-  const addHabit = () => {
-    if (!newHabitName.trim()) return;
-    onUpdate([...habits, { 
-      id: Date.now(), 
-      name: newHabitName, 
-      category, 
-      completedDays: {} 
-    }]);
-    setNewHabitName('');
+  const deleteHabit = (id) => {
+    if (window.confirm('Delete this quest?')) {
+      const updated = habits.filter(h => h.id !== id);
+      onUpdate(updated);
+    }
   };
 
+  if (!habits || habits.length === 0) {
+    return (
+      <div className="empty-state">
+        <div className="empty-icon-bg">⚔️</div>
+        <h3>No Quests Yet</h3>
+        <p>Start your adventure by adding a new quest above.</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="tracker-container animate-fade">
-      
-      {/* 1. WEEKLY REPORT SUMMARY */}
-      <div style={{ marginBottom: '24px' }}>
-        <WeeklyReport habits={habits} />
-      </div>
-
-      {/* 2. CHARTS SECTION */}
-      <div className="stats-grid">
-        <div className="card">
-          <h3>Monthly Performance</h3>
-          <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={dailyData}>
-              <XAxis dataKey="name" tick={{fontSize: 10}} interval={2} stroke="#94a3b8" />
-              <Tooltip cursor={{fill: '#f1f5f9'}} />
-              <Bar dataKey="completed" fill="var(--primary)" radius={[4, 4, 0, 0]} barSize={8} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-
-        <HabitOverview habits={habits} daysInMonth={daysInMonth} />
-
-        <div className="card">
-          <h3>Category Balance</h3>
-          <ResponsiveContainer width="100%" height={220}>
-            <PieChart>
-              <Pie data={categoryData} innerRadius={65} outerRadius={85} paddingAngle={5} dataKey="value">
-                {categoryData.map((entry, index) => <Cell key={index} fill={entry.color} />)}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-
-      {/* 3. SEARCH & FILTER CONTROLS (Fixed Structure) */}
-      <div className="controls-row">
-        <div className="search-box">
-          <Search size={20} className="search-icon" />
-          <input 
-            type="text" 
-            placeholder="Search habits..." 
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-        <div className="filter-group">
-          <button 
-            className={`filter-pill ${activeCategory === 'All' ? 'active' : ''}`}
-            onClick={() => setActiveCategory('All')}
-          >All</button>
-          {CATEGORIES.map(cat => (
-            <button 
-              key={cat}
-              className={`filter-pill ${activeCategory === cat ? 'active' : ''}`}
-              onClick={() => setActiveCategory(cat)}
-            >{cat}</button>
-          ))}
-        </div>
-      </div>
-
-      {/* 4. ADD HABIT FORM */}
-      <div className="add-habit-form">
-        <input 
-          placeholder="New habit..." 
-          value={newHabitName} 
-          onChange={e => setNewHabitName(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && addHabit()} 
-        />
-        <select value={category} onChange={e => setCategory(e.target.value)}>
-          {CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
-        </select>
-        <button onClick={addHabit}>
-          <Plus size={18} /> Add
-        </button>
-      </div>
-
-      {/* 5. HABIT GRID */}
-      <div className="grid-card">
-        <div className="grid-head">
-          <div className="h-col">HABIT</div>
-          <div className="d-col">{daysArray.map(d => <span key={d}>{d}</span>)}</div>
-          <div style={{textAlign:'center'}}>SUCCESS</div>
-        </div>
-        {filteredHabits.map(h => (
-          <HabitRow 
-            key={h.id} 
-            habit={h} 
-            days={daysArray} 
-            onToggle={toggleDay} 
-            onDelete={(id) => onUpdate(habits.filter(item => item.id !== id))} 
-          />
-        ))}
-        {filteredHabits.length === 0 && (
-          <div style={{padding: 40, textAlign:'center', color:'#94a3b8'}}>
-            No habits match your filters.
+    <div className="tracker-card animate-slide-up">
+      <div className="grid-container">
+        {/* Header Row */}
+        <div className="grid-row header">
+          <div className="col-name">QUEST</div>
+          <div className="col-days">
+            {daysArray.map(d => (
+              <div key={d} className="day-header">{d}</div>
+            ))}
           </div>
-        )}
+          <div className="col-stats">STATS</div>
+        </div>
+
+        {/* Habit Rows */}
+        {habits.map(habit => {
+          const completedCount = habit.completedDays ? Object.keys(habit.completedDays).length : 0;
+          const progress = Math.round((completedCount / daysInMonth) * 100);
+          
+          return (
+            <div key={habit.id} className="grid-row">
+              {/* 1. Name & Icon */}
+              <div className="col-name">
+                <div className="habit-identity">
+                  {getAttributeIcon(habit.attribute)}
+                  <span className="habit-text">{habit.name}</span>
+                </div>
+                <button className="delete-mini-btn" onClick={() => deleteHabit(habit.id)}>
+                  <Trash2 size={14} />
+                </button>
+              </div>
+
+              {/* 2. Checkboxes */}
+              <div className="col-days">
+                {daysArray.map(day => {
+                  const isCompleted = habit.completedDays && habit.completedDays[day];
+                  return (
+                    <div 
+                      key={day}
+                      className={`checkbox ${isCompleted ? 'checked' : ''} ${habit.attribute || 'str'}`}
+                      onClick={() => toggleDay(habit.id, day)}
+                    >
+                      {isCompleted && <Check size={12} strokeWidth={4} />}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* 3. Progress Bar */}
+              <div className="col-stats">
+                <div className="mini-progress-wrapper">
+                  <div className="mini-progress-bar">
+                    <div 
+                      className={`mini-progress-fill ${habit.attribute || 'str'}`}
+                      style={{ width: `${progress}%` }}
+                    ></div>
+                  </div>
+                  <span className="mini-percent">{progress}%</span>
+                </div>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
