@@ -1,53 +1,55 @@
 import React, { useMemo } from 'react';
 import { 
   Check, Trash2, Sword, Brain, Sparkles, MessageCircle, 
-  Flame, Trophy, Quote 
+  Flame, Trophy, Quote, Info 
 } from 'lucide-react';
 
 export default function TrackerView({ year, month, habits, onUpdate }) {
   
-  // --- HELPER: Calculate Streak (Global) ---
+  // --- HELPER: Smart Streak Logic (Counts from Last Active Day) ---
   const globalStreak = useMemo(() => {
-    // 1. Collect all dates where AT LEAST ONE habit was done
     const activeDates = new Set();
+    let maxDay = 0;
+
     habits.forEach(h => {
         if(h.completedDays) {
-            Object.keys(h.completedDays).forEach(day => activeDates.add(parseInt(day)));
+            Object.keys(h.completedDays).forEach(day => {
+                const d = parseInt(day);
+                activeDates.add(d);
+                if (d > maxDay) maxDay = d; 
+            });
         }
     });
 
-    // 2. Count backwards from today
+    if (maxDay === 0) return 0;
+
     let streak = 0;
-    const today = new Date().getDate();
-    // Check today, then yesterday, etc.
-    // (Simplified logic: checks consecutive days present in the month)
-    let checkDay = today;
-    
-    // If today is empty, check if yesterday was active to continue streak
-    if (!activeDates.has(today) && activeDates.has(today - 1)) {
-        checkDay = today - 1;
-    }
+    let checkDay = maxDay; 
 
     while (activeDates.has(checkDay)) {
         streak++;
         checkDay--;
-        if (checkDay < 1) break; // Stop if we hit start of month
+        if (checkDay < 1) break; 
     }
     return streak;
   }, [habits]);
 
-  // --- HELPER: Top Performing Quests ---
+  // --- HELPER: Top 3 Leaderboard ---
   const topQuests = useMemo(() => {
     return [...habits]
       .sort((a, b) => {
         const countA = a.completedDays ? Object.keys(a.completedDays).length : 0;
         const countB = b.completedDays ? Object.keys(b.completedDays).length : 0;
-        return countB - countA; // Descending
+        
+        // 1. Primary Sort: Count (Descending)
+        if (countB !== countA) return countB - countA;
+        
+        // 2. Secondary Sort: Creation Date/ID (Ascending) - Older habits win ties
+        return a.id - b.id; 
       })
-      .slice(0, 3); // Top 3
+      .slice(0, 3); // Get Top 3
   }, [habits]);
 
-  // --- HELPER: Random RPG Quote ---
   const quote = useMemo(() => {
     const quotes = [
       "A hero is made in the quiet moments.",
@@ -57,9 +59,8 @@ export default function TrackerView({ year, month, habits, onUpdate }) {
       "Discipline is choosing what you want most over what you want now."
     ];
     return quotes[Math.floor(Math.random() * quotes.length)];
-  }, []); // Empty dependency = calculated once on mount
+  }, []); 
 
-  // --- ICON HELPER ---
   const getAttributeIcon = (attr) => {
     const safeAttr = (attr || 'str').toLowerCase(); 
     switch (safeAttr) {
@@ -93,11 +94,9 @@ export default function TrackerView({ year, month, habits, onUpdate }) {
     }
   };
 
-  // --- RENDER ---
   return (
     <div className="tracker-wrapper animate-slide-up">
       
-      {/* --- NEW: COMPACT STATS LEGEND --- */}
       <div className="stats-legend-row">
         <div className="legend-pill warrior"><Sword size={12} /> <span>STR = Health</span></div>
         <div className="legend-pill mage"><Brain size={12} /> <span>INT = Learn</span></div>
@@ -105,39 +104,56 @@ export default function TrackerView({ year, month, habits, onUpdate }) {
         <div className="legend-pill bard"><MessageCircle size={12} /> <span>CHA = Social</span></div>
       </div>
 
-      {/* 1. DASHBOARD HEADER */}
       <div className="dashboard-grid">
         
-        {/* Card A: The Quote */}
+        {/* Quote */}
         <div className="dash-card quote-card">
           <Quote size={20} className="quote-icon" />
           <p>"{quote}"</p>
         </div>
 
-        {/* Card B: The Streak (Rule: Only show > 3) */}
+        {/* Smart Streak */}
         <div className={`dash-card streak-card ${globalStreak >= 3 ? 'active-streak' : ''}`}>
           <div className="card-icon-bg"><Flame size={20} /></div>
-          <div>
-            <span className="card-label">Daily Streak</span>
+          <div style={{ flex: 1 }}>
+            <span className="card-label">Current Streak</span>
             <div className="card-value">
-              {globalStreak >= 3 ? `${globalStreak} Days` : <span style={{fontSize:'14px', color:'#94a3b8'}}>Igniting... ({globalStreak}/3)</span>}
+              {globalStreak >= 3 ? `${globalStreak} Days` : <span>Igniting... ({globalStreak}/3)</span>}
+            </div>
+            {/* NEW: Explanation Text */}
+            <div className="streak-explainer">
+              <Info size={10} style={{ marginRight: 4 }}/> 
+              Based on your last active day
             </div>
           </div>
         </div>
 
-        {/* Card C: Top Quest */}
+        {/* Top 3 Leaderboard */}
         <div className="dash-card top-card">
            <div className="card-icon-bg purple"><Trophy size={20} /></div>
-           <div>
-             <span className="card-label">Top Quest</span>
-             <div className="card-value small">
-                {topQuests[0] ? topQuests[0].name : "No Data"}
+           <div style={{ width: '100%' }}>
+             <span className="card-label">Top Quests</span>
+             <div className="leaderboard-list">
+                {topQuests.length === 0 ? (
+                  <div className="leader-row empty">No Data</div>
+                ) : (
+                  topQuests.map((quest, index) => {
+                     const count = quest.completedDays ? Object.keys(quest.completedDays).length : 0;
+                     return (
+                       <div key={quest.id} className="leader-row">
+                         <span className="rank">#{index + 1}</span>
+                         <span className="name">{quest.name}</span>
+                         <span className="count">{count}</span>
+                       </div>
+                     );
+                  })
+                )}
              </div>
            </div>
         </div>
       </div>
 
-      {/* 2. THE GRID (Existing Logic) */}
+      {/* Grid */}
       <div className="tracker-card">
         {habits.length === 0 ? (
           <div className="empty-state">

@@ -789,3 +789,60 @@ html, body {
     justify-content: center; /* Center on mobile */
   }
 }
+
+/* --- UPDATED DASHBOARD STYLES --- */
+
+/* Streak Explainer */
+.streak-explainer {
+  font-size: 10px;
+  color: #94a3b8;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+}
+
+/* Leaderboard List (Top Quest Card) */
+.leaderboard-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 4px;
+  width: 100%;
+}
+
+.leader-row {
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  color: #1e293b;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.leader-row.empty { color: #94a3b8; font-style: italic; font-size: 12px; }
+
+.leader-row .rank {
+  font-weight: 800;
+  color: #a855f7; /* Purple */
+  width: 20px;
+  font-size: 11px;
+}
+
+.leader-row .name {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 600;
+  margin-right: 8px;
+}
+
+.leader-row .count {
+  background: #f3e8ff;
+  color: #7e22ce;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 800;
+}
