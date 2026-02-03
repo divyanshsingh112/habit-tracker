@@ -3,6 +3,7 @@ import { ChevronRight, LayoutDashboard, LogOut, Flame, X, CheckCircle, AlertTria
 import { auth, logout } from './firebase'; 
 import { onAuthStateChanged } from 'firebase/auth';
 import confetti from 'canvas-confetti'; 
+import { Analytics } from '@vercel/analytics/react';
 import Login from './components/Login';
 import YearView from './components/YearView';
 import MonthView from './components/MonthView';
@@ -322,6 +323,7 @@ export default function App() {
         discipline={calculateDisciplineScore()} 
       />
       
+      <Analytics />
     </div>
   );
 }
