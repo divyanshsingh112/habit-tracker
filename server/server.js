@@ -14,7 +14,15 @@ const guildRoutes = require('./routes/guildRoutes'); // <-- Ensure this file exi
 const { sendReminders } = require('./controllers/notificationController');
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: [
+    'https://habit-grid-system.vercel.app', // Your Vercel URL
+    'http://localhost:5173',               // Your Localhost (for testing)
+    'http://localhost:5000'
+  ],
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true
+}));
 app.use(express.json());
 
 // Database Connection
