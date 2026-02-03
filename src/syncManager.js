@@ -1,7 +1,7 @@
 // src/syncManager.js
 import { getPendingSyncs, clearPendingSync } from './db';
 
-const API_URL = 'https://habit-tracker-2-12x6.onrender.com';
+const API_URL = 'https://habit-tracker-m9uw.onrender.com';
 
 export const syncData = async () => {
   if (!navigator.onLine) return; // Stop if offline
