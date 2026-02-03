@@ -54,7 +54,7 @@ html, body {
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
   z-index: 100;
-  padding: 0 16px; /* Reduced padding for mobile */
+  padding: 0 16px; 
   height: 60px;
   display: flex;
   justify-content: center;
@@ -81,6 +81,7 @@ html, body {
 @media (max-width: 640px) {
   .brand-section h1 { display: none; } 
   .brand-section { border-right: none; padding-right: 0; }
+  .slim-navbar { padding: 0 12px; } /* Tighter padding */
 }
 
 .app-logo-icon { color: var(--primary); flex-shrink: 0; }
@@ -127,7 +128,7 @@ html, body {
   flex: 1;
   overflow-y: auto;
   width: 100%;
-  padding: 20px 16px;
+  padding: 16px; /* Default for mobile */
 }
 
 @media (min-width: 768px) {
@@ -192,7 +193,7 @@ html, body {
 /* Mobile: Small name col, rest takes available space */
 @media (max-width: 640px) {
   .grid-head, .habit-row {
-    grid-template-columns: 100px 1fr 45px;
+    grid-template-columns: 110px 1fr 40px; /* Adjusted for tighter screens */
     gap: 8px;
   }
 }
@@ -253,7 +254,6 @@ html, body {
 
 .check-box:hover { border-color: var(--primary); }
 .check-box.active { background: var(--primary); border-color: var(--primary); }
-/* Add a checkmark icon in React logic if you want, or just color fill */
 
 /* Column 3: Success % */
 .s-col { text-align: right; font-weight: 700; font-size: 12px; color: var(--text-main); }
@@ -309,21 +309,6 @@ html, body {
 
 .year-right-column { display: flex; justify-content: center; align-items: center; }
 
-/* Illustration */
-.hero-illustration {
-  width: 100%; max-width: 300px;
-  height: auto; object-fit: contain;
-  animation: float 6s ease-in-out infinite;
-}
-@media (min-width: 1024px) {
-  .hero-illustration { max-width: 450px; }
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-15px); }
-}
-
 /* Input Group */
 .input-group-modern {
   background: white; padding: 4px; border-radius: 12px;
@@ -342,44 +327,13 @@ html, body {
 }
 
 /* Cards Grid */
-.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; }
+.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
 @media (min-width: 768px) {
   .card-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
 }
 
 .year-card, .month-card { background: white; border-radius: 16px; border: 1px solid var(--border); padding: 20px; cursor: pointer; transition: all 0.2s; }
 .year-card:hover, .month-card:hover { border-color: var(--primary); transform: translateY(-3px); box-shadow: var(--shadow-md); }
-
-/* Stats Grid */
-.stats-grid { display: grid; grid-template-columns: 1fr; gap: 16px; margin-bottom: 24px; }
-
-@media (min-width: 768px) {
-  .stats-grid { grid-template-columns: repeat(2, 1fr); }
-}
-@media (min-width: 1024px) {
-  .stats-grid { grid-template-columns: 1.5fr 1fr 1fr; gap: 20px; }
-}
-
-.card { background: white; padding: 20px; border-radius: 16px; border: 1px solid var(--border); }
-
-/* Controls & Filters */
-.controls-row { display: flex; gap: 12px; margin-bottom: 20px; flex-direction: column; }
-@media (min-width: 640px) {
-  .controls-row { flex-direction: row; }
-}
-
-.search-box { flex: 1; position: relative; width: 100%; }
-.search-box input { width: 100%; padding: 10px 10px 10px 40px; border-radius: 10px; border: 1px solid var(--border); outline: none; }
-.search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-sub); }
-
-.filter-group { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; -webkit-overflow-scrolling: touch; }
-.filter-pill { 
-  background: white; border: 1px solid var(--border); 
-  padding: 6px 14px; border-radius: 20px; 
-  font-size: 12px; font-weight: 600; color: var(--text-sub); 
-  cursor: pointer; white-space: nowrap; 
-}
-.filter-pill.active { background: var(--primary); color: white; border-color: var(--primary); }
 
 
 /* =========================================
@@ -444,31 +398,8 @@ html, body {
 
 
 /* =========================================
-   6. MOBILE ALIGNMENT FIX
+   6. RPG MODAL STYLES (Mobile Flexible)
    ========================================= */
-@media (max-width: 640px) {
-  
-  /* 1. Force header numbers to have EXACT width as checkboxes */
-  .grid-head .d-col span {
-    width: 28px !important;      /* Matches .check-box width */
-    min-width: 28px !important;  /* Prevents shrinking */
-    text-align: center;          /* Centers number relative to the box */
-    display: inline-flex;        
-    justify-content: center;
-    /* Optional: Font tweaks to make it look cleaner */
-    font-size: 12px;
-  }
-
-  /* 2. Force identical gap and alignment for header and rows */
-  .grid-head .d-col, 
-  .habit-row .d-col {
-    gap: 4px !important;         /* Consistent spacing */
-    justify-content: flex-start; /* Align left so they don't drift */
-    padding-left: 2px;           /* Minor visual nudge */
-  }
-}
-
-/* --- RPG MODAL STYLES --- */
 .modal-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -478,21 +409,24 @@ html, body {
   justify-content: center;
   z-index: 2000;
   backdrop-filter: blur(4px);
+  padding: 16px; /* Ensure space from edges on mobile */
 }
 
 .modal-content {
   background: white;
-  padding: 25px;
+  padding: 24px;
   border-radius: 24px;
-  width: 90%;
+  width: 100%;
   max-width: 420px;
   box-shadow: 0 20px 60px rgba(0,0,0,0.2);
   border: 1px solid #e2e8f0;
+  max-height: 90vh; /* Prevent overflowing screen on short phones */
+  overflow-y: auto; /* Scroll if content is too tall */
 }
 
 .modal-header {
   display: flex; justify-content: space-between; align-items: center;
-  margin-bottom: 25px;
+  margin-bottom: 20px;
 }
 .modal-header h3 { margin: 0; font-size: 1.2rem; color: #0f172a; }
 
@@ -508,7 +442,6 @@ html, body {
 }
 .input-group input:focus { border-color: #4caf50; }
 
-/* The RPG Class Grid */
 .class-grid {
   display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
 }
@@ -524,7 +457,6 @@ html, body {
 .class-card span { font-weight: 700; font-size: 0.9rem; margin: 6px 0 2px; }
 .class-card small { font-size: 0.75rem; opacity: 0.8; }
 
-/* Colors for Classes */
 .warrior.selected { border-color: #ef4444; background: #fef2f2; color: #ef4444; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2); }
 .mage.selected { border-color: #3b82f6; background: #eff6ff; color: #3b82f6; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2); }
 .monk.selected { border-color: #8b5cf6; background: #f5f3ff; color: #8b5cf6; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2); }
@@ -595,7 +527,6 @@ html, body {
   text-overflow: ellipsis;
 }
 
-/* RPG Icons */
 .rpg-icon { padding: 4px; border-radius: 6px; flex-shrink: 0; }
 .rpg-icon.warrior { background: #fef2f2; color: #ef4444; }
 .rpg-icon.mage { background: #eff6ff; color: #3b82f6; }
@@ -605,18 +536,14 @@ html, body {
 .col-days {
   display: flex;
   gap: 6px;
-  overflow-x: auto; /* Allow horizontal scrolling */
+  overflow-x: auto; 
   padding: 12px 8px;
-  scrollbar-width: none; /* Hide scrollbar Firefox */
+  scrollbar-width: none; 
 }
-.col-days::-webkit-scrollbar { display: none; } /* Hide scrollbar Chrome */
+.col-days::-webkit-scrollbar { display: none; }
 
-.day-header {
-  min-width: 32px;
-  text-align: center;
-}
+.day-header { min-width: 32px; text-align: center; }
 
-/* Checkboxes */
 .checkbox {
   min-width: 32px;
   height: 32px;
@@ -632,7 +559,6 @@ html, body {
 
 .checkbox:hover { border-color: #cbd5e1; }
 
-/* Dynamic Colors for Checkboxes */
 .checkbox.checked.str, .checkbox.checked.undefined { background: #ef4444; border-color: #ef4444; box-shadow: 0 2px 5px rgba(239, 68, 68, 0.4); }
 .checkbox.checked.int { background: #3b82f6; border-color: #3b82f6; box-shadow: 0 2px 5px rgba(59, 130, 246, 0.4); }
 .checkbox.checked.wis { background: #8b5cf6; border-color: #8b5cf6; box-shadow: 0 2px 5px rgba(139, 92, 246, 0.4); }
@@ -662,105 +588,20 @@ html, body {
 .grid-row:hover .delete-mini-btn { opacity: 1; }
 .delete-mini-btn:hover { color: #ef4444; }
 
-/* Mobile Responsiveness */
+/* Mobile Grid Row Update */
 @media (max-width: 640px) {
   .grid-row { grid-template-columns: 130px 1fr 45px; }
   .habit-text { font-size: 13px; }
   .col-name { padding: 0 8px; }
   .col-stats { padding: 0 4px; }
-  .delete-mini-btn { opacity: 1; } /* Always show delete on mobile */
+  .delete-mini-btn { opacity: 1; } 
 }
 
-/* --- NEW DASHBOARD STYLES --- */
+/* --- DASHBOARD & STATS LEGEND --- */
 
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-@media (min-width: 768px) {
-  .dashboard-grid {
-    grid-template-columns: 1.5fr 1fr 1fr; /* Quote is wider */
-  }
-}
-
-.dash-card {
-  background: white;
-  padding: 16px 20px;
-  border-radius: 16px;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  position: relative;
-  overflow: hidden;
-}
-
-/* Quote Card */
-.quote-card {
-  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-  color: white;
-  font-style: italic;
-  font-size: 14px;
-  border: none;
-}
-.quote-icon { opacity: 0.3; margin-right: 8px; flex-shrink: 0; }
-
-/* Streak Card */
-.streak-card .card-icon-bg {
-  background: #fff7ed; color: #cbd5e1; /* Grey when inactive */
-  width: 40px; height: 40px; border-radius: 10px;
-  display: flex; align-items: center; justify-content: center;
-  transition: all 0.3s;
-}
-
-/* Active Streak (Day 3+) */
-.streak-card.active-streak .card-icon-bg {
-  background: #ffedd5; color: #ea580c; /* Orange when active */
-  box-shadow: 0 0 15px rgba(234, 88, 12, 0.4);
-  animation: pulse-fire 2s infinite;
-}
-
-.streak-card.active-streak .card-value {
-  color: #ea580c;
-}
-
-@keyframes pulse-fire {
-  0% { box-shadow: 0 0 0 0 rgba(234, 88, 12, 0.4); }
-  70% { box-shadow: 0 0 0 10px rgba(234, 88, 12, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(234, 88, 12, 0); }
-}
-
-/* Top Quest Card */
-.top-card .card-icon-bg {
-  background: #f3e8ff; color: #9333ea;
-  width: 40px; height: 40px; border-radius: 10px;
-  display: flex; align-items: center; justify-content: center;
-}
-.top-card.purple .card-icon-bg { background: #faf5ff; color: #7e22ce; }
-
-.card-label {
-  display: block; font-size: 11px; font-weight: 700; 
-  color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em;
-  margin-bottom: 2px;
-}
-.card-value {
-  font-size: 18px; font-weight: 800; color: #1e293b;
-}
-.card-value.small { font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
-
-/* Highlight Today's Column in Grid */
-.day-header.today {
-  background: #1e293b; color: white; border-radius: 6px;
-}
-
-/* --- COMPACT STATS LEGEND --- */
 .stats-legend-row {
   display: flex;
-  justify-content: flex-end; /* Aligns to right */
+  justify-content: flex-end; 
   gap: 8px;
   margin-bottom: 12px;
   flex-wrap: wrap;
@@ -786,63 +627,120 @@ html, body {
 
 @media (max-width: 640px) {
   .stats-legend-row {
-    justify-content: center; /* Center on mobile */
+    justify-content: center;
   }
 }
 
-/* --- UPDATED DASHBOARD STYLES --- */
+/* --- DASHBOARD GRID SYSTEM --- */
 
-/* Streak Explainer */
-.streak-explainer {
-  font-size: 10px;
-  color: #94a3b8;
-  margin-top: 4px;
-  display: flex;
-  align-items: center;
-  font-weight: 500;
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr; /* Default Mobile: Stack vertically */
+  gap: 16px;
+  margin-bottom: 24px;
 }
 
-/* Leaderboard List (Top Quest Card) */
-.leaderboard-list {
+/* Tablet Layout (2 Columns) */
+@media (min-width: 640px) and (max-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  /* Make Quote Card span full width on tablet */
+  .dash-card.quote-card {
+    grid-column: span 2;
+  }
+}
+
+/* Desktop Layout (3 Columns) */
+@media (min-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: 1.5fr 1fr 1fr;
+  }
+}
+
+.dash-card {
+  background: white;
+  padding: 16px 20px;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
   display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin-top: 4px;
-  width: 100%;
+  align-items: center;
+  gap: 16px;
+  position: relative;
+  overflow: hidden;
+  min-height: 80px; /* Ensure cards have substance on mobile */
+}
+
+/* Quote Card */
+.quote-card {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  color: white;
+  font-style: italic;
+  font-size: 14px;
+  border: none;
+}
+.quote-icon { opacity: 0.3; margin-right: 8px; flex-shrink: 0; }
+
+/* Streak Card */
+.streak-card .card-icon-bg {
+  background: #fff7ed; color: #cbd5e1; 
+  width: 40px; height: 40px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.3s;
+  flex-shrink: 0;
+}
+
+.streak-card.active-streak .card-icon-bg {
+  background: #ffedd5; color: #ea580c; 
+  box-shadow: 0 0 15px rgba(234, 88, 12, 0.4);
+  animation: pulse-fire 2s infinite;
+}
+
+.streak-card.active-streak .card-value {
+  color: #ea580c;
+}
+
+@keyframes pulse-fire {
+  0% { box-shadow: 0 0 0 0 rgba(234, 88, 12, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(234, 88, 12, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(234, 88, 12, 0); }
+}
+
+/* Top Quest Card */
+.top-card .card-icon-bg {
+  background: #f3e8ff; color: #9333ea;
+  width: 40px; height: 40px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.top-card.purple .card-icon-bg { background: #faf5ff; color: #7e22ce; }
+
+.card-label {
+  display: block; font-size: 11px; font-weight: 700; 
+  color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em;
+  margin-bottom: 2px;
+}
+.card-value {
+  font-size: 18px; font-weight: 800; color: #1e293b;
+}
+
+/* New Elements */
+.streak-explainer {
+  font-size: 10px; color: #94a3b8; margin-top: 4px;
+  display: flex; align-items: center; font-weight: 500;
+}
+
+.leaderboard-list {
+  display: flex; flex-direction: column; gap: 4px; margin-top: 4px; width: 100%;
 }
 
 .leader-row {
-  display: flex;
-  align-items: center;
-  font-size: 13px;
-  color: #1e293b;
-  justify-content: space-between;
-  width: 100%;
+  display: flex; align-items: center; font-size: 13px; color: #1e293b;
+  justify-content: space-between; width: 100%;
 }
-
 .leader-row.empty { color: #94a3b8; font-style: italic; font-size: 12px; }
 
-.leader-row .rank {
-  font-weight: 800;
-  color: #a855f7; /* Purple */
-  width: 20px;
-  font-size: 11px;
-}
-
-.leader-row .name {
-  flex: 1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-weight: 600;
-  margin-right: 8px;
-}
-
-.leader-row .count {
-  background: #f3e8ff;
-  color: #7e22ce;
-  padding: 1px 6px;
-  border-radius: 4px;
-  font-size: 10px;
-  font-weight: 800;
-}
+.leader-row .rank { font-weight: 800; color: #a855f7; width: 20px; font-size: 11px; }
+.leader-row .name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; margin-right: 8px; }
+.leader-row .count { background: #f3e8ff; color: #7e22ce; padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 800; }
