@@ -11,13 +11,13 @@ const userSchema = new mongoose.Schema({
   coins: { type: Number, default: 0 },
   streak: { type: Number, default: 0 },
   
-  // ✅ FIX: Define inventory as a list of Objects, NOT strings
+  // ✅ FIX: Define inventory as a list of OBJECTS, not Strings
   inventory: [{ 
     id: String, 
     type: String, 
     name: String,
-    price: Number, // Added price just in case
-    desc: String   // Added desc just in case
+    price: Number, 
+    desc: String   
   }],
   
   activeTheme: { type: String, default: 'light' }
