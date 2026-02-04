@@ -1,66 +1,58 @@
-const UserStats = require('../models/UserStats');
+const User = require('../models/User');
 
-exports.getStats = async (req, res) => {
+// Helper to calculate level
+const calculateLevel = (xp) => Math.floor(Math.sqrt(xp / 100)) + 1;
+
+exports.getUserStats = async (req, res) => {
   try {
-    let stats = await UserStats.findOne({ userId: req.params.userId });
-    if (!stats) stats = await UserStats.create({ userId: req.params.userId });
-    res.json(stats);
+    let user = await User.findOne({ userId: req.params.userId });
+    if (!user) {
+      user = await User.create({ userId: req.params.userId });
+    }
+    res.json(user);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
-exports.updateStats = async (req, res) => {
+exports.updateXp = async (req, res) => {
   try {
-    const { xpEarned, attribute, displayName } = req.body; // <-- GET NAME
-    let stats = await UserStats.findOne({ userId: req.params.userId });
-    if (!stats) stats = await UserStats.create({ userId: req.params.userId });
+    const { userId, xpChange } = req.body;
+    let user = await User.findOne({ userId });
+    
+    if (!user) user = new User({ userId });
 
-    // Sync Name if provided
-    if (displayName) stats.displayName = displayName;
-
-    // Update XP & Coins
-    stats.xp += xpEarned || 0;
-    const coinChange = (xpEarned / 2); 
-    stats.coins = Math.max(0, (stats.coins || 0) + coinChange);
-
-    if (xpEarned !== 0 && attribute) {
-       if (!stats.stats) stats.stats = { str: 0, int: 0, wis: 0, cha: 0 };
-       const attrKey = attribute.toLowerCase();
-       if (stats.stats[attrKey] !== undefined) {
-          stats.stats[attrKey] = Math.max(0, stats.stats[attrKey] + (xpEarned / 10)); 
-       }
-    }
-
-    // Level Logic
-    while (stats.xp >= stats.level * 100) {
-      stats.xp -= stats.level * 100;
-      stats.level += 1;
-    }
-    while (stats.xp < 0) {
-      if (stats.level > 1) {
-        stats.level -= 1;
-        stats.xp += stats.level * 100; 
-      } else {
-        stats.xp = 0;
-        break;
-      }
-    }
-
-    await stats.save();
-    res.json(stats);
+    user.xp = Math.max(0, user.xp + xpChange);
+    user.level = calculateLevel(user.xp);
+    
+    await user.save();
+    res.json(user);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
+// ✅ FIXED: Missing Streak Function
+exports.getStreak = async (req, res) => {
+  try {
+    const user = await User.findOne({ userId: req.params.userId });
+    // Return 0 if user not found, otherwise return their streak
+    res.json({ streak: user ? user.streak || 0 : 0 });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// ✅ ADDED: Missing Leaderboard Function
 exports.getLeaderboard = async (req, res) => {
   try {
-    const topPlayers = await UserStats.find()
-      .sort({ level: -1, xp: -1 })
+    // Get top 10 users sorted by XP (descending)
+    const leaders = await User.find({})
+      .sort({ xp: -1 })
       .limit(10)
-      .select('displayName level xp userId');
-    res.json(topPlayers);
+      .select('userId displayName level xp streak'); // Only send necessary fields
+    
+    res.json(leaders);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -68,21 +60,15 @@ exports.getLeaderboard = async (req, res) => {
 
 exports.buyItem = async (req, res) => {
   try {
-    const { itemId, price, type } = req.body;
-    const stats = await UserStats.findOne({ userId: req.params.userId });
-
-    if (!stats.inventory) stats.inventory = { themes: ['light'], streakFreezes: 0, activeTheme: 'light' };
-    if (stats.coins < price) return res.status(400).json({ error: "Not enough coins" });
-
-    stats.coins -= price;
-    if (type === 'theme') {
-      if (!stats.inventory.themes.includes(itemId)) stats.inventory.themes.push(itemId);
-    } else if (type === 'consumable') {
-      stats.inventory.streakFreezes += 1;
-    }
-
-    await stats.save();
-    res.json(stats);
+    const { userId, item } = req.body;
+    const user = await User.findOne({ userId });
+    
+    if (user.coins < item.price) return res.status(400).json({ error: "Not enough coins" });
+    
+    user.coins -= item.price;
+    user.inventory.push(item);
+    await user.save();
+    res.json(user);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -90,16 +76,15 @@ exports.buyItem = async (req, res) => {
 
 exports.equipItem = async (req, res) => {
   try {
-    const { itemId, type } = req.body;
-    const stats = await UserStats.findOne({ userId: req.params.userId });
-    if (!stats.inventory) stats.inventory = { themes: ['light'], streakFreezes: 0, activeTheme: 'light' };
-
-    if (type === 'theme') {
-      if (stats.inventory.themes.includes(itemId)) stats.inventory.activeTheme = itemId;
+    const { userId, item } = req.body;
+    const user = await User.findOne({ userId });
+    
+    if (item.type === 'theme') {
+       user.activeTheme = item.id; 
     }
-
-    await stats.save();
-    res.json(stats);
+    
+    await user.save();
+    res.json(user);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
