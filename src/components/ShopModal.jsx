@@ -1,18 +1,22 @@
 import React from 'react';
-import { X, ShoppingBag, Lock, Check } from 'lucide-react';
+import { X, ShoppingBag, Lock, Check, FlaskConical } from 'lucide-react';
 
 export default function ShopModal({ isOpen, onClose, userStats, onBuy, onEquip }) {
   if (!isOpen) return null;
 
-  // SAFEGUARD: Ensure inventory is always an array
+  // SAFEGUARD: Ensure inventory is always an array to prevent White Screen
   const inventory = userStats?.inventory || [];
   const currentCoins = userStats?.coins || 0;
   const activeTheme = userStats?.activeTheme || 'light';
 
   const shopItems = [
+    // THEMES
     { id: 'theme_dark', name: 'Midnight Mode', price: 100, type: 'theme', desc: 'Dark visuals for night owls.' },
     { id: 'theme_forest', name: 'Forest Cloak', price: 250, type: 'theme', desc: 'Peaceful green aesthetic.' },
     { id: 'theme_cyber', name: 'Cyberpunk', price: 500, type: 'theme', desc: 'Neon lights and glitch effects.' },
+    
+    // NEW: STREAK FREEZE POTION (Now appearing in shop!)
+    { id: 'item_freeze', name: 'Streak Freeze', price: 300, type: 'consumable', desc: 'Protects your streak for 1 missed day.' }
   ];
 
   const handleBuy = async (item) => {
@@ -35,12 +39,14 @@ export default function ShopModal({ isOpen, onClose, userStats, onBuy, onEquip }
 
         <div className="shop-grid">
           {shopItems.map(item => {
-            // FIX: Check inventory safely
-            const isOwned = inventory.some(i => i.id === item.id) || inventory.includes(item.id);
+            // FIX: Robust check for ownership. 
+            // Checks if ID exists in inventory (handles both string IDs and object IDs)
+            const isOwned = inventory.some(i => (typeof i === 'string' ? i === item.id : i.id === item.id));
             const isEquipped = activeTheme === item.id;
+            const isConsumable = item.type === 'consumable';
 
             return (
-              <div key={item.id} className={`shop-card ${isOwned ? 'owned' : ''} ${isEquipped ? 'equipped' : ''}`}>
+              <div key={item.id} className={`shop-card ${isOwned && !isConsumable ? 'owned' : ''} ${isEquipped ? 'equipped' : ''}`}>
                 <div className="shop-info">
                   <h4>{item.name}</h4>
                   <p>{item.desc}</p>
@@ -48,7 +54,7 @@ export default function ShopModal({ isOpen, onClose, userStats, onBuy, onEquip }
 
                 {isEquipped ? (
                   <button className="action-btn active" disabled><Check size={16} /> Active</button>
-                ) : isOwned ? (
+                ) : isOwned && !isConsumable ? (
                   <button className="action-btn" onClick={() => onEquip(item)}>Equip</button>
                 ) : (
                   <button 
