@@ -6,7 +6,7 @@ exports.createGuild = async (req, res) => {
   try {
     const { name, description, userId, displayName } = req.body;
     
-    // Check if user is already in a guild (Optional, but good practice)
+    // Check if user is already in a guild
     const existing = await Guild.findOne({ "members.userId": userId });
     if (existing) return res.status(400).json({ error: "You are already in a guild!" });
 
@@ -34,6 +34,12 @@ exports.joinGuild = async (req, res) => {
     const guild = await Guild.findOne({ inviteCode });
     if (!guild) return res.status(404).json({ error: "Guild not found!" });
 
+    // --- SELF-HEAL FIX: If old guild has no Admin, assign one ---
+    if (!guild.adminId && guild.members.length > 0) {
+       guild.adminId = guild.members[0].userId;
+    }
+    // -----------------------------------------------------------
+
     guild.members.push({ userId, displayName });
     await guild.save();
     
@@ -58,17 +64,24 @@ exports.postMessage = async (req, res) => {
     const guild = await Guild.findById(guildId);
     if (!guild) return res.status(404).json({ error: "Guild not found" });
 
+    // --- SELF-HEAL FIX: If old guild has no Admin, assign one ---
+    if (!guild.adminId && guild.members.length > 0) {
+       guild.adminId = guild.members[0].userId;
+    }
+    // -----------------------------------------------------------
+
     guild.chat.push({ userId, displayName, message });
+    
+    // Keep chat clean: Only keep last 50 messages
     if (guild.chat.length > 50) guild.chat.shift();
     
     await guild.save();
     res.json(guild.chat);
   } catch (err) {
+    console.error("Message Error:", err);
     res.status(500).json({ error: err.message });
   }
 };
-
-// --- NEW FUNCTIONS ---
 
 exports.leaveGuild = async (req, res) => {
   try {

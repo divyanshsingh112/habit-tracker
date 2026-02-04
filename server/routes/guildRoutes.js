@@ -7,7 +7,7 @@ router.post('/guild/join', guildController.joinGuild);
 router.get('/guild/:userId', guildController.getGuild);
 router.post('/guild/message', guildController.postMessage);
 
-// NEW ROUTES
+// NEW ROUTES for Leaving and Deleting
 router.post('/guild/leave', guildController.leaveGuild);
 router.post('/guild/delete', guildController.deleteGuild);
 
