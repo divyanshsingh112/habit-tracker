@@ -9,7 +9,7 @@ export default function Guild({ user }) {
   const [createForm, setCreateForm] = useState({ name: '', description: '' });
   
   const chatEndRef = useRef(null);
-  const API_URL = import.meta.env.VITE_API_URL || 'https://habit-tracker-m9uw.onrender.com';
+  const API_URL = 'https://habit-tracker-m9uw.onrender.com';
 
   const fetchGuild = async () => {
     try {
