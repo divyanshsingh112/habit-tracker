@@ -6,7 +6,7 @@ exports.createGuild = async (req, res) => {
   try {
     const { name, description, userId, displayName } = req.body;
     
-    // Check if user is already in a guild
+    // Check duplicates
     const existing = await Guild.findOne({ "members.userId": userId });
     if (existing) return res.status(400).json({ error: "You are already in a guild!" });
 
@@ -14,7 +14,7 @@ exports.createGuild = async (req, res) => {
       name,
       description,
       inviteCode: generateCode(),
-      adminId: userId, // Set Creator as Admin
+      adminId: userId, 
       members: [{ userId, displayName }]
     });
 
@@ -34,11 +34,10 @@ exports.joinGuild = async (req, res) => {
     const guild = await Guild.findOne({ inviteCode });
     if (!guild) return res.status(404).json({ error: "Guild not found!" });
 
-    // --- SELF-HEAL FIX: If old guild has no Admin, assign one ---
+    // ✅ SELF-HEAL FIX: If old guild has no Admin, assign one
     if (!guild.adminId && guild.members.length > 0) {
        guild.adminId = guild.members[0].userId;
     }
-    // -----------------------------------------------------------
 
     guild.members.push({ userId, displayName });
     await guild.save();
@@ -64,15 +63,12 @@ exports.postMessage = async (req, res) => {
     const guild = await Guild.findById(guildId);
     if (!guild) return res.status(404).json({ error: "Guild not found" });
 
-    // --- SELF-HEAL FIX: If old guild has no Admin, assign one ---
+    // ✅ SELF-HEAL FIX: If old guild has no Admin, assign one
     if (!guild.adminId && guild.members.length > 0) {
        guild.adminId = guild.members[0].userId;
     }
-    // -----------------------------------------------------------
 
     guild.chat.push({ userId, displayName, message });
-    
-    // Keep chat clean: Only keep last 50 messages
     if (guild.chat.length > 50) guild.chat.shift();
     
     await guild.save();
@@ -116,8 +112,8 @@ exports.deleteGuild = async (req, res) => {
     const guild = await Guild.findById(guildId);
     if (!guild) return res.status(404).json({ error: "Guild not found" });
 
-    // Security Check: Only Admin can delete
-    if (guild.adminId !== userId) {
+    // Only Admin can delete (or if admin is missing, anyone can - failsafe)
+    if (guild.adminId && guild.adminId !== userId) {
       return res.status(403).json({ error: "Only the Leader can disband the guild!" });
     }
 
