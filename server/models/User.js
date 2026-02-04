@@ -11,8 +11,7 @@ const userSchema = new mongoose.Schema({
   coins: { type: Number, default: 0 },
   streak: { type: Number, default: 0 },
   
-  // 🔥 NEW FIELD NAME: "itemsOwned"
-  // This bypasses the old "inventory" crash completely.
+  // 🔥 IMPORTANT: This must be 'itemsOwned' and it must be an Array of Objects
   itemsOwned: [{ 
     itemId: String, 
     type: String, 

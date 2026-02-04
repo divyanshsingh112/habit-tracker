@@ -1,6 +1,5 @@
 const User = require('../models/User');
 
-// Helper
 const calculateLevel = (xp) => Math.floor(Math.sqrt(xp / 100)) + 1;
 
 exports.getStats = async (req, res) => {
@@ -24,13 +23,11 @@ exports.updateStats = async (req, res) => {
     let user = await User.findOne({ userId });
     if (!user) user = new User({ userId });
 
-    // Update XP
     if (xpChange) {
         user.xp = Math.max(0, (user.xp || 0) + Number(xpChange));
         user.level = calculateLevel(user.xp);
     }
 
-    // Update Coins
     if (coinsChange !== undefined) {
         user.coins = Math.max(0, (user.coins || 0) + Number(coinsChange));
     }
@@ -45,7 +42,6 @@ exports.updateStats = async (req, res) => {
 exports.buyItem = async (req, res) => {
   try {
     const userId = req.params.userId || req.body.userId;
-    // Allow frontend to send "item" wrapped or unwrapped
     const itemData = req.body.item || req.body;
 
     if (!userId) return res.status(400).json({ error: "User ID missing" });
@@ -54,16 +50,19 @@ exports.buyItem = async (req, res) => {
     const user = await User.findOne({ userId });
     if (!user) return res.status(404).json({ error: "User not found" });
     
-    // 1. Check Balance
+    // Check if user already owns it
+    const alreadyOwns = user.itemsOwned && user.itemsOwned.some(i => i.itemId === itemData.id);
+    if (alreadyOwns && itemData.type !== 'consumable') {
+        return res.status(400).json({ error: "Item already owned" });
+    }
+
     if ((user.coins || 0) < itemData.price) {
         return res.status(400).json({ error: "Not enough coins" });
     }
     
-    // 2. Deduct Coins
     user.coins -= itemData.price;
     
-    // 3. Add to NEW list "itemsOwned"
-    // We store a clean object to avoid strict mode errors
+    // 🔥 PUSH TO NEW FIELD
     user.itemsOwned.push({
         itemId: itemData.id,
         name: itemData.name,
@@ -83,12 +82,9 @@ exports.equipItem = async (req, res) => {
   try {
     const userId = req.params.userId || req.body.userId;
     const item = req.body.item || req.body;
-    
     const user = await User.findOne({ userId });
     
-    if (item.type === 'theme') {
-       user.activeTheme = item.id; 
-    }
+    if (item.type === 'theme') user.activeTheme = item.id; 
     
     await user.save();
     res.json(user);
@@ -97,6 +93,5 @@ exports.equipItem = async (req, res) => {
   }
 };
 
-// Keep existing helpers to prevent crashes
 exports.getStreak = async (req, res) => res.json({ streak: 0 });
 exports.getLeaderboard = async (req, res) => res.json([]);

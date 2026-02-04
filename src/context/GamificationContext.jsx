@@ -5,17 +5,16 @@ const GamificationContext = createContext();
 export const useGameContext = () => useContext(GamificationContext);
 
 export const GamificationProvider = ({ children, user, showToast }) => {
-  const API_URL = 'https://habit-tracker-m9uw.onrender.com';
+  const API_URL = import.meta.env.VITE_API_URL || 'https://habit-tracker-m9uw.onrender.com';
 
   const [userStats, setUserStats] = useState({
     xp: 0,
     level: 1,
     coins: 0,
-    itemsOwned: [], // 🔥 NEW NAME
+    itemsOwned: [], // 🔥 NEW FIELD NAME
     activeTheme: 'light'
   });
 
-  // Load Data
   useEffect(() => {
     if (user?.uid) fetchUserStats(user.uid);
   }, [user]);
@@ -30,7 +29,7 @@ export const GamificationProvider = ({ children, user, showToast }) => {
           xp: data.xp || 0,
           level: data.level || 1,
           coins: data.coins || 0,
-          itemsOwned: data.itemsOwned || [], // 🔥 NEW NAME
+          itemsOwned: data.itemsOwned || [], // 🔥 READ NEW FIELD
           activeTheme: data.activeTheme || 'light'
         }));
       }
@@ -42,7 +41,6 @@ export const GamificationProvider = ({ children, user, showToast }) => {
   const processXpUpdate = async (xpAmount, coinsAmount) => {
     if (!user) return;
     
-    // Optimistic Update
     setUserStats(prev => ({
         ...prev, 
         xp: (prev.xp || 0) + xpAmount, 
@@ -80,9 +78,8 @@ export const GamificationProvider = ({ children, user, showToast }) => {
       });
       
       if (!res.ok) {
-        const err = await res.json();
-        showToast(err.error || "Failed", "error");
-        fetchUserStats(user.uid); // Revert
+        showToast("Purchase failed", "error");
+        fetchUserStats(user.uid); 
         return false;
       }
       return true;
