@@ -19,7 +19,7 @@ const MonthView = lazy(() => import('./components/MonthView'));
 const TrackerView = lazy(() => import('./components/TrackerView'));
 const Analytics = lazy(() => import('./components/Analytics'));
 const Leaderboard = lazy(() => import('./components/Leaderboard'));
-const Guild = lazy(() => import('./components/Guild')); // <-- NEW IMPORT
+const Guild = lazy(() => import('./components/Guild'));
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://habit-tracker-m9uw.onrender.com'; 
 const PageLoader = () => <div className="loading-spinner" style={{margin: '100px auto'}}></div>;
@@ -37,13 +37,32 @@ function Dashboard({ user, showToast, handleLogout }) {
     if (user) { loadLocalData(); fetchAndSync(user.uid, null); }
   }, [user]);
 
+  // ✅ FIXED: Correctly calculates if we gained or lost checks to award Coins/XP
   const handleTrackerUpdate = async (updatedHabitsList, habitAttribute) => {
-    setStore(prev => ({ ...prev, [view.year]: { ...prev[view.year], [view.month]: updatedHabitsList } }));
-    const currentHabits = store[view.year]?.[view.month] || [];
+    const previousHabits = store[view.year]?.[view.month] || [];
+    
+    // Helper to count total checks in a list of habits
     const countChecks = (list) => list.reduce((acc, h) => acc + (h.completedDays ? Object.keys(h.completedDays).length : 0), 0);
-    const diff = countChecks(updatedHabitsList) - countChecks(currentHabits);
-    processXpUpdate(diff, habitAttribute);
-    if (user) { await saveMonthLocally(user.uid, view.year, view.month, updatedHabitsList); syncData(); }
+    
+    const oldTotal = countChecks(previousHabits);
+    const newTotal = countChecks(updatedHabitsList);
+    const diff = newTotal - oldTotal;
+
+    // Update Local Store
+    setStore(prev => ({ ...prev, [view.year]: { ...prev[view.year], [view.month]: updatedHabitsList } }));
+
+    // Send Update to Game Engine (XP + Coins)
+    if (diff !== 0) {
+      console.log(`[App] Check difference: ${diff}. Attribute: ${habitAttribute}`);
+      // Assuming processXpUpdate handles the backend logic for rewards
+      // +10 XP per check is the standard rate
+      processXpUpdate(diff * 10, habitAttribute);
+    }
+
+    if (user) { 
+      await saveMonthLocally(user.uid, view.year, view.month, updatedHabitsList); 
+      syncData(); 
+    }
   };
 
   const handleAddHabit = async ({ name, attribute }) => {
@@ -59,7 +78,8 @@ function Dashboard({ user, showToast, handleLogout }) {
     showToast(`Year ${year} created!`);
   };
 
-  const activeTheme = userStats.inventory?.activeTheme || 'light';
+  // Safe access to inventory
+  const activeTheme = userStats?.activeTheme || 'light';
   const themeClass = activeTheme !== 'light' ? `theme-${activeTheme}` : '';
 
   return (
@@ -100,7 +120,6 @@ function Dashboard({ user, showToast, handleLogout }) {
               <Leaderboard currentUser={user} />
             )}
 
-            {/* NEW: GUILD VIEW */}
             {view.screen === 'guild' && (
               <Guild user={user} />
             )}
@@ -109,8 +128,16 @@ function Dashboard({ user, showToast, handleLogout }) {
         </div>
       </main>
 
-      <StatsModal isOpen={isStatsOpen} onClose={() => setIsStatsOpen(false)} stats={userStats} discipline={0} />
-      <ShopModal isOpen={isShopOpen} onClose={() => setIsShopOpen(false)} userStats={userStats} onBuy={buyItem} onEquip={equipItem} />
+      <StatsModal isOpen={isStatsOpen} onClose={() => setIsStatsOpen(false)} stats={userStats || { xp: 0, level: 1 }} discipline={0} />
+      
+      {/* ✅ FIXED: Prevents "White Screen" by passing safe default values */}
+      <ShopModal 
+        isOpen={isShopOpen} 
+        onClose={() => setIsShopOpen(false)} 
+        userStats={userStats || { inventory: [], coins: 0, activeTheme: 'light' }} 
+        onBuy={buyItem} 
+        onEquip={equipItem} 
+      />
     </div>
   );
 }
@@ -119,10 +146,20 @@ export default function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
-  const showToast = (message, type = 'success') => { setToast({ show: true, message, type }); setTimeout(() => setToast({ ...toast, show: false }), 3000); };
-  useEffect(() => { const unsub = onAuthStateChanged(auth, u => { setUser(u); setLoading(false); }); return () => unsub(); }, []);
+  
+  const showToast = (message, type = 'success') => { 
+    setToast({ show: true, message, type }); 
+    setTimeout(() => setToast({ ...toast, show: false }), 3000); 
+  };
+  
+  useEffect(() => { 
+    const unsub = onAuthStateChanged(auth, u => { setUser(u); setLoading(false); }); 
+    return () => unsub(); 
+  }, []);
+
   if (loading) return <PageLoader />;
   if (!user) return <Login onLogin={setUser} />;
+  
   return (
     <GamificationProvider user={user} showToast={showToast} apiURL={API_URL}>
       <HabitProvider user={user} apiURL={API_URL}>

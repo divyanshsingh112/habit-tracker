@@ -3,32 +3,34 @@ import {
   Check, Trash2, Sword, Brain, Sparkles, MessageCircle, 
   Flame, Trophy, Quote, Info 
 } from 'lucide-react';
+import confetti from 'canvas-confetti'; // ✅ Make sure to install: npm install canvas-confetti
 
 export default function TrackerView({ year, month, habits, onUpdate }) {
   
-  // --- HELPER: Action-Based Streak Logic (Anti-Backfill) ---
+  // --- HELPER: Trigger Confetti ---
+  const triggerConfetti = () => {
+    const colors = ['#f43f5e', '#3b82f6', '#8b5cf6', '#f59e0b'];
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 },
+      colors: colors,
+      disableForReducedMotion: true
+    });
+  };
+
+  // --- HELPER: Action-Based Streak Logic ---
   const globalStreak = useMemo(() => {
     let maxStreak = 0;
-
     habits.forEach(habit => {
       if (!habit.completedDays) return;
-
-      // 1. Extract TIMESTAMPS (When did you actually click the button?)
       const timestamps = Object.values(habit.completedDays);
+      const actionDates = new Set(timestamps.map(ts => new Date(ts).toDateString()));
       
-      // 2. Convert to Unique Dates (e.g., "Mon Feb 03 2026")
-      const actionDates = new Set(
-        timestamps.map(ts => new Date(ts).toDateString())
-      );
-
-      // 3. Count Consecutive Action Days (Backwards from Today)
       let currentStreak = 0;
-      const checkDate = new Date(); // Start with Today
+      const checkDate = new Date(); 
 
-      // Check Today
       let hasDate = actionDates.has(checkDate.toDateString());
-      
-      // If no action Today, check Yesterday
       if (!hasDate) {
          checkDate.setDate(checkDate.getDate() - 1);
          hasDate = actionDates.has(checkDate.toDateString());
@@ -37,22 +39,19 @@ export default function TrackerView({ year, month, habits, onUpdate }) {
       if (hasDate) {
         currentStreak = 1;
         while (true) {
-          checkDate.setDate(checkDate.getDate() - 1); // Go back 1 day
+          checkDate.setDate(checkDate.getDate() - 1);
           if (actionDates.has(checkDate.toDateString())) {
             currentStreak++;
           } else {
-            break; // Gap found, stop counting
+            break;
           }
         }
       }
-
       if (currentStreak > maxStreak) maxStreak = currentStreak;
     });
-
     return maxStreak;
   }, [habits]);
 
-  // --- HELPER: Top 3 Leaderboard ---
   const topQuests = useMemo(() => {
     return [...habits]
       .sort((a, b) => {
@@ -89,23 +88,28 @@ export default function TrackerView({ year, month, habits, onUpdate }) {
   const daysInMonth = new Date(year, new Date(`${month} 1, 2000`).getMonth() + 1, 0).getDate();
   const daysArray = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
+  // ✅ FIXED: Toggle Logic with Confetti and Update Detection
   const toggleDay = (habitId, day) => {
     let activeAttribute = null;
 
     const updated = habits.map(h => {
       if (h.id === habitId) {
         const newDays = { ...h.completedDays };
-        if (newDays[day]) {
-            delete newDays[day];
+        const wasCompleted = !!newDays[day];
+
+        if (wasCompleted) {
+            delete newDays[day]; // Uncheck
         } else {
-            newDays[day] = new Date().toISOString(); 
+            newDays[day] = new Date().toISOString(); // Check
             activeAttribute = h.attribute || 'str'; 
+            triggerConfetti(); // 🎉 POP!
         }
         return { ...h, completedDays: newDays };
       }
       return h;
     });
     
+    // Pass the updated list AND the attribute responsible for the change
     onUpdate(updated, activeAttribute);
   };
 
@@ -117,37 +121,19 @@ export default function TrackerView({ year, month, habits, onUpdate }) {
 
   return (
     <div className="tracker-wrapper animate-slide-up">
-      
-      {/* UPDATED: Horizontal Stats Legend with RPG Descriptions */}
       <div className="stats-legend-inline">
-        <div className="legend-item">
-          <Sword size={14} color="#ef4444" /> 
-          <span>STR: Physical Power & Health</span>
-        </div>
-        <div className="legend-item">
-          <Brain size={14} color="#3b82f6" /> 
-          <span>INT: Logic & Learning</span>
-        </div>
-        <div className="legend-item">
-          <Sparkles size={14} color="#8b5cf6" /> 
-          <span>WIS: Willpower & Focus</span>
-        </div>
-        <div className="legend-item">
-          <MessageCircle size={14} color="#f59e0b" /> 
-          <span>CHA: Social & Influence</span>
-        </div>
+        <div className="legend-item"><Sword size={14} color="#ef4444" /> <span>STR: Power</span></div>
+        <div className="legend-item"><Brain size={14} color="#3b82f6" /> <span>INT: Logic</span></div>
+        <div className="legend-item"><Sparkles size={14} color="#8b5cf6" /> <span>WIS: Focus</span></div>
+        <div className="legend-item"><MessageCircle size={14} color="#f59e0b" /> <span>CHA: Social</span></div>
       </div>
 
-      {/* Dashboard */}
       <div className="dashboard-grid">
-        
-        {/* Quote */}
         <div className="dash-card quote-card">
           <Quote size={20} className="quote-icon" />
           <p>"{quote}"</p>
         </div>
 
-        {/* Action Streak */}
         <div className={`dash-card streak-card ${globalStreak >= 3 ? 'active-streak' : ''}`}>
           <div className="card-icon-bg"><Flame size={20} /></div>
           <div style={{ flex: 1 }}>
@@ -156,38 +142,30 @@ export default function TrackerView({ year, month, habits, onUpdate }) {
               {globalStreak >= 3 ? `${globalStreak} Days` : <span style={{fontSize:'16px', color:'#94a3b8'}}>Igniting... ({globalStreak}/3)</span>}
             </div>
             <div className="streak-explainer">
-              <Info size={10} style={{ marginRight: 4 }}/> 
-              Counts consecutive days you took action
+              <Info size={10} style={{ marginRight: 4 }}/> Counts consecutive days
             </div>
           </div>
         </div>
 
-        {/* Leaderboard */}
         <div className="dash-card top-card">
            <div className="card-icon-bg purple"><Trophy size={20} /></div>
            <div style={{ width: '100%' }}>
              <span className="card-label">Top Quests</span>
              <div className="leaderboard-list">
-                {topQuests.length === 0 ? (
-                  <div className="leader-row empty">No Data</div>
-                ) : (
-                  topQuests.map((quest, index) => {
-                     const count = quest.completedDays ? Object.keys(quest.completedDays).length : 0;
-                     return (
-                       <div key={quest.id} className="leader-row">
-                         <span className="rank">#{index + 1}</span>
-                         <span className="name">{quest.name}</span>
-                         <span className="count">{count}</span>
-                       </div>
-                     );
-                  })
-                )}
+                {topQuests.length === 0 ? <div className="leader-row empty">No Data</div> : 
+                  topQuests.map((quest, index) => (
+                     <div key={quest.id} className="leader-row">
+                       <span className="rank">#{index + 1}</span>
+                       <span className="name">{quest.name}</span>
+                       <span className="count">{quest.completedDays ? Object.keys(quest.completedDays).length : 0}</span>
+                     </div>
+                  ))
+                }
              </div>
            </div>
         </div>
       </div>
 
-      {/* Grid */}
       <div className="tracker-card">
         {habits.length === 0 ? (
           <div className="empty-state">
@@ -241,10 +219,7 @@ export default function TrackerView({ year, month, habits, onUpdate }) {
                   <div className="col-stats">
                     <div className="mini-progress-wrapper">
                       <div className="mini-progress-bar">
-                        <div 
-                          className={`mini-progress-fill ${habit.attribute || 'str'}`}
-                          style={{ width: `${progress}%` }}
-                        ></div>
+                        <div className={`mini-progress-fill ${habit.attribute || 'str'}`} style={{ width: `${progress}%` }}></div>
                       </div>
                       <span className="mini-percent">{progress}%</span>
                     </div>

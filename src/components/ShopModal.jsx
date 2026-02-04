@@ -1,73 +1,69 @@
 import React from 'react';
-import { X, Coins, Check } from 'lucide-react';
-import { SHOP_ITEMS } from '../data/shopItems';
+import { X, ShoppingBag, Lock, Check } from 'lucide-react';
 
 export default function ShopModal({ isOpen, onClose, userStats, onBuy, onEquip }) {
   if (!isOpen) return null;
 
-  const inventory = userStats.inventory || { themes: ['light'], streakFreezes: 0, activeTheme: 'light' };
+  // SAFEGUARD: Ensure inventory is always an array
+  const inventory = userStats?.inventory || [];
+  const currentCoins = userStats?.coins || 0;
+  const activeTheme = userStats?.activeTheme || 'light';
+
+  const shopItems = [
+    { id: 'theme_dark', name: 'Midnight Mode', price: 100, type: 'theme', desc: 'Dark visuals for night owls.' },
+    { id: 'theme_forest', name: 'Forest Cloak', price: 250, type: 'theme', desc: 'Peaceful green aesthetic.' },
+    { id: 'theme_cyber', name: 'Cyberpunk', price: 500, type: 'theme', desc: 'Neon lights and glitch effects.' },
+  ];
+
+  const handleBuy = async (item) => {
+    if (confirm(`Buy ${item.name} for ${item.price} coins?`)) {
+      await onBuy(item);
+    }
+  };
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content animate-slide-up" onClick={e => e.stopPropagation()} style={{ maxWidth: '500px' }}>
-        
-        {/* Header */}
+      <div className="modal-content animate-scale-up" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <h3>Item Shop</h3>
-            <div className="streak-pill" style={{ background: '#fffbeb', color: '#b45309', border: '1px solid #fcd34d' }}>
-              <Coins size={14} fill="#f59e0b" stroke="#b45309" />
-              <span>{userStats.coins}</span>
-            </div>
-          </div>
-          <button onClick={onClose} className="close-btn"><X size={20} /></button>
+          <h2><ShoppingBag size={24} /> Hero's Market</h2>
+          <button className="close-btn" onClick={onClose}><X size={24} /></button>
         </div>
 
-        {/* Shop Grid */}
+        <div className="shop-balance">
+          💰 Balance: <span>{currentCoins} Coins</span>
+        </div>
+
         <div className="shop-grid">
-          {SHOP_ITEMS.map(item => {
-            const isOwned = item.type === 'theme' && inventory.themes.includes(item.id);
-            const isEquipped = item.type === 'theme' && inventory.activeTheme === item.id;
-            const canAfford = userStats.coins >= item.price;
+          {shopItems.map(item => {
+            // FIX: Check inventory safely
+            const isOwned = inventory.some(i => i.id === item.id) || inventory.includes(item.id);
+            const isEquipped = activeTheme === item.id;
 
             return (
-              <div key={item.id} className={`shop-card ${isEquipped ? 'equipped' : ''}`}>
-                <div className="shop-icon">{item.icon}</div>
+              <div key={item.id} className={`shop-card ${isOwned ? 'owned' : ''} ${isEquipped ? 'equipped' : ''}`}>
                 <div className="shop-info">
                   <h4>{item.name}</h4>
-                  <p>{item.description}</p>
+                  <p>{item.desc}</p>
                 </div>
-                
-                <div className="shop-action">
-                  {isOwned ? (
-                    <button 
-                      className={`action-btn ${isEquipped ? 'active' : ''}`}
-                      onClick={() => !isEquipped && onEquip(item)}
-                      disabled={isEquipped}
-                    >
-                      {isEquipped ? 'Active' : 'Equip'}
-                    </button>
-                  ) : (
-                    <button 
-                      className={`buy-btn ${!canAfford ? 'disabled' : ''}`}
-                      onClick={() => canAfford && onBuy(item)}
-                      disabled={!canAfford}
-                    >
-                      <Coins size={12} /> {item.price}
-                    </button>
-                  )}
-                  
-                  {item.type === 'consumable' && (
-                    <div style={{ fontSize: '10px', color: '#94a3b8', marginTop: '4px', textAlign: 'center' }}>
-                      Owned: {inventory.streakFreezes}
-                    </div>
-                  )}
-                </div>
+
+                {isEquipped ? (
+                  <button className="action-btn active" disabled><Check size={16} /> Active</button>
+                ) : isOwned ? (
+                  <button className="action-btn" onClick={() => onEquip(item)}>Equip</button>
+                ) : (
+                  <button 
+                    className="buy-btn" 
+                    disabled={currentCoins < item.price}
+                    onClick={() => handleBuy(item)}
+                  >
+                    {currentCoins < item.price && <Lock size={12} />}
+                    {item.price} 💰
+                  </button>
+                )}
               </div>
             );
           })}
         </div>
-
       </div>
     </div>
   );
