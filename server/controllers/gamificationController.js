@@ -60,18 +60,28 @@ exports.getLeaderboard = async (req, res) => {
   }
 };
 
-// ✅ FIXED: Now reads ID from req.params (URL)
+// ✅ FIXED: Robustly handles wrapped or unwrapped item data
 exports.buyItem = async (req, res) => {
   try {
-    const userId = req.params.userId || req.body.userId; // Check URL first
-    const { item } = req.body;
+    const userId = req.params.userId || req.body.userId;
+    
+    // TRICK: If req.body.item exists, use it. Otherwise, assume req.body IS the item.
+    // This solves the "undefined" error if data is sent directly.
+    const item = req.body.item || req.body;
 
     if (!userId) return res.status(400).json({ error: "User ID missing" });
+    
+    // Double Check: Ensure 'item' has a price property before proceeding
+    if (!item || typeof item.price === 'undefined') {
+       // Log the body so you can debug what was actually sent
+       console.error("Invalid Item Data Received:", req.body);
+       return res.status(400).json({ error: "Invalid item data: Price is missing" });
+    }
 
     const user = await User.findOne({ userId });
     if (!user) return res.status(404).json({ error: "User not found" });
     
-    // Check balance safely
+    // Check balance
     if ((user.coins || 0) < item.price) {
         return res.status(400).json({ error: "Not enough coins" });
     }
@@ -86,11 +96,11 @@ exports.buyItem = async (req, res) => {
   }
 };
 
-// ✅ FIXED: Now reads ID from req.params (URL)
+// ✅ FIXED: Robustly handles wrapped or unwrapped item data
 exports.equipItem = async (req, res) => {
   try {
-    const userId = req.params.userId || req.body.userId; // Check URL first
-    const { item } = req.body;
+    const userId = req.params.userId || req.body.userId;
+    const item = req.body.item || req.body;
     
     if (!userId) return res.status(400).json({ error: "User ID missing" });
 
