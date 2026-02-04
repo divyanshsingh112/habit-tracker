@@ -8,6 +8,7 @@ exports.getStats = async (req, res) => {
     const userId = req.params.userId;
     let user = await User.findOne({ userId });
     
+    // Auto-create user if they don't exist
     if (!user) {
       user = await User.create({ userId });
     }
@@ -17,24 +18,34 @@ exports.getStats = async (req, res) => {
   }
 };
 
+// ✅ THE CRITICAL FIX: Handles XP *AND* Coins
 exports.updateStats = async (req, res) => {
   try {
     const userId = req.params.userId || req.body.userId;
-    const { xpChange } = req.body;
+    // Look for both xpChange AND coinsChange
+    const { xpChange, coinsChange } = req.body;
 
     if (!userId) return res.status(400).json({ error: "User ID is required" });
 
     let user = await User.findOne({ userId });
     if (!user) user = new User({ userId });
 
+    // 1. Update XP
     if (xpChange) {
-        user.xp = Math.max(0, user.xp + xpChange);
+        user.xp = Math.max(0, (user.xp || 0) + Number(xpChange));
         user.level = calculateLevel(user.xp);
+    }
+
+    // 2. Update Coins (This was likely missing or broken)
+    if (coinsChange !== undefined) {
+        user.coins = Math.max(0, (user.coins || 0) + Number(coinsChange));
     }
     
     await user.save();
+    console.log(`[Stats] Updated User ${userId}: Level ${user.level}, Coins ${user.coins}`);
     res.json(user);
   } catch (err) {
+    console.error("Update Stats Error:", err);
     res.status(500).json({ error: err.message });
   }
 };
@@ -60,34 +71,37 @@ exports.getLeaderboard = async (req, res) => {
   }
 };
 
-// ✅ FIXED: Robustly handles wrapped or unwrapped item data
+// ✅ SHOP FIX: Handles "unwrapped" items and checks balance properly
 exports.buyItem = async (req, res) => {
   try {
     const userId = req.params.userId || req.body.userId;
     
-    // TRICK: If req.body.item exists, use it. Otherwise, assume req.body IS the item.
-    // This solves the "undefined" error if data is sent directly.
+    // Handle both { item: {...} } and { ... } formats
     const item = req.body.item || req.body;
 
     if (!userId) return res.status(400).json({ error: "User ID missing" });
     
-    // Double Check: Ensure 'item' has a price property before proceeding
+    // Safety check for price
     if (!item || typeof item.price === 'undefined') {
-       // Log the body so you can debug what was actually sent
-       console.error("Invalid Item Data Received:", req.body);
        return res.status(400).json({ error: "Invalid item data: Price is missing" });
     }
 
     const user = await User.findOne({ userId });
     if (!user) return res.status(404).json({ error: "User not found" });
     
-    // Check balance
+    // Check if user is rich enough
     if ((user.coins || 0) < item.price) {
+        console.log(`[Shop] Failed: User has ${user.coins}, needs ${item.price}`);
         return res.status(400).json({ error: "Not enough coins" });
     }
     
+    // Deduct coins & Add item
     user.coins -= item.price;
+    
+    // Ensure inventory exists
+    if (!user.inventory) user.inventory = [];
     user.inventory.push(item);
+    
     await user.save();
     res.json(user);
   } catch (err) {
@@ -96,7 +110,6 @@ exports.buyItem = async (req, res) => {
   }
 };
 
-// ✅ FIXED: Robustly handles wrapped or unwrapped item data
 exports.equipItem = async (req, res) => {
   try {
     const userId = req.params.userId || req.body.userId;
@@ -105,7 +118,6 @@ exports.equipItem = async (req, res) => {
     if (!userId) return res.status(400).json({ error: "User ID missing" });
 
     const user = await User.findOne({ userId });
-    if (!user) return res.status(404).json({ error: "User not found" });
     
     if (item.type === 'theme') {
        user.activeTheme = item.id; 

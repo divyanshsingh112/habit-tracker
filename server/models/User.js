@@ -5,13 +5,13 @@ const userSchema = new mongoose.Schema({
   displayName: String,
   email: String,
   
-  // Gamification Stats
+  // STATS
   xp: { type: Number, default: 0 },
   level: { type: Number, default: 1 },
-  coins: { type: Number, default: 0 },
+  coins: { type: Number, default: 0 }, // <--- THIS MUST BE HERE
   streak: { type: Number, default: 0 },
   
-  // Shop Inventory
+  // INVENTORY
   inventory: [{ 
     id: String, 
     type: String, 
