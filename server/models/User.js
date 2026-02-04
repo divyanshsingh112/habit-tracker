@@ -11,13 +11,13 @@ const userSchema = new mongoose.Schema({
   coins: { type: Number, default: 0 },
   streak: { type: Number, default: 0 },
   
-  // ✅ FIX: Define inventory as a list of OBJECTS, not Strings
-  inventory: [{ 
-    id: String, 
+  // 🔥 NEW FIELD NAME: "itemsOwned"
+  // This bypasses the old "inventory" crash completely.
+  itemsOwned: [{ 
+    itemId: String, 
     type: String, 
     name: String,
-    price: Number, 
-    desc: String   
+    price: Number
   }],
   
   activeTheme: { type: String, default: 'light' }

@@ -1,22 +1,19 @@
 import React from 'react';
-import { X, ShoppingBag, Lock, Check, FlaskConical } from 'lucide-react';
+import { X, ShoppingBag, Lock, Check } from 'lucide-react';
 
 export default function ShopModal({ isOpen, onClose, userStats, onBuy, onEquip }) {
   if (!isOpen) return null;
 
-  // SAFEGUARD: Ensure inventory is always an array to prevent White Screen
-  const inventory = userStats?.inventory || [];
+  // 🔥 NEW: Read from itemsOwned
+  const itemsOwned = userStats?.itemsOwned || [];
   const currentCoins = userStats?.coins || 0;
   const activeTheme = userStats?.activeTheme || 'light';
 
   const shopItems = [
-    // THEMES
-    { id: 'theme_dark', name: 'Midnight Mode', price: 100, type: 'theme', desc: 'Dark visuals for night owls.' },
-    { id: 'theme_forest', name: 'Forest Cloak', price: 250, type: 'theme', desc: 'Peaceful green aesthetic.' },
-    { id: 'theme_cyber', name: 'Cyberpunk', price: 500, type: 'theme', desc: 'Neon lights and glitch effects.' },
-    
-    // NEW: STREAK FREEZE POTION (Now appearing in shop!)
-    { id: 'item_freeze', name: 'Streak Freeze', price: 300, type: 'consumable', desc: 'Protects your streak for 1 missed day.' }
+    { id: 'theme_dark', name: 'Midnight Mode', price: 100, type: 'theme', desc: 'Dark visuals.' },
+    { id: 'theme_forest', name: 'Forest Cloak', price: 250, type: 'theme', desc: 'Peaceful green.' },
+    { id: 'theme_cyber', name: 'Cyberpunk', price: 500, type: 'theme', desc: 'Neon lights.' },
+    { id: 'item_freeze', name: 'Streak Freeze', price: 300, type: 'consumable', desc: 'Save your streak.' }
   ];
 
   const handleBuy = async (item) => {
@@ -39,9 +36,8 @@ export default function ShopModal({ isOpen, onClose, userStats, onBuy, onEquip }
 
         <div className="shop-grid">
           {shopItems.map(item => {
-            // FIX: Robust check for ownership. 
-            // Checks if ID exists in inventory (handles both string IDs and object IDs)
-            const isOwned = inventory.some(i => (typeof i === 'string' ? i === item.id : i.id === item.id));
+            // 🔥 NEW: Check ownership using itemId
+            const isOwned = itemsOwned.some(i => i.itemId === item.id);
             const isEquipped = activeTheme === item.id;
             const isConsumable = item.type === 'consumable';
 
