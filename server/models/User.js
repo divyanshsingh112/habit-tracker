@@ -8,15 +8,18 @@ const userSchema = new mongoose.Schema({
   // STATS
   xp: { type: Number, default: 0 },
   level: { type: Number, default: 1 },
-  coins: { type: Number, default: 0 }, // <--- THIS MUST BE HERE
+  coins: { type: Number, default: 0 },
   streak: { type: Number, default: 0 },
   
-  // INVENTORY
+  // ✅ FIX: Define inventory as a list of Objects, NOT strings
   inventory: [{ 
     id: String, 
     type: String, 
-    name: String 
+    name: String,
+    price: Number, // Added price just in case
+    desc: String   // Added desc just in case
   }],
+  
   activeTheme: { type: String, default: 'light' }
 }, { timestamps: true });
 
