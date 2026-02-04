@@ -399,3 +399,83 @@ img { max-width: 100%; display: block; }
 .analytics-container { width: 100%; }
 .analytics-grid { display: grid; grid-template-columns: 1fr; gap: 24px; }
 @media (min-width: 768px) { .analytics-grid { grid-template-columns: 1fr 1fr; } }
+
+/* --- NEW GUILD HALL STYLES --- */
+.guild-hall-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 100px); /* Fill screen minus navbar */
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.gh-header {
+  background: var(--card);
+  padding: 16px 24px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: var(--shadow-sm);
+}
+.gh-title { margin: 0; font-size: 20px; font-weight: 800; display: flex; align-items: center; gap: 8px; color: var(--text-main); }
+.gh-desc { margin: 4px 0 0; color: var(--text-sub); font-size: 14px; }
+.gh-invite {
+  background: var(--bg); border: 1px dashed var(--border);
+  padding: 8px 12px; border-radius: 8px; font-size: 12px; cursor: pointer;
+  display: flex; align-items: center; gap: 8px; color: var(--text-sub);
+}
+.gh-invite strong { font-size: 16px; color: var(--primary); }
+
+.gh-grid {
+  display: grid;
+  grid-template-columns: 260px 1fr; /* Sidebar fixed, Chat flexible */
+  gap: 16px;
+  flex: 1;
+  min-height: 0; /* Important for scroll */
+}
+
+@media (max-width: 768px) {
+  .gh-grid { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+  .gh-sidebar { max-height: 200px; }
+}
+
+/* SIDEBAR */
+.gh-sidebar {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 16px; padding: 16px; display: flex; flex-direction: column;
+}
+.gh-section-title { font-size: 11px; font-weight: 700; color: var(--text-sub); margin-bottom: 12px; display: flex; gap: 6px; }
+.gh-member-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+.gh-member { display: flex; align-items: center; gap: 10px; padding: 6px; border-radius: 8px; font-size: 14px; font-weight: 500; }
+.gh-avatar { width: 28px; height: 28px; background: var(--border); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px; color: var(--text-sub); }
+
+.gh-actions { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px; }
+.gh-btn-danger {
+  background: transparent; border: 1px solid var(--border); color: var(--text-sub);
+  padding: 8px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; justify-content: center; transition: all 0.2s;
+}
+.gh-btn-danger:hover { background: #fee2e2; color: #ef4444; border-color: #fecaca; }
+.gh-btn-danger.delete:hover { background: #ef4444; color: white; border-color: #ef4444; }
+
+/* CHAT AREA */
+.gh-chat-area {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 16px; display: flex; flex-direction: column; overflow: hidden;
+}
+.gh-chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; background: var(--bg); }
+
+.chat-bubble-row { display: flex; gap: 8px; max-width: 70%; }
+.chat-bubble-row.me { align-self: flex-end; flex-direction: row-reverse; }
+
+.chat-avatar-mini { width: 24px; height: 24px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; margin-top: auto; }
+.chat-bubble { background: white; padding: 10px 14px; border-radius: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); font-size: 14px; line-height: 1.4; border-bottom-left-radius: 2px; }
+.chat-bubble-row.me .chat-bubble { background: var(--primary); color: white; border-bottom-left-radius: 12px; border-bottom-right-radius: 2px; }
+.chat-name { font-size: 10px; color: var(--text-sub); margin-bottom: 2px; font-weight: 700; }
+.empty-state { text-align: center; color: var(--text-sub); margin-top: 40px; font-style: italic; }
+
+.gh-chat-input { padding: 12px; background: var(--card); border-top: 1px solid var(--border); display: flex; gap: 10px; }
+.gh-chat-input input { flex: 1; padding: 12px; border: 1px solid var(--border); border-radius: 10px; outline: none; background: var(--bg); color: var(--text-main); }
+.gh-chat-input button { background: var(--primary); color: white; border: none; width: 44px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
