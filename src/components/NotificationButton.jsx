@@ -5,7 +5,7 @@ export default function NotificationButton({ user }) {
   const [isSubscribed, setIsSubscribed] = useState(Notification.permission === 'granted');
   const API_URL = import.meta.env.VITE_API_URL || 'https://habit-tracker-m9uw.onrender.com';
   // MUST match the Public Key from Step 2
-  const VAPID_PUBLIC_KEY = 'YOUR_PUBLIC_KEY_FROM_STEP_2'; 
+  const VAPID_PUBLIC_KEY = 'BCg6-otSiiMR0by8vE-4IyblqvSxydfilRXRtWfF2BcCgLDTDhUFslACWiPjLt8RBihfg20frJbDEEGMDC7tJBU'; 
 
   const urlBase64ToUint8Array = (base64String) => {
     const padding = '='.repeat((4 - base64String.length % 4) % 4);
