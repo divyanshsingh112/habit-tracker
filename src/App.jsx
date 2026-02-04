@@ -37,26 +37,31 @@ function Dashboard({ user, showToast, handleLogout }) {
     if (user) { loadLocalData(); fetchAndSync(user.uid, null); }
   }, [user]);
 
-  // ✅ FIXED: Correctly calculates if we gained or lost checks to award Coins/XP
+  // ✅ UPDATED: Calculates Coin Reward (+5 Coins) and Deductions (-5 Coins)
   const handleTrackerUpdate = async (updatedHabitsList, habitAttribute) => {
     const previousHabits = store[view.year]?.[view.month] || [];
     
-    // Helper to count total checks in a list of habits
-    const countChecks = (list) => list.reduce((acc, h) => acc + (h.completedDays ? Object.keys(h.completedDays).length : 0), 0);
+    // Count checks BEFORE update
+    const oldTotal = previousHabits.reduce((acc, h) => acc + (h.completedDays ? Object.keys(h.completedDays).length : 0), 0);
     
-    const oldTotal = countChecks(previousHabits);
-    const newTotal = countChecks(updatedHabitsList);
+    // Count checks AFTER update
+    const newTotal = updatedHabitsList.reduce((acc, h) => acc + (h.completedDays ? Object.keys(h.completedDays).length : 0), 0);
+    
+    // Determine the difference (+1 or -1)
     const diff = newTotal - oldTotal;
 
     // Update Local Store
     setStore(prev => ({ ...prev, [view.year]: { ...prev[view.year], [view.month]: updatedHabitsList } }));
 
-    // Send Update to Game Engine (XP + Coins)
+    // Send Rewards
     if (diff !== 0) {
-      console.log(`[App] Check difference: ${diff}. Attribute: ${habitAttribute}`);
-      // Assuming processXpUpdate handles the backend logic for rewards
-      // +10 XP per check is the standard rate
-      processXpUpdate(diff * 10, habitAttribute);
+      // RATES: 10 XP per check, 5 Coins per check
+      const xpReward = diff * 10;
+      const coinReward = diff * 5;
+
+      // This works for unchecking too:
+      // If diff is -1: xpReward is -10, coinReward is -5 (Deducted automatically)
+      processXpUpdate(xpReward, coinReward);
     }
 
     if (user) { 
@@ -78,7 +83,6 @@ function Dashboard({ user, showToast, handleLogout }) {
     showToast(`Year ${year} created!`);
   };
 
-  // Safe access to inventory
   const activeTheme = userStats?.activeTheme || 'light';
   const themeClass = activeTheme !== 'light' ? `theme-${activeTheme}` : '';
 
@@ -129,8 +133,6 @@ function Dashboard({ user, showToast, handleLogout }) {
       </main>
 
       <StatsModal isOpen={isStatsOpen} onClose={() => setIsStatsOpen(false)} stats={userStats || { xp: 0, level: 1 }} discipline={0} />
-      
-      {/* ✅ FIXED: Prevents "White Screen" by passing safe default values */}
       <ShopModal 
         isOpen={isShopOpen} 
         onClose={() => setIsShopOpen(false)} 
