@@ -71,7 +71,7 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Custom Scrollbar (Works on Chrome/Edge/Safari) */
+/* Custom Scrollbar */
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: var(--scroll-track); }
 ::-webkit-scrollbar-thumb { 
@@ -80,18 +80,17 @@ body {
 }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-sub); }
 
-/* Main Container */
 .app-container {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  overflow: hidden; /* Prevents double scrolling */
+  overflow: hidden;
 }
 
 .main-scroll-area {
   flex: 1;
   overflow-y: auto;
-  padding-top: 80px; /* Space for fixed navbar */
+  padding-top: 80px; 
   padding-bottom: 40px;
 }
 
@@ -143,7 +142,6 @@ body {
   gap: 8px;
 }
 
-/* Nav Buttons */
 .crumb-btn {
   padding: 8px 12px;
   border-radius: 8px;
@@ -156,17 +154,9 @@ body {
   gap: 6px;
 }
 
-.crumb-btn:hover {
-  background: var(--bg);
-  color: var(--text-main);
-}
+.crumb-btn:hover { background: var(--bg); color: var(--text-main); }
+.crumb-btn.active { background: var(--primary); color: white; }
 
-.crumb-btn.active {
-  background: var(--primary);
-  color: white;
-}
-
-/* Stats Pills (Coins/Level) */
 .stat-pill {
   padding: 6px 12px;
   border-radius: 20px;
@@ -194,22 +184,105 @@ body {
   gap: 6px;
 }
 
-/* Mobile Menu Button */
-.mobile-menu-btn {
-  display: none; /* Hidden on Desktop */
-}
+.mobile-menu-btn { display: none; }
 
 /* =========================================
-   4. GUILD & CHAT (THE FIXES)
+   4. YEAR & MONTH VIEWS
    ========================================= */
-.guild-dashboard {
-  display: flex;
-  height: calc(100vh - 100px); /* Fill screen minus navbar */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 20px;
+}
+
+.selection-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
+  height: 140px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.selection-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary);
+}
+
+.selection-card h3 { margin: 0; font-size: 20px; color: var(--text-main); }
+.add-card { border-style: dashed; }
+.add-btn { background: var(--primary); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; }
+
+/* =========================================
+   5. TRACKER VIEW
+   ========================================= */
+.tracker-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.habit-row {
+  display: flex;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-bottom: 12px;
   overflow: hidden;
 }
 
-/* Sidebar */
+.h-col {
+  width: 200px;
+  padding: 16px;
+  border-right: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg);
+}
+
+.habit-title { font-weight: 600; font-size: 14px; color: var(--text-main); }
+.cat-tag { font-size: 10px; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; font-weight: 700; background: #e2e8f0; color: #64748b; margin-top: 4px; display: inline-block; }
+
+.d-col {
+  flex: 1;
+  display: flex;
+  overflow-x: auto;
+}
+
+.check-box {
+  min-width: 40px;
+  border-right: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.check-box:hover { background: #f1f5f9; }
+.check-box.active { background: var(--primary); }
+
+.delete-btn { color: var(--text-sub); opacity: 0.5; transition: opacity 0.2s; }
+.delete-btn:hover { opacity: 1; color: var(--danger); }
+
+/* =========================================
+   6. GUILD & CHAT (FIXED SECTION)
+   ========================================= */
+.guild-dashboard {
+  display: flex;
+  gap: 20px;
+  height: calc(100vh - 140px); /* Fill screen */
+}
+
 .gh-sidebar {
   width: 280px;
   background: var(--card);
@@ -222,43 +295,14 @@ body {
 }
 
 .gh-header h2 { margin: 0; font-size: 20px; color: var(--text-main); }
-.gh-header p { margin: 4px 0 0; font-size: 13px; color: var(--text-sub); }
-
-.gh-stat-box {
-  background: var(--bg);
-  padding: 12px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-}
-
-.gh-code {
-  display: flex;
-  justify-content: space-between;
-  font-family: monospace;
-  font-weight: 700;
-  color: var(--primary);
-  margin-bottom: 8px;
-}
-
+.gh-header p { margin: 0; font-size: 12px; color: var(--text-sub); }
+.gh-stat-box { background: var(--bg); padding: 12px; border-radius: 8px; }
+.gh-code { font-family: monospace; font-weight: bold; color: var(--primary); display: flex; justify-content: space-between; }
 .gh-members-list { flex: 1; overflow-y: auto; }
-.gh-member-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 0;
-  font-size: 14px;
-  color: var(--text-main);
-}
+.gh-member-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 14px; color: var(--text-main); }
+.member-avatar { width: 28px; height: 28px; background: var(--border); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; }
 
-.member-avatar {
-  width: 32px; height: 32px;
-  border-radius: 50%;
-  background: var(--border);
-  display: flex; align-items: center; justify-content: center;
-  font-weight: bold;
-}
-
-/* Chat Area */
+/* CHAT AREA - FIXED VISIBILITY */
 .gh-chat-area {
   flex: 1;
   background: var(--card);
@@ -266,7 +310,7 @@ body {
   border-radius: 16px;
   display: flex;
   flex-direction: column;
-  overflow: hidden; /* Contains the scroll */
+  overflow: hidden;
 }
 
 .gh-chat-messages {
@@ -276,214 +320,131 @@ body {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  background-color: var(--bg); /* Adds contrast to chat bubbles */
+  background: var(--bg); 
 }
 
-/* ---- CHAT BUBBLES (CRITICAL FIX) ---- */
-
-.chat-bubble-row {
-  display: flex;
-  gap: 8px;
-  max-width: 75%;
+/* Chat Rows */
+.chat-bubble-row { 
+  display: flex; 
+  gap: 8px; 
+  max-width: 70%; 
+  align-items: flex-end; 
 }
 
-/* THEM (Incoming) */
-.chat-bubble-row.them { align-self: flex-start; }
+/* Friend's Message (Left) */
+.chat-bubble-row.them {
+  align-self: flex-start;
+}
 
+/* Friend's Bubble Style */
 .chat-bubble-row.them .chat-bubble {
-  background: #ffffff;
-  color: #1e293b; /* Dark text for readability */
+  background: #ffffff;      /* Always white */
+  color: #1e293b;           /* Always dark text */
   border: 1px solid #e2e8f0;
   border-bottom-left-radius: 2px;
 }
-.chat-bubble-row.them .chat-text { color: #1e293b; }
-.chat-bubble-row.them .chat-name { color: #64748b; font-size: 11px; margin-bottom: 2px; font-weight: 700;}
 
-/* ME (Outgoing) */
+/* Friend's Text - Explicitly set color */
+.chat-bubble-row.them .chat-text {
+  color: #1e293b; 
+}
+
+/* Friend's Name */
+.chat-bubble-row.them .chat-name {
+  font-size: 10px;
+  color: #64748b;
+  margin-bottom: 2px;
+  font-weight: 700;
+  display: block;
+}
+
+/* My Message (Right) */
 .chat-bubble-row.me { 
   align-self: flex-end; 
   flex-direction: row-reverse; 
 }
 
+/* My Bubble Style */
 .chat-bubble-row.me .chat-bubble {
-  background: var(--primary);
-  color: white; /* White text on Green */
+  background: var(--primary); /* Green */
+  color: #ffffff;             /* Always white text */
   border: none;
   border-bottom-right-radius: 2px;
 }
-.chat-bubble-row.me .chat-text { color: white; }
-.chat-bubble-row.me .chat-name { display: none; } /* Hide my own name */
 
-/* Common Bubble Styles */
+/* My Text - Explicitly set color */
+.chat-bubble-row.me .chat-text {
+  color: #ffffff;
+}
+
+/* Hide my name */
+.chat-bubble-row.me .chat-name {
+  display: none;
+}
+
+/* General Bubble Shape */
 .chat-bubble {
   padding: 10px 14px;
-  border-radius: 16px;
-  font-size: 14px;
-  line-height: 1.5;
+  border-radius: 12px;
   box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  font-size: 14px;
+  line-height: 1.4;
+  word-wrap: break-word;
 }
 
-.chat-avatar-mini {
-  width: 28px; height: 28px;
-  border-radius: 50%;
-  background: #cbd5e1;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 10px; font-weight: bold; color: #475569;
-  margin-top: auto; /* Aligns avatar to bottom of message */
+.chat-avatar-mini { 
+  width: 24px; 
+  height: 24px; 
+  background: var(--border); 
+  color: var(--text-sub); 
+  border-radius: 50%; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  font-size: 10px; 
+  font-weight: bold; 
 }
 
-/* Input Area */
-.gh-chat-input {
-  padding: 15px;
-  background: var(--card);
-  border-top: 1px solid var(--border);
-  display: flex;
-  gap: 10px;
-}
+.empty-state { text-align: center; color: var(--text-sub); margin-top: 40px; font-style: italic; }
 
-.gh-chat-input input {
-  flex: 1;
-  padding: 12px 16px;
-  border: 1px solid var(--border);
-  border-radius: 24px;
-  outline: none;
-  background: var(--bg);
-  color: var(--text-main);
-  transition: border-color 0.2s;
-}
-
-.gh-chat-input input:focus { border-color: var(--primary); }
-
-.gh-chat-input button {
-  background: var(--primary);
-  color: white;
-  width: 44px; height: 44px;
-  border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  transition: transform 0.1s;
-}
-
-.gh-chat-input button:active { transform: scale(0.95); }
+.gh-chat-input { padding: 12px; background: var(--card); border-top: 1px solid var(--border); display: flex; gap: 10px; }
+.gh-chat-input input { flex: 1; padding: 12px; border: 1px solid var(--border); border-radius: 10px; outline: none; background: var(--bg); color: var(--text-main); }
+.gh-chat-input button { background: var(--primary); color: white; border: none; width: 44px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
 
 /* =========================================
-   5. SHOP & MODALS
+   7. MODALS & UTILS
    ========================================= */
 .modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.4);
+  position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+  display: flex; align-items: center; justify-content: center; z-index: 2000;
   backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2000;
-  padding: 20px;
 }
 
 .modal-content {
   background: var(--card);
-  width: 100%;
-  max-width: 500px;
-  border-radius: 20px;
-  padding: 24px;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-  border: 1px solid var(--border);
-  animation: slideUp 0.3s ease-out;
+  padding: 24px; border-radius: 16px;
+  width: 100%; max-width: 420px;
+  box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
 }
 
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+.save-btn {
+  width: 100%; padding: 12px; background: var(--primary); color: white;
+  border-radius: 8px; font-weight: 600; margin-top: 20px;
 }
 
-.shop-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 12px;
-  margin-top: 20px;
-}
+.animate-fade { animation: fadeIn 0.3s ease-out; }
+.animate-slide-up { animation: slideUp 0.3s ease-out; }
 
-.shop-card {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  height: 160px;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-.shop-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-md);
-}
-
-.shop-card.equipped {
-  border: 2px solid var(--primary);
-  background: rgba(76, 175, 80, 0.1);
-}
-
-.buy-btn {
-  background: var(--text-main);
-  color: var(--bg);
-  padding: 8px;
-  border-radius: 8px;
-  font-weight: 600;
-  margin-top: auto;
-  display: flex; justify-content: center; align-items: center; gap: 6px;
-}
-
-.buy-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-/* =========================================
-   6. MOBILE RESPONSIVENESS
-   ========================================= */
+/* Mobile Responsive */
 @media (max-width: 768px) {
-  /* Navbar */
   .desktop-only { display: none; }
   .mobile-menu-btn { display: block; color: var(--text-main); }
   
-  .nav-inner { padding: 0 16px; }
-  
-  /* Mobile Menu Drawer */
-  .mobile-menu {
-    position: fixed;
-    top: 60px; left: 0; right: 0;
-    background: var(--card);
-    border-bottom: 1px solid var(--border);
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    box-shadow: var(--shadow-md);
-  }
-
-  .mobile-nav-item {
-    padding: 12px;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: 500;
-    color: var(--text-main);
-    background: var(--bg);
-    display: flex; align-items: center; gap: 10px;
-  }
-  
-  .mobile-nav-item.active {
-    background: var(--primary);
-    color: white;
-  }
-
-  /* Guild / Chat Mobile */
-  .guild-dashboard { flex-direction: column; height: auto; overflow: visible; }
-  .gh-sidebar { width: 100%; height: auto; }
-  .gh-chat-area { height: 600px; } /* Fixed height on mobile */
-  
-  /* Modals */
-  .modal-content {
-    width: 95%;
-    padding: 20px;
-  }
+  .guild-dashboard { flex-direction: column; height: auto; }
+  .gh-sidebar { width: 100%; }
+  .gh-chat-area { height: 500px; }
 }
