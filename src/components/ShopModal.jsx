@@ -5,7 +5,7 @@ export default function ShopModal({ isOpen, onClose, userStats, onBuy, onEquip }
   if (!isOpen) return null;
 
   // 🔥 READ NEW FIELD
-  const itemsOwned = userStats?.itemsOwned || [];
+  const inventory = userStats?.heroInventory || [];
   const currentCoins = userStats?.coins || 0;
   const activeTheme = userStats?.activeTheme || 'light';
 
@@ -37,7 +37,7 @@ export default function ShopModal({ isOpen, onClose, userStats, onBuy, onEquip }
         <div className="shop-grid">
           {shopItems.map(item => {
             // 🔥 CHECK OWNERSHIP BY itemId
-            const isOwned = itemsOwned.some(i => i.itemId === item.id);
+            const isOwned = inventory.some(i => i.itemId === item.id);
             const isEquipped = activeTheme === item.id;
             const isConsumable = item.type === 'consumable';
 

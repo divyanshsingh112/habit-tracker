@@ -6,7 +6,8 @@ exports.getStats = async (req, res) => {
   try {
     const userId = req.params.userId;
     let user = await User.findOne({ userId });
-    if (!user) user = await User.create({ userId });
+    // Initialize if missing
+    if (!user) user = await User.create({ userId, heroInventory: [] });
     res.json(user);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -21,7 +22,7 @@ exports.updateStats = async (req, res) => {
     if (!userId) return res.status(400).json({ error: "User ID required" });
 
     let user = await User.findOne({ userId });
-    if (!user) user = new User({ userId });
+    if (!user) user = new User({ userId, heroInventory: [] });
 
     if (xpChange) {
         user.xp = Math.max(0, (user.xp || 0) + Number(xpChange));
@@ -45,13 +46,20 @@ exports.buyItem = async (req, res) => {
     const itemData = req.body.item || req.body;
 
     if (!userId) return res.status(400).json({ error: "User ID missing" });
-    if (!itemData || !itemData.price) return res.status(400).json({ error: "Invalid item data" });
+    if (!itemData || typeof itemData.price === 'undefined') {
+       return res.status(400).json({ error: "Invalid item data" });
+    }
 
     const user = await User.findOne({ userId });
     if (!user) return res.status(404).json({ error: "User not found" });
     
-    // Check if user already owns it
-    const alreadyOwns = user.itemsOwned && user.itemsOwned.some(i => i.itemId === itemData.id);
+    // ✅ CRITICAL SAFETY CHECK (Prevents 500 Error)
+    if (!user.heroInventory) {
+        user.heroInventory = [];
+    }
+
+    // Check ownership
+    const alreadyOwns = user.heroInventory.some(i => i.itemId === itemData.id);
     if (alreadyOwns && itemData.type !== 'consumable') {
         return res.status(400).json({ error: "Item already owned" });
     }
@@ -60,10 +68,9 @@ exports.buyItem = async (req, res) => {
         return res.status(400).json({ error: "Not enough coins" });
     }
     
+    // Deduct Coins & Add Item
     user.coins -= itemData.price;
-    
-    // 🔥 PUSH TO NEW FIELD
-    user.itemsOwned.push({
+    user.heroInventory.push({
         itemId: itemData.id,
         name: itemData.name,
         type: itemData.type,
@@ -82,8 +89,8 @@ exports.equipItem = async (req, res) => {
   try {
     const userId = req.params.userId || req.body.userId;
     const item = req.body.item || req.body;
-    const user = await User.findOne({ userId });
     
+    const user = await User.findOne({ userId });
     if (item.type === 'theme') user.activeTheme = item.id; 
     
     await user.save();

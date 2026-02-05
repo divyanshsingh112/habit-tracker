@@ -11,7 +11,7 @@ export const GamificationProvider = ({ children, user, showToast }) => {
     xp: 0,
     level: 1,
     coins: 0,
-    itemsOwned: [], // 🔥 NEW FIELD NAME
+    heroInventory: [], // 🔥 NEW STATE NAME
     activeTheme: 'light'
   });
 
@@ -29,7 +29,7 @@ export const GamificationProvider = ({ children, user, showToast }) => {
           xp: data.xp || 0,
           level: data.level || 1,
           coins: data.coins || 0,
-          itemsOwned: data.itemsOwned || [], // 🔥 READ NEW FIELD
+          heroInventory: data.heroInventory || [], // 🔥 READ NEW FIELD
           activeTheme: data.activeTheme || 'light'
         }));
       }
@@ -67,7 +67,8 @@ export const GamificationProvider = ({ children, user, showToast }) => {
     setUserStats(prev => ({
       ...prev,
       coins: prev.coins - item.price,
-      itemsOwned: [...prev.itemsOwned, { itemId: item.id, ...item }]
+      // 🔥 UPDATED: Use new name
+      heroInventory: [...prev.heroInventory, { itemId: item.id, ...item }]
     }));
 
     try {
@@ -78,7 +79,8 @@ export const GamificationProvider = ({ children, user, showToast }) => {
       });
       
       if (!res.ok) {
-        showToast("Purchase failed", "error");
+        const err = await res.json();
+        showToast(err.error || "Purchase failed", "error");
         fetchUserStats(user.uid); 
         return false;
       }
