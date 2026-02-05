@@ -1,25 +1,39 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { X, ShoppingBag, Lock, Check } from 'lucide-react';
 
 export default function ShopModal({ isOpen, onClose, userStats, onBuy, onEquip }) {
+  const [processing, setProcessing] = useState(false); // Prevents double-clicks
+
   if (!isOpen) return null;
 
-  // 🔥 READ NEW FIELD
+  // Read inventory safely
   const inventory = userStats?.heroInventory || [];
   const currentCoins = userStats?.coins || 0;
   const activeTheme = userStats?.activeTheme || 'light';
 
   const shopItems = [
-    { id: 'theme_dark', name: 'Midnight Mode', price: 100, type: 'theme', desc: 'Dark visuals.' },
-    { id: 'theme_forest', name: 'Forest Cloak', price: 250, type: 'theme', desc: 'Peaceful green.' },
-    { id: 'theme_cyber', name: 'Cyberpunk', price: 500, type: 'theme', desc: 'Neon lights.' },
-    { id: 'item_freeze', name: 'Streak Freeze', price: 300, type: 'consumable', desc: 'Save your streak.' }
+    // ✅ FIX: IDs must match your CSS (removed 'theme_' prefix)
+    { id: 'dark', name: 'Midnight Mode', price: 100, type: 'theme', desc: 'Dark visuals.' },
+    { id: 'forest', name: 'Forest Cloak', price: 250, type: 'theme', desc: 'Peaceful green.' },
+    { id: 'cyber', name: 'Cyberpunk', price: 500, type: 'theme', desc: 'Neon lights.' },
+    { id: 'freeze', name: 'Streak Freeze', price: 300, type: 'consumable', desc: 'Save your streak.' }
   ];
 
   const handleBuy = async (item) => {
+    if (processing) return; // Stop spam clicking
+    setProcessing(true);
+    
+    // UI Safeguard for Negative Coins
+    if (currentCoins < item.price) {
+        alert("Not enough coins!");
+        setProcessing(false);
+        return;
+    }
+
     if (confirm(`Buy ${item.name} for ${item.price} coins?`)) {
       await onBuy(item);
     }
+    setProcessing(false);
   };
 
   return (
@@ -36,7 +50,7 @@ export default function ShopModal({ isOpen, onClose, userStats, onBuy, onEquip }
 
         <div className="shop-grid">
           {shopItems.map(item => {
-            // 🔥 CHECK OWNERSHIP BY itemId
+            // Check ownership
             const isOwned = inventory.some(i => i.itemId === item.id);
             const isEquipped = activeTheme === item.id;
             const isConsumable = item.type === 'consumable';
@@ -55,8 +69,9 @@ export default function ShopModal({ isOpen, onClose, userStats, onBuy, onEquip }
                 ) : (
                   <button 
                     className="buy-btn" 
-                    disabled={currentCoins < item.price}
+                    disabled={currentCoins < item.price || processing} // Disable if poor or processing
                     onClick={() => handleBuy(item)}
+                    style={{ opacity: processing ? 0.5 : 1 }}
                   >
                     {currentCoins < item.price && <Lock size={12} />}
                     {item.price} 💰
