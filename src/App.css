@@ -9,11 +9,14 @@
   --text-main: #1e293b;
   --text-sub: #64748b;
   --border: #e2e8f0;
+  
   --primary: #4caf50;
   --primary-hover: #43a047;
   --danger: #ef4444;
+  
   --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  
   --scroll-thumb: #cbd5e1;
   --scroll-track: transparent;
 }
@@ -27,488 +30,460 @@
   --text-sub: #94a3b8;
   --border: #334155;
   --primary: #22c55e;
+  --primary-hover: #16a34a;
   --scroll-thumb: #475569;
 }
 
-/* Forest Cloak */
+/* Forest Mode */
 .theme-forest {
   --bg: #f0fdf4;
-  --card: rgba(255, 255, 255, 0.85);
-  --navbar: rgba(255, 255, 255, 0.85);
+  --card: #ffffff;
+  --navbar: rgba(255, 255, 255, 0.9);
   --text-main: #14532d;
   --text-sub: #166534;
   --border: #bbf7d0;
   --primary: #15803d;
-  --scroll-thumb: #86efac;
-  --forest-bg-desktop: url('/forest-desktop.jpg');
-  --forest-bg-mobile: url('/forest-mobile.jpg');
+  --primary-hover: #14532d;
 }
 
-/* Cyberpunk */
+/* Cyberpunk Mode */
 .theme-cyber {
   --bg: #09090b;
-  --card: rgba(24, 24, 27, 0.8);
-  --navbar: rgba(24, 24, 27, 0.8);
-  --text-main: #e4e4e7;
+  --card: #18181b;
+  --navbar: rgba(24, 24, 27, 0.9);
+  --text-main: #22d3ee; /* Cyan Text */
   --text-sub: #a1a1aa;
   --border: #27272a;
-  --primary: #d946ef;
-  --scroll-thumb: #701a75;
-  --cyber-bg-desktop: url('/cyber-desktop.jpg');
-  --cyber-bg-mobile: url('/cyber-mobile.jpg');
+  --primary: #d946ef; /* Magenta Buttons */
+  --primary-hover: #c026d3;
 }
 
 /* =========================================
-   2. GLOBAL RESETS & LAYOUT
+   2. GLOBAL RESETS & SCROLLBARS
    ========================================= */
 * { box-sizing: border-box; }
-html, body { margin: 0; height: 100%; overflow-x: hidden; background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text-main); }
-#root { height: 100%; }
-img { max-width: 100%; display: block; }
 
-/* APP CONTAINER */
-.app-container { 
-  display: flex; flex-direction: column; min-height: 100vh; 
-  background-color: var(--bg); color: var(--text-main);
+body {
+  margin: 0;
+  background-color: var(--bg);
+  color: var(--text-main);
+  font-family: 'Inter', -apple-system, sans-serif;
   transition: background-color 0.3s ease, color 0.3s ease;
-  background-size: cover; background-position: center; background-attachment: fixed;
-}
-.app-container.theme-cyber { background-image: var(--cyber-bg-desktop); }
-.app-container.theme-forest { background-image: var(--forest-bg-desktop); }
-
-/* Mobile Background Overrides */
-@media (max-width: 768px) {
-  .app-container.theme-cyber { background-image: var(--cyber-bg-mobile); }
-  .app-container.theme-forest { background-image: var(--forest-bg-mobile); }
 }
 
-/* =========================================
-   3. NAVBAR (RESPONSIVE)
-   ========================================= */
-.slim-navbar { 
-  width: 100%; background: var(--navbar); backdrop-filter: blur(12px); 
-  border-bottom: 1px solid var(--border); z-index: 100; padding: 0 24px; height: 64px; 
-  display: flex; justify-content: center; box-shadow: var(--shadow-sm); flex-shrink: 0; 
+/* Custom Scrollbar (Works on Chrome/Edge/Safari) */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--scroll-track); }
+::-webkit-scrollbar-thumb { 
+  background: var(--scroll-thumb); 
+  border-radius: 4px; 
 }
+::-webkit-scrollbar-thumb:hover { background: var(--text-sub); }
 
-.nav-inner { width: 100%; max-width: 1400px; display: flex; align-items: center; justify-content: space-between; }
-.nav-left { display: flex; align-items: center; gap: 16px; overflow: hidden; }
-
-/* Brand */
-.brand-section { display: flex; align-items: center; gap: 10px; padding-right: 12px; border-right: 1px solid var(--border); flex-shrink: 0; }
-.app-logo-icon { color: var(--primary); }
-.brand-section h1 { margin: 0; font-size: 16px; font-weight: 800; color: var(--text-main); white-space: nowrap; }
-
-/* Desktop Navigation Group */
-.nav-links-group { display: flex; align-items: center; gap: 8px; }
-
-/* Breadcrumbs (Scrollable on mobile) */
-.inline-breadcrumbs { 
-  display: flex; align-items: center; gap: 4px; 
-  overflow-x: auto; white-space: nowrap; max-width: 100%; 
-  scrollbar-width: none; mask-image: linear-gradient(to right, black 90%, transparent 100%);
-}
-.inline-breadcrumbs::-webkit-scrollbar { display: none; }
-
-.crumb-btn { 
-  background: transparent; border: none; font-size: 13px; font-weight: 500; 
-  color: var(--text-sub); cursor: pointer; padding: 4px 8px; border-radius: 6px; 
-  transition: all 0.2s; display: flex; align-items: center; gap: 6px; flex-shrink: 0;
-}
-.crumb-btn:hover { background: var(--border); color: var(--text-main); }
-.crumb-active { color: var(--text-main); font-weight: 700; background: var(--card); border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
-.crumb-separator { color: var(--text-sub); opacity: 0.5; margin: 0 2px; }
-
-/* Right Side Desktop */
-.nav-right { display: flex; align-items: center; gap: 12px; }
-.streak-pill { display: flex; align-items: center; gap: 6px; background: #fff7ed; color: #ea580c; padding: 4px 10px; border-radius: 50px; font-size: 11px; font-weight: 800; border: 1px solid #ffedd5; white-space: nowrap; }
-.user-welcome { font-size: 12px; font-weight: 600; color: var(--text-sub); }
-.logout-link { font-size: 12px; font-weight: 600; color: var(--danger); cursor: pointer; background: none; border: none; display: flex; align-items: center; gap: 4px; padding: 6px; border-radius: 6px; }
-.logout-link:hover { background: rgba(239, 68, 68, 0.1); }
-
-/* --- RESPONSIVE LOGIC (Tablet/Mobile < 768px) --- */
-.mobile-menu-btn { display: none; background: transparent; border: none; color: var(--text-main); cursor: pointer; padding: 8px; }
-
-@media (max-width: 768px) {
-  .desktop-only { display: none !important; }
-  .mobile-menu-btn { display: block; }
-  .slim-navbar { padding: 0 16px; height: 60px; }
-  .brand-section h1 { display: none; } /* Hide Text Logo on Mobile */
-  .brand-section { border-right: none; padding-right: 0; }
-  .inline-breadcrumbs { margin-left: 0; }
-}
-
-/* --- MOBILE DROPDOWN --- */
-.mobile-menu-dropdown {
-  position: absolute; top: 60px; left: 0; width: 100%;
-  background: var(--navbar); backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--border); padding: 16px;
-  box-shadow: var(--shadow-md); z-index: 99;
-  display: flex; flex-direction: column; gap: 12px;
-}
-
-.mobile-nav-section { display: flex; flex-direction: column; gap: 4px; }
-.mobile-nav-item {
-  background: transparent; border: none; color: var(--text-main);
-  font-size: 15px; font-weight: 600; text-align: left;
-  padding: 12px; border-radius: 8px; cursor: pointer;
-  display: flex; align-items: center; gap: 12px;
-  transition: background 0.2s;
-}
-.mobile-nav-item:hover { background: var(--bg); color: var(--primary); }
-
-.mobile-stats-row { display: flex; justify-content: space-between; gap: 8px; }
-.mobile-stats-row .streak-pill { flex: 1; justify-content: center; padding: 10px; }
-
-.mobile-divider { border: 0; height: 1px; background: var(--border); width: 100%; margin: 4px 0; }
-.mobile-user-info { display: flex; justify-content: space-between; align-items: center; color: var(--text-sub); }
-.mobile-logout { background: rgba(239, 68, 68, 0.1); color: var(--danger); border: none; padding: 8px 16px; border-radius: 8px; font-weight: 700; display: flex; align-items: center; gap: 6px; cursor: pointer; }
-
-.animate-slide-down { animation: slideDown 0.2s ease-out forwards; }
-@keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-
-/* =========================================
-   4. DASHBOARD & MAIN LAYOUT
-   ========================================= */
-.main-scroll-area { flex: 1; overflow-y: auto; width: 100%; padding: 24px; }
-@media (max-width: 640px) { .main-scroll-area { padding: 16px; } }
-.content-max-width { max-width: 1400px; margin: 0 auto; }
-
-/* Dashboard Grid */
-.dashboard-grid { display: grid; gap: 20px; grid-template-columns: 1fr; margin-bottom: 30px; }
-@media (min-width: 700px) { .dashboard-grid { grid-template-columns: 1.2fr 1fr; } .dash-card.quote-card { grid-column: span 2; } }
-@media (min-width: 1024px) { .dashboard-grid { grid-template-columns: 1.5fr 1fr 1fr; } .dash-card.quote-card { grid-column: auto; } }
-
-.dash-card { 
-  background: var(--card); color: var(--text-main); padding: 20px; 
-  border-radius: 16px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); 
-  display: flex; align-items: center; gap: 16px; min-height: 90px; backdrop-filter: blur(10px); 
-}
-
-/* Quote Card */
-.quote-card { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: white; font-style: italic; border: none; }
-.quote-icon { opacity: 0.3; margin-right: 8px; flex-shrink: 0; }
-
-/* Icon Backgrounds in Cards */
-.card-icon-bg { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.streak-card .card-icon-bg { background: #fff7ed; color: #cbd5e1; }
-.streak-card.active-streak .card-icon-bg { background: #ffedd5; color: #ea580c; animation: pulse-fire 2s infinite; }
-.streak-card.active-streak .card-value { color: #ea580c; }
-.top-card .card-icon-bg { background: #f3e8ff; color: #7e22ce; }
-
-.card-label { display: block; font-size: 11px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; margin-bottom: 4px; }
-.card-value { font-size: 20px; font-weight: 800; color: var(--text-main); }
-
-@keyframes pulse-fire { 0% { box-shadow: 0 0 0 0 rgba(234, 88, 12, 0.4); } 70% { box-shadow: 0 0 0 10px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
-
-/* =========================================
-   5. YEAR & MONTH GRID VIEWS
-   ========================================= */
-.card-grid, .years-grid, .months-grid { 
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; 
-}
-@media (max-width: 500px) { .card-grid, .years-grid, .months-grid { grid-template-columns: 1fr; } }
-
-.year-card, .month-card { 
-  background: var(--card); color: var(--text-main); border-radius: 16px; 
-  border: 1px solid var(--border); padding: 24px; cursor: pointer; 
-  transition: all 0.2s; text-align: center; backdrop-filter: blur(10px);
-}
-.year-card:hover, .month-card:hover { border-color: var(--primary); transform: translateY(-4px); box-shadow: var(--shadow-md); }
-
-.year-view-split { display: grid; gap: 40px; align-items: center; min-height: 50vh; grid-template-columns: 1fr; }
-@media (min-width: 850px) { .year-view-split { grid-template-columns: 1fr 1fr; gap: 60px; } }
-
-.hero-illustration { width: 100%; max-width: 320px; height: auto; margin: 0 auto; display: block; animation: float 6s ease-in-out infinite; }
-@media (min-width: 850px) { .hero-illustration { max-width: 480px; margin: 0; } }
-@keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
-
-.input-group-modern { background: var(--card); padding: 4px; border-radius: 12px; border: 1px solid var(--border); display: flex; gap: 4px; box-shadow: var(--shadow-sm); width: 100%; max-width: 340px; margin: 0 auto; }
-@media (min-width: 850px) { .input-group-modern { margin: 0; } }
-.input-group-modern input { border: none; outline: none; padding: 10px 16px; flex: 1; font-size: 14px; border-radius: 8px; background: transparent; color: var(--text-main); }
-.input-group-modern button { background: var(--primary); color: white; border: none; padding: 8px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; }
-
-/* =========================================
-   6. TRACKER VIEW (THE COMPLEX GRID)
-   ========================================= */
-.tracker-card { background: var(--card); border-radius: 20px; box-shadow: var(--shadow-sm); border: 1px solid var(--border); overflow: hidden; backdrop-filter: blur(10px); }
-
-.grid-row.header, .grid-row { 
-  display: grid; align-items: center; gap: 16px; padding: 0 16px; 
-  grid-template-columns: 220px minmax(0, 1fr) 60px; 
-}
-.grid-row.header { background: var(--bg); height: 44px; font-size: 11px; font-weight: 700; color: var(--text-sub); letter-spacing: 0.05em; }
-.grid-row { height: 60px; border-bottom: 1px solid var(--border); }
-
-/* Responsive Tracker Columns */
-@media (max-width: 1024px) { .grid-row.header, .grid-row { grid-template-columns: 160px minmax(0, 1fr) 50px; } }
-@media (max-width: 640px) { .grid-row.header, .grid-row { grid-template-columns: 110px minmax(0, 1fr) 40px; padding: 0 10px; gap: 8px; } }
-
-.col-name { display: flex; align-items: center; justify-content: space-between; overflow: hidden; }
-.habit-text { font-weight: 600; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-main); }
-
-.col-days { 
-  display: flex; gap: 4px; overflow-x: auto; padding: 4px 0; 
-  scrollbar-width: thin; scrollbar-color: var(--scroll-thumb) var(--scroll-track); 
-}
-.col-days::-webkit-scrollbar { height: 6px; }
-.col-days::-webkit-scrollbar-track { background: var(--scroll-track); }
-.col-days::-webkit-scrollbar-thumb { background: var(--scroll-thumb); border-radius: 10px; }
-
-.day-header { min-width: 32px; text-align: center; color: var(--text-main); }
-.day-header.today { background: var(--text-main); color: var(--bg); border-radius: 6px; }
-
-.checkbox { 
-  width: 32px; height: 32px; border-radius: 8px; border: 2px solid var(--border); 
-  background: var(--bg); cursor: pointer; display: flex; align-items: center; justify-content: center; 
-  transition: all 0.2s; color: white; flex-shrink: 0; 
-}
-.checkbox:hover { border-color: var(--text-sub); }
-.checkbox.checked.str { background: #ef4444; border-color: #ef4444; }
-.checkbox.checked.int { background: #3b82f6; border-color: #3b82f6; }
-.checkbox.checked.wis { background: #8b5cf6; border-color: #8b5cf6; }
-.checkbox.checked.cha { background: #f59e0b; border-color: #f59e0b; }
-
-.col-stats { text-align: center; padding: 0 8px; }
-.mini-percent { font-size: 10px; font-weight: 700; color: var(--text-sub); }
-.mini-progress-bar { height: 4px; width: 100%; background: var(--bg); border-radius: 2px; margin-bottom: 2px; }
-.mini-progress-fill.str { background: #ef4444; height: 100%; border-radius: 2px; }
-.mini-progress-fill.int { background: #3b82f6; height: 100%; border-radius: 2px; }
-.mini-progress-fill.wis { background: #8b5cf6; height: 100%; border-radius: 2px; }
-.mini-progress-fill.cha { background: #f59e0b; height: 100%; border-radius: 2px; }
-
-.delete-mini-btn { opacity: 0; border: none; background: none; color: var(--text-sub); cursor: pointer; transition: opacity 0.2s; }
-.grid-row:hover .delete-mini-btn { opacity: 1; }
-@media (max-width: 640px) { .delete-mini-btn { opacity: 1; } }
-
-/* =========================================
-   7. AUTH, MODALS & SHOP
-   ========================================= */
-.login-container { position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center; background: var(--bg); padding: 16px; }
-.login-card { background: var(--navbar); backdrop-filter: blur(24px); padding: 32px 24px; border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.5); box-shadow: 0 20px 40px -10px rgba(0,0,0,0.1); width: 100%; max-width: 420px; text-align: center; }
-.auth-form input { width: 100%; padding: 14px; margin-bottom: 12px; border: 1px solid var(--border); border-radius: 12px; outline: none; background: var(--bg); color: var(--text-main); }
-.primary-auth-btn { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; margin-top: 8px; }
-
-.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 16px; backdrop-filter: blur(4px); }
-.modal-content { background: var(--card); color: var(--text-main); padding: 24px; border-radius: 24px; width: 100%; max-width: 420px; max-height: 90vh; overflow-y: auto; }
-.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-.close-btn { background: none; border: none; cursor: pointer; color: var(--text-sub); }
-.save-btn { width: 100%; padding: 16px; background: var(--text-main); color: var(--bg); border: none; border-radius: 14px; font-weight: 700; margin-top: 24px; cursor: pointer; }
-.input-group input { width: 100%; padding: 14px; border: 2px solid var(--border); border-radius: 12px; outline: none; margin-bottom: 20px; background: var(--bg); color: var(--text-main); }
-.input-group input:focus { border-color: var(--primary); }
-
-/* SHOP STYLES */
-.shop-grid { display: flex; flex-direction: column; gap: 12px; }
-.shop-card { 
-  display: flex; align-items: center; gap: 12px; 
-  background: var(--bg); border: 1px solid var(--border); 
-  padding: 12px; border-radius: 12px; transition: all 0.2s; 
-  backdrop-filter: blur(10px);
-}
-.shop-card.equipped { border-color: var(--primary); background: rgba(76, 175, 80, 0.1); }
-.shop-icon { font-size: 24px; width: 40px; text-align: center; }
-.shop-info { flex: 1; }
-.shop-info h4 { margin: 0; font-size: 14px; color: var(--text-main); }
-.shop-info p { margin: 2px 0 0; font-size: 11px; color: var(--text-sub); }
-
-.buy-btn { background: #fffbeb; color: #b45309; border: 1px solid #fcd34d; padding: 6px 12px; border-radius: 8px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px; }
-.action-btn { background: var(--card); border: 1px solid var(--border); color: var(--text-main); padding: 6px 12px; border-radius: 8px; font-weight: 700; cursor: pointer; }
-.action-btn.active { background: var(--primary); color: white; border-color: var(--primary); cursor: default; }
-
-/* =========================================
-   8. STATS & CLASS LEGEND
-   ========================================= */
-.stats-legend-inline {
-  display: flex; flex-wrap: wrap; gap: 16px;
-  margin-bottom: 20px; padding: 12px 16px;
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: 12px; align-items: center;
-  backdrop-filter: blur(10px);
-}
-.legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--text-sub); }
-.legend-icon { font-size: 14px; }
-
-.class-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; }
-.class-card {
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  padding: 12px; background: var(--bg); border: 2px solid var(--border);
-  border-radius: 12px; cursor: pointer; transition: all 0.2s;
-  color: var(--text-sub); font-size: 11px; font-weight: 700;
-  text-transform: uppercase; text-align: center; gap: 4px;
-}
-.class-card:hover { border-color: var(--text-sub); color: var(--text-main); }
-.class-card.selected.warrior { background: rgba(239, 68, 68, 0.15); border-color: #ef4444; color: #ef4444; }
-.class-card.selected.mage    { background: rgba(59, 130, 246, 0.15); border-color: #3b82f6; color: #3b82f6; }
-.class-card.selected.monk    { background: rgba(139, 92, 246, 0.15); border-color: #8b5cf6; color: #8b5cf6; }
-.class-card.selected.bard    { background: rgba(245, 158, 11, 0.15); border-color: #f59e0b; color: #f59e0b; }
-
-/* =========================================
-   9. GUILD & SOCIAL UI (RESPONSIVE)
-   ========================================= */
-.guild-container { max-width: 900px; margin: 0 auto; animation: slideUp 0.4s ease-out; }
-
-/* Stacks on mobile, Side-by-side on tablet+ */
-.guild-split { display: grid; grid-template-columns: 1fr; gap: 24px; }
-@media(min-width: 768px) { .guild-split { grid-template-columns: 1fr 1fr; } }
-
-.guild-card { 
-  background: white; border-radius: 16px; padding: 24px; border: 1px solid var(--border); 
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center;
-}
-.guild-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 20px; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
-
-.guild-input { width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 12px; background: #f8fafc; outline: none; }
-.guild-btn { width: 100%; padding: 12px; border-radius: 12px; font-weight: 600; cursor: pointer; border: none; margin-top: 10px; display: flex; justify-content: center; align-items: center; gap: 8px; }
-.btn-join { background: var(--bg); color: var(--text-main); border: 2px solid var(--border); }
-.btn-create { background: var(--primary); color: white; box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2); }
-
-/* Guild Hall Layout */
-.guild-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px; }
-.invite-box { background: var(--bg); padding: 10px 16px; border-radius: 12px; border: 1px dashed var(--border); cursor: pointer; text-align: right; }
-
-.guild-grid { display: grid; grid-template-columns: 1fr; gap: 24px; }
-@media(min-width: 900px) { .guild-grid { grid-template-columns: 280px 1fr; } }
-
-/* Chat Area */
-.chat-card { height: 60vh; max-height: 600px; display: flex; flex-direction: column; padding: 0 !important; }
-.chat-header { padding: 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: var(--bg); }
-.chat-history { flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; background: #f8fafc; }
-.chat-input-area { padding: 10px; border-top: 1px solid var(--border); display: flex; gap: 8px; background: white; }
-.chat-input-area input { flex: 1; padding: 12px; border: 1px solid var(--border); border-radius: 8px; outline: none; }
-.chat-input-area button { background: var(--primary); color: white; border: none; width: 44px; height: 44px; border-radius: 8px; display: flex; alignItems: center; justify-content: center; cursor: pointer; }
-
-/* Messages */
-.chat-msg { display: flex; flex-direction: column; align-items: flex-start; max-width: 80%; }
-.my-msg { align-self: flex-end; align-items: flex-end; }
-.msg-author { font-size: 10px; color: var(--text-sub); margin-bottom: 2px; }
-.msg-bubble { background: white; padding: 8px 12px; border-radius: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); font-size: 14px; border-bottom-left-radius: 2px; }
-.my-msg .msg-bubble { background: var(--primary); color: white; border-bottom-left-radius: 12px; border-bottom-right-radius: 2px; }
-
-/* Member List */
-.member-list { margin-top: 16px; display: flex; flex-direction: column; gap: 10px; }
-.member-item { display: flex; alignItems: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); }
-.member-item:last-child { border-bottom: none; }
-.avatar-circle {
-  width: 32px; height: 32px; background: var(--primary); color: white;
-  border-radius: 50%; display: flex; align-items: center; justify-content: center;
-  font-weight: bold; font-size: 14px;
-}
-.you-tag { font-size: 10px; background: #e0f2fe; color: #0284c7; padding: 2px 6px; border-radius: 4px; }
-
-/* ANALYTICS */
-.analytics-container { width: 100%; }
-.analytics-grid { display: grid; grid-template-columns: 1fr; gap: 24px; }
-@media (min-width: 768px) { .analytics-grid { grid-template-columns: 1fr 1fr; } }
-
-/* --- NEW GUILD HALL STYLES --- */
-.guild-hall-wrapper {
+/* Main Container */
+.app-container {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 100px); /* Fill screen minus navbar */
-  max-width: 1200px;
-  margin: 0 auto;
+  height: 100vh;
+  overflow: hidden; /* Prevents double scrolling */
 }
 
-.gh-header {
-  background: var(--card);
-  padding: 16px 24px;
-  border-radius: 16px;
-  border: 1px solid var(--border);
-  margin-bottom: 16px;
+.main-scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  padding-top: 80px; /* Space for fixed navbar */
+  padding-bottom: 40px;
+}
+
+.content-max-width {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* =========================================
+   3. NAVBAR
+   ========================================= */
+.slim-navbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 60px;
+  background: var(--navbar);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+}
+
+.nav-inner {
+  width: 100%;
+  max-width: 1200px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: var(--shadow-sm);
-}
-.gh-title { margin: 0; font-size: 20px; font-weight: 800; display: flex; align-items: center; gap: 8px; color: var(--text-main); }
-.gh-desc { margin: 4px 0 0; color: var(--text-sub); font-size: 14px; }
-.gh-invite {
-  background: var(--bg); border: 1px dashed var(--border);
-  padding: 8px 12px; border-radius: 8px; font-size: 12px; cursor: pointer;
-  display: flex; align-items: center; gap: 8px; color: var(--text-sub);
-}
-.gh-invite strong { font-size: 16px; color: var(--primary); }
-
-.gh-grid {
-  display: grid;
-  grid-template-columns: 260px 1fr; /* Sidebar fixed, Chat flexible */
-  gap: 16px;
-  flex: 1;
-  min-height: 0; /* Important for scroll */
+  padding: 0 20px;
 }
 
-@media (max-width: 768px) {
-  .gh-grid { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
-  .gh-sidebar { max-height: 200px; }
+.brand-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-/* SIDEBAR */
-.gh-sidebar {
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: 16px; padding: 16px; display: flex; flex-direction: column;
-}
-.gh-section-title { font-size: 11px; font-weight: 700; color: var(--text-sub); margin-bottom: 12px; display: flex; gap: 6px; }
-.gh-member-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
-.gh-member { display: flex; align-items: center; gap: 10px; padding: 6px; border-radius: 8px; font-size: 14px; font-weight: 500; }
-.gh-avatar { width: 28px; height: 28px; background: var(--border); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px; color: var(--text-sub); }
-
-.gh-actions { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px; }
-.gh-btn-danger {
-  background: transparent; border: 1px solid var(--border); color: var(--text-sub);
-  padding: 8px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; justify-content: center; transition: all 0.2s;
-}
-.gh-btn-danger:hover { background: #fee2e2; color: #ef4444; border-color: #fecaca; }
-.gh-btn-danger.delete:hover { background: #ef4444; color: white; border-color: #ef4444; }
-
-/* CHAT AREA */
-.gh-chat-area {
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: 16px; display: flex; flex-direction: column; overflow: hidden;
-}
-.gh-chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; background: var(--bg); }
-
-.chat-bubble-row { display: flex; gap: 8px; max-width: 70%; }
-.chat-bubble-row.me { align-self: flex-end; flex-direction: row-reverse; }
-
-.chat-avatar-mini { width: 24px; height: 24px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; margin-top: auto; }
-.chat-bubble { background: white; padding: 10px 14px; border-radius: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); font-size: 14px; line-height: 1.4; border-bottom-left-radius: 2px; }
-.chat-bubble-row.me .chat-bubble { background: var(--primary); color: white; border-bottom-left-radius: 12px; border-bottom-right-radius: 2px; }
-.chat-name { font-size: 10px; color: var(--text-sub); margin-bottom: 2px; font-weight: 700; }
-.empty-state { text-align: center; color: var(--text-sub); margin-top: 40px; font-style: italic; }
-
-.gh-chat-input { padding: 12px; background: var(--card); border-top: 1px solid var(--border); display: flex; gap: 10px; }
-.gh-chat-input input { flex: 1; padding: 12px; border: 1px solid var(--border); border-radius: 10px; outline: none; background: var(--bg); color: var(--text-main); }
-.gh-chat-input button { background: var(--primary); color: white; border: none; width: 44px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-
-
-/* --- CHAT COLOR FIXES --- */
-
-/* 1. Incoming Messages (Left Side) */
-/* White Bubble -> Dark Text */
-.chat-bubble {
-  background: white;
-  color: #1e293b; /* Dark Slate Color (Readable Black) */
+.brand-section h1 {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+  color: var(--text-main);
 }
 
-.chat-bubble .chat-text {
-  color: #1e293b; /* Force text to be dark */
+.nav-links-group {
+  display: flex;
+  gap: 8px;
 }
 
-.chat-bubble .chat-name {
-  color: #64748b; /* Subtitle color for names */
+/* Nav Buttons */
+.crumb-btn {
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-sub);
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-/* 2. My Messages (Right Side) */
-/* Green Bubble -> White Text */
-.chat-bubble-row.me .chat-bubble {
+.crumb-btn:hover {
+  background: var(--bg);
+  color: var(--text-main);
+}
+
+.crumb-btn.active {
   background: var(--primary);
   color: white;
 }
 
-.chat-bubble-row.me .chat-bubble .chat-text {
-  color: white; /* Force my text to be white */
+/* Stats Pills (Coins/Level) */
+.stat-pill {
+  padding: 6px 12px;
+  border-radius: 20px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-main);
+  cursor: pointer;
 }
 
-.chat-bubble-row.me .chat-bubble .chat-name {
-  color: rgba(255, 255, 255, 0.8); /* Slightly dim name */
+.streak-pill {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 700;
+  background: #fff7ed;
+  color: #ea580c;
+  border: 1px solid #ffedd5;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Mobile Menu Button */
+.mobile-menu-btn {
+  display: none; /* Hidden on Desktop */
+}
+
+/* =========================================
+   4. GUILD & CHAT (THE FIXES)
+   ========================================= */
+.guild-dashboard {
+  display: flex;
+  height: calc(100vh - 100px); /* Fill screen minus navbar */
+  gap: 20px;
+  overflow: hidden;
+}
+
+/* Sidebar */
+.gh-sidebar {
+  width: 280px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.gh-header h2 { margin: 0; font-size: 20px; color: var(--text-main); }
+.gh-header p { margin: 4px 0 0; font-size: 13px; color: var(--text-sub); }
+
+.gh-stat-box {
+  background: var(--bg);
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+.gh-code {
+  display: flex;
+  justify-content: space-between;
+  font-family: monospace;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 8px;
+}
+
+.gh-members-list { flex: 1; overflow-y: auto; }
+.gh-member-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  font-size: 14px;
+  color: var(--text-main);
+}
+
+.member-avatar {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: bold;
+}
+
+/* Chat Area */
+.gh-chat-area {
+  flex: 1;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Contains the scroll */
+}
+
+.gh-chat-messages {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background-color: var(--bg); /* Adds contrast to chat bubbles */
+}
+
+/* ---- CHAT BUBBLES (CRITICAL FIX) ---- */
+
+.chat-bubble-row {
+  display: flex;
+  gap: 8px;
+  max-width: 75%;
+}
+
+/* THEM (Incoming) */
+.chat-bubble-row.them { align-self: flex-start; }
+
+.chat-bubble-row.them .chat-bubble {
+  background: #ffffff;
+  color: #1e293b; /* Dark text for readability */
+  border: 1px solid #e2e8f0;
+  border-bottom-left-radius: 2px;
+}
+.chat-bubble-row.them .chat-text { color: #1e293b; }
+.chat-bubble-row.them .chat-name { color: #64748b; font-size: 11px; margin-bottom: 2px; font-weight: 700;}
+
+/* ME (Outgoing) */
+.chat-bubble-row.me { 
+  align-self: flex-end; 
+  flex-direction: row-reverse; 
+}
+
+.chat-bubble-row.me .chat-bubble {
+  background: var(--primary);
+  color: white; /* White text on Green */
+  border: none;
+  border-bottom-right-radius: 2px;
+}
+.chat-bubble-row.me .chat-text { color: white; }
+.chat-bubble-row.me .chat-name { display: none; } /* Hide my own name */
+
+/* Common Bubble Styles */
+.chat-bubble {
+  padding: 10px 14px;
+  border-radius: 16px;
+  font-size: 14px;
+  line-height: 1.5;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.chat-avatar-mini {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: #cbd5e1;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: bold; color: #475569;
+  margin-top: auto; /* Aligns avatar to bottom of message */
+}
+
+/* Input Area */
+.gh-chat-input {
+  padding: 15px;
+  background: var(--card);
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 10px;
+}
+
+.gh-chat-input input {
+  flex: 1;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  outline: none;
+  background: var(--bg);
+  color: var(--text-main);
+  transition: border-color 0.2s;
+}
+
+.gh-chat-input input:focus { border-color: var(--primary); }
+
+.gh-chat-input button {
+  background: var(--primary);
+  color: white;
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 0.1s;
+}
+
+.gh-chat-input button:active { transform: scale(0.95); }
+
+
+/* =========================================
+   5. SHOP & MODALS
+   ========================================= */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 20px;
+}
+
+.modal-content {
+  background: var(--card);
+  width: 100%;
+  max-width: 500px;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--border);
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.shop-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.shop-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 160px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.shop-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+}
+
+.shop-card.equipped {
+  border: 2px solid var(--primary);
+  background: rgba(76, 175, 80, 0.1);
+}
+
+.buy-btn {
+  background: var(--text-main);
+  color: var(--bg);
+  padding: 8px;
+  border-radius: 8px;
+  font-weight: 600;
+  margin-top: auto;
+  display: flex; justify-content: center; align-items: center; gap: 6px;
+}
+
+.buy-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* =========================================
+   6. MOBILE RESPONSIVENESS
+   ========================================= */
+@media (max-width: 768px) {
+  /* Navbar */
+  .desktop-only { display: none; }
+  .mobile-menu-btn { display: block; color: var(--text-main); }
+  
+  .nav-inner { padding: 0 16px; }
+  
+  /* Mobile Menu Drawer */
+  .mobile-menu {
+    position: fixed;
+    top: 60px; left: 0; right: 0;
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-shadow: var(--shadow-md);
+  }
+
+  .mobile-nav-item {
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text-main);
+    background: var(--bg);
+    display: flex; align-items: center; gap: 10px;
+  }
+  
+  .mobile-nav-item.active {
+    background: var(--primary);
+    color: white;
+  }
+
+  /* Guild / Chat Mobile */
+  .guild-dashboard { flex-direction: column; height: auto; overflow: visible; }
+  .gh-sidebar { width: 100%; height: auto; }
+  .gh-chat-area { height: 600px; } /* Fixed height on mobile */
+  
+  /* Modals */
+  .modal-content {
+    width: 95%;
+    padding: 20px;
+  }
 }
