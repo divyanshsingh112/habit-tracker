@@ -9,7 +9,9 @@ export default function Guild({ user }) {
   const [createForm, setCreateForm] = useState({ name: '', description: '' });
   
   const chatEndRef = useRef(null);
-  const API_URL = 'https://habit-tracker-m9uw.onrender.com';
+  
+  // Use environment variable or fallback
+  const API_URL = import.meta.env.VITE_API_URL || 'https://habit-tracker-m9uw.onrender.com';
 
   const fetchGuild = async () => {
     try {
@@ -18,178 +20,211 @@ export default function Guild({ user }) {
         const data = await res.json();
         setGuild(data);
       } else {
+        // 404 means user isn't in a guild
         setGuild(null);
       }
     } catch (err) { console.error(err); } 
     finally { setLoading(false); }
   };
 
+  // 🔥 FIX: Auto-Refresh Logic (Polling)
   useEffect(() => {
+    // 1. Fetch immediately
     fetchGuild();
-    const interval = setInterval(() => { if(guild) fetchGuild(); }, 8000); 
-    return () => clearInterval(interval);
-  }, []);
 
-  useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [guild?.chat]);
+    // 2. Fetch every 2 seconds (Fast enough for chat)
+    const interval = setInterval(() => {
+      fetchGuild();
+    }, 2000); 
+
+    // 3. Cleanup on unmount
+    return () => clearInterval(interval);
+  }, [user.uid]); // Re-start if user changes
+
+  // Auto-scroll to bottom of chat
+  useEffect(() => { 
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); 
+  }, [guild?.chat]);
 
   // --- ACTIONS ---
 
-  const handleCreate = async () => {
+  const createGuild = async (e) => {
+    e.preventDefault();
     if(!createForm.name) return;
     try {
-      const res = await fetch(`${API_URL}/guild/create`, {
-        method: 'POST', headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ name: createForm.name, description: createForm.description, userId: user.uid, displayName: user.displayName || 'Hero' })
+      await fetch(`${API_URL}/guild/create`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...createForm, userId: user.uid, displayName: user.displayName || 'Hero' })
       });
-      if(res.ok) { const data = await res.json(); setGuild(data); }
-      else { alert("Could not create guild. You might already be in one."); }
-    } catch(e) { alert("Server error"); }
+      fetchGuild();
+    } catch (err) { alert("Failed to create guild"); }
   };
 
-  const handleJoin = async () => {
+  const joinGuild = async (e) => {
+    e.preventDefault();
     if(!joinCode) return;
     try {
       const res = await fetch(`${API_URL}/guild/join`, {
-        method: 'POST', headers: {'Content-Type': 'application/json'},
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ inviteCode: joinCode, userId: user.uid, displayName: user.displayName || 'Hero' })
       });
-      if(res.ok) { const data = await res.json(); setGuild(data); }
-      else { alert("Invalid Code or already in guild!"); }
-    } catch(e) { alert("Server error"); }
-  };
-
-  const handleLeave = async () => {
-    if(!confirm("Are you sure you want to leave?")) return;
-    await fetch(`${API_URL}/guild/leave`, {
-        method: 'POST', headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ guildId: guild._id, userId: user.uid })
-    });
-    setGuild(null); // Reset UI
-  };
-
-  const handleDelete = async () => {
-    if(!confirm("DANGER: This will delete the guild for everyone. Continue?")) return;
-    await fetch(`${API_URL}/guild/delete`, {
-        method: 'POST', headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ guildId: guild._id, userId: user.uid })
-    });
-    setGuild(null); // Reset UI
+      if (!res.ok) throw new Error();
+      fetchGuild();
+    } catch (err) { alert("Invalid Code or already in a guild!"); }
   };
 
   const sendMessage = async (e) => {
     e.preventDefault();
-    if(!message.trim()) return;
-    const newMsg = { userId: user.uid, displayName: user.displayName || 'Me', message, timestamp: new Date() };
-    setGuild(prev => ({ ...prev, chat: [...prev.chat, newMsg] }));
-    setMessage('');
-    await fetch(`${API_URL}/guild/message`, {
-      method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ guildId: guild._id, userId: user.uid, displayName: user.displayName || 'Hero', message })
-    });
-    fetchGuild();
+    if (!message.trim() || !guild) return;
+
+    // 1. Optimistic Update (Show message instantly for ME)
+    const tempMsg = { 
+      userId: user.uid, 
+      displayName: user.displayName || 'Me', 
+      message: message,
+      timestamp: new Date()
+    };
+    
+    setGuild(prev => ({ ...prev, chat: [...prev.chat, tempMsg] }));
+    setMessage(''); // Clear input
+
+    try {
+      // 2. Send to Server
+      await fetch(`${API_URL}/guild/message`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ guildId: guild._id, userId: user.uid, displayName: user.displayName, message: tempMsg.message })
+      });
+      // The background interval will pick up the real saved message in 2 seconds
+    } catch (err) { console.error("Message failed"); }
   };
 
-  if (loading) return <div className="loading-spinner" style={{margin: '50px auto'}}></div>;
+  const handleLeave = async () => {
+    if(!confirm("Leave this guild?")) return;
+    try {
+      await fetch(`${API_URL}/guild/leave`, {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ guildId: guild._id, userId: user.uid })
+      });
+      setGuild(null);
+    } catch (err) { console.error(err); }
+  };
 
-  // --- VIEW 1: NO GUILD ---
+  const handleDelete = async () => {
+    if(!confirm("Disband guild? This cannot be undone.")) return;
+    try {
+      await fetch(`${API_URL}/guild/delete`, {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ guildId: guild._id, userId: user.uid })
+      });
+      setGuild(null);
+    } catch (err) { console.error(err); }
+  };
+
+  if (loading) return <div className="loading-spinner"></div>;
+
+  // --- RENDER: NO GUILD ---
   if (!guild) {
     return (
-      <div className="guild-container animate-slide-up">
-        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-          <Shield size={64} className="text-primary" style={{ margin: '0 auto 16px', color: 'var(--primary)' }} />
-          <h2 style={{ fontSize: '32px', fontWeight: '800' }}>Join a Squad</h2>
-          <p style={{ color: 'var(--text-sub)' }}>Accountability works better with friends.</p>
+      <div className="guild-container animate-fade">
+        <div className="guild-intro">
+          <h2><Shield size={32} /> Join the Alliance</h2>
+          <p>Team up with friends to track habits together!</p>
         </div>
 
-        <div className="guild-split">
+        <div className="guild-actions-grid">
           <div className="guild-card">
-            <h3><Users size={20} /> Join Existing</h3>
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <input className="guild-input" placeholder="Enter Invite Code" value={joinCode} onChange={e => setJoinCode(e.target.value.toUpperCase())} />
-              <button className="guild-btn btn-join" style={{ width: 'auto' }} onClick={handleJoin}>Join</button>
-            </div>
+            <h3>Create a Guild</h3>
+            <form onSubmit={createGuild}>
+              <input placeholder="Guild Name" value={createForm.name} onChange={e => setCreateForm({...createForm, name: e.target.value})} />
+              <input placeholder="Motto (Optional)" value={createForm.description} onChange={e => setCreateForm({...createForm, description: e.target.value})} />
+              <button type="submit" className="gh-btn primary">Create</button>
+            </form>
           </div>
+
           <div className="guild-card">
-            <h3><Shield size={20} /> Start New</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <input className="guild-input" placeholder="Guild Name" value={createForm.name} onChange={e => setCreateForm({...createForm, name: e.target.value})} />
-              <input className="guild-input" placeholder="Motto" value={createForm.description} onChange={e => setCreateForm({...createForm, description: e.target.value})} />
-              <button className="guild-btn btn-create" onClick={handleCreate}>Create Guild</button>
-            </div>
+            <h3>Join with Code</h3>
+            <form onSubmit={joinGuild}>
+              <input placeholder="Enter Invite Code" value={joinCode} onChange={e => setJoinCode(e.target.value)} />
+              <button type="submit" className="gh-btn secondary">Join</button>
+            </form>
           </div>
         </div>
       </div>
     );
   }
 
-  // --- VIEW 2: GUILD HALL (Redesigned) ---
-  const isAdmin = guild.adminId === user.uid || (guild.members.length > 0 && guild.members[0].userId === user.uid); // Fallback for old guilds
+  // --- RENDER: ACTIVE GUILD ---
+  const isAdmin = guild.adminId === user.uid;
 
   return (
-    <div className="guild-hall-wrapper animate-slide-up">
-      {/* HEADER */}
-      <div className="gh-header">
-        <div>
-          <h1 className="gh-title"><Shield size={24} /> {guild.name}</h1>
-          <p className="gh-desc">{guild.description}</p>
+    <div className="guild-dashboard animate-slide-up">
+      {/* LEFT SIDE: INFO */}
+      <aside className="gh-sidebar">
+        <div className="gh-header">
+          <h2>{guild.name}</h2>
+          <p>{guild.description}</p>
         </div>
-        <div className="gh-invite" onClick={() => { navigator.clipboard.writeText(guild.inviteCode); alert("Code copied!"); }}>
-          <span>INVITE:</span> <strong>{guild.inviteCode}</strong> <Copy size={14} />
-        </div>
-      </div>
 
-      {/* MAIN CONTENT GRID */}
-      <div className="gh-grid">
-        {/* LEFT SIDEBAR: MEMBERS */}
-        <aside className="gh-sidebar">
-          <div className="gh-section-title"><Users size={16} /> MEMBERS ({guild.members.length})</div>
-          <div className="gh-member-list">
-            {guild.members.map((m, i) => (
-              <div key={i} className="gh-member">
-                <div className="gh-avatar">{m.displayName[0].toUpperCase()}</div>
-                <span className="gh-name">{m.displayName} {m.userId === user.uid && "(You)"}</span>
-                {m.userId === guild.adminId && <Shield size={12} fill="#f59e0b" color="#f59e0b"/>}
-              </div>
-            ))}
+        <div className="gh-stat-box">
+          <div className="gh-code">
+            <span>Code: {guild.inviteCode}</span>
+            <button onClick={() => navigator.clipboard.writeText(guild.inviteCode)}><Copy size={14}/></button>
           </div>
+          <div className="gh-members-count">
+            <Users size={16} /> {guild.members.length} Heroes
+          </div>
+        </div>
 
-          <div className="gh-actions">
-            <button className="gh-btn-danger" onClick={handleLeave}>
-              <LogOut size={16} /> Leave Guild
+        <div className="gh-members-list">
+          <h4>Squad</h4>
+          {guild.members.map(m => (
+            <div key={m.userId} className="gh-member-row">
+              <div className="member-avatar">{m.displayName?.[0]}</div>
+              <span>{m.displayName} {m.userId === guild.adminId && '👑'}</span>
+            </div>
+          ))}
+        </div>
+
+        <div className="gh-controls">
+          <button className="gh-btn-danger" onClick={handleLeave}>
+            <LogOut size={16} /> Leave Guild
+          </button>
+          {isAdmin && (
+            <button className="gh-btn-danger delete" onClick={handleDelete}>
+              <Trash2 size={16} /> Disband
             </button>
-            {isAdmin && (
-              <button className="gh-btn-danger delete" onClick={handleDelete}>
-                <Trash2 size={16} /> Disband
-              </button>
-            )}
-          </div>
-        </aside>
+          )}
+        </div>
+      </aside>
 
-        {/* RIGHT SIDE: CHAT */}
-        <section className="gh-chat-area">
-          <div className="gh-chat-messages">
-            {guild.chat.length === 0 ? (
-               <div className="empty-state">No messages yet. Start the conversation!</div>
-            ) : (
-               guild.chat.map((msg, i) => (
-                <div key={i} className={`chat-bubble-row ${msg.userId === user.uid ? 'me' : 'them'}`}>
-                  {msg.userId !== user.uid && <div className="chat-avatar-mini">{msg.displayName[0]}</div>}
-                  <div className="chat-bubble">
-                    {msg.userId !== user.uid && <div className="chat-name">{msg.displayName}</div>}
-                    <div className="chat-text">{msg.message}</div>
-                  </div>
+      {/* RIGHT SIDE: CHAT */}
+      <section className="gh-chat-area">
+        <div className="gh-chat-messages">
+          {guild.chat.length === 0 ? (
+             <div className="empty-state">No messages yet. Start the conversation!</div>
+          ) : (
+             guild.chat.map((msg, i) => (
+              <div key={i} className={`chat-bubble-row ${msg.userId === user.uid ? 'me' : 'them'}`}>
+                {msg.userId !== user.uid && <div className="chat-avatar-mini">{msg.displayName[0]}</div>}
+                <div className="chat-bubble">
+                  {msg.userId !== user.uid && <div className="chat-name">{msg.displayName}</div>}
+                  <div className="chat-text">{msg.message}</div>
                 </div>
-               ))
-            )}
-            <div ref={chatEndRef} />
-          </div>
-          
-          <form className="gh-chat-input" onSubmit={sendMessage}>
-            <input placeholder="Message your squad..." value={message} onChange={e => setMessage(e.target.value)} />
-            <button type="submit"><Send size={18} /></button>
-          </form>
-        </section>
-      </div>
+              </div>
+             ))
+          )}
+          <div ref={chatEndRef} />
+        </div>
+        
+        <form className="gh-chat-input" onSubmit={sendMessage}>
+          <input 
+            placeholder="Message your squad..." 
+            value={message} 
+            onChange={e => setMessage(e.target.value)} 
+          />
+          <button type="submit"><Send size={18} /></button>
+        </form>
+      </section>
     </div>
   );
 }

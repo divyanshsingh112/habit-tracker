@@ -479,3 +479,36 @@ img { max-width: 100%; display: block; }
 .gh-chat-input { padding: 12px; background: var(--card); border-top: 1px solid var(--border); display: flex; gap: 10px; }
 .gh-chat-input input { flex: 1; padding: 12px; border: 1px solid var(--border); border-radius: 10px; outline: none; background: var(--bg); color: var(--text-main); }
 .gh-chat-input button { background: var(--primary); color: white; border: none; width: 44px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+
+/* --- CHAT COLOR FIXES --- */
+
+/* 1. Incoming Messages (Left Side) */
+/* White Bubble -> Dark Text */
+.chat-bubble {
+  background: white;
+  color: #1e293b; /* Dark Slate Color (Readable Black) */
+}
+
+.chat-bubble .chat-text {
+  color: #1e293b; /* Force text to be dark */
+}
+
+.chat-bubble .chat-name {
+  color: #64748b; /* Subtitle color for names */
+}
+
+/* 2. My Messages (Right Side) */
+/* Green Bubble -> White Text */
+.chat-bubble-row.me .chat-bubble {
+  background: var(--primary);
+  color: white;
+}
+
+.chat-bubble-row.me .chat-bubble .chat-text {
+  color: white; /* Force my text to be white */
+}
+
+.chat-bubble-row.me .chat-bubble .chat-name {
+  color: rgba(255, 255, 255, 0.8); /* Slightly dim name */
+}
