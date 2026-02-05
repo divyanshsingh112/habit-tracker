@@ -1,108 +1,110 @@
-const User = require('../models/User');
+import React, { createContext, useState, useContext, useEffect } from 'react';
 
-const calculateLevel = (xp) => Math.floor(Math.sqrt(xp / 100)) + 1;
+const GamificationContext = createContext();
 
-exports.getStats = async (req, res) => {
-  try {
-    const userId = req.params.userId;
-    let user = await User.findOne({ userId });
-    if (!user) user = await User.create({ userId, heroInventory: [] });
-    res.json(user);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+export const useGameContext = () => useContext(GamificationContext);
+
+export const GamificationProvider = ({ children, user, showToast }) => {
+  const API_URL = import.meta.env.VITE_API_URL || 'https://habit-tracker-m9uw.onrender.com';
+
+  const [userStats, setUserStats] = useState({
+    xp: 0,
+    level: 1,
+    coins: 0,
+    heroInventory: [], // 🔥 NEW STATE NAME
+    activeTheme: 'light'
+  });
+
+  useEffect(() => {
+    if (user?.uid) fetchUserStats(user.uid);
+  }, [user]);
+
+  const fetchUserStats = async (userId) => {
+    try {
+      const res = await fetch(`${API_URL}/stats/${userId}`);
+      if (res.ok) {
+        const data = await res.json();
+        setUserStats(prev => ({
+          ...prev,
+          xp: data.xp || 0,
+          level: data.level || 1,
+          coins: data.coins || 0,
+          heroInventory: data.heroInventory || [], // 🔥 READ NEW FIELD
+          activeTheme: data.activeTheme || 'light'
+        }));
+      }
+    } catch (err) {
+      console.error("Stats Load Error:", err);
+    }
+  };
+
+  const processXpUpdate = async (xpAmount, coinsAmount) => {
+    if (!user) return;
+    
+    setUserStats(prev => ({
+        ...prev, 
+        xp: (prev.xp || 0) + xpAmount, 
+        coins: (prev.coins || 0) + coinsAmount,
+        level: Math.floor(Math.sqrt(((prev.xp || 0) + xpAmount) / 100)) + 1
+    }));
+
+    try {
+      await fetch(`${API_URL}/stats/${user.uid}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.uid, xpChange: xpAmount, coinsChange: coinsAmount })
+      });
+    } catch (err) { console.error("Sync Error:", err); }
+  };
+
+  const buyItem = async (item) => {
+    if (userStats.coins < item.price) {
+      showToast("Not enough coins!", "error");
+      return false;
+    }
+
+    // Optimistic Update
+    setUserStats(prev => ({
+      ...prev,
+      coins: prev.coins - item.price,
+      // 🔥 UPDATED: Use new name
+      heroInventory: [...prev.heroInventory, { itemId: item.id, ...item }]
+    }));
+
+    try {
+      const res = await fetch(`${API_URL}/shop/buy/${user.uid}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.uid, item })
+      });
+      
+      if (!res.ok) {
+        const err = await res.json();
+        showToast(err.error || "Purchase failed", "error");
+        fetchUserStats(user.uid); 
+        return false;
+      }
+      return true;
+    } catch (err) {
+      fetchUserStats(user.uid);
+      return false;
+    }
+  };
+
+  const equipItem = async (item) => {
+    setUserStats(prev => ({ ...prev, activeTheme: item.id }));
+    try {
+      await fetch(`${API_URL}/shop/equip/${user.uid}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.uid, item })
+      });
+    } catch (err) { console.error(err); }
+  };
+
+  return (
+    <GamificationContext.Provider value={{ userStats, processXpUpdate, buyItem, equipItem }}>
+      {children}
+    </GamificationContext.Provider>
+  );
 };
-
-exports.updateStats = async (req, res) => {
-  try {
-    const userId = req.params.userId || req.body.userId;
-    const { xpChange, coinsChange } = req.body;
-
-    if (!userId) return res.status(400).json({ error: "User ID required" });
-
-    let user = await User.findOne({ userId });
-    if (!user) user = new User({ userId, heroInventory: [] });
-
-    if (xpChange) {
-        user.xp = Math.max(0, (user.xp || 0) + Number(xpChange));
-        user.level = calculateLevel(user.xp);
-    }
-
-    if (coinsChange !== undefined) {
-        // ✅ FIX: Use Math.max(0) to prevent negative balance
-        user.coins = Math.max(0, (user.coins || 0) + Number(coinsChange));
-    }
-    
-    await user.save();
-    res.json(user);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-
-exports.buyItem = async (req, res) => {
-  try {
-    const userId = req.params.userId || req.body.userId;
-    const itemData = req.body.item || req.body;
-
-    if (!userId) return res.status(400).json({ error: "User ID missing" });
-    if (!itemData || typeof itemData.price === 'undefined') {
-       return res.status(400).json({ error: "Invalid item data" });
-    }
-
-    const user = await User.findOne({ userId });
-    if (!user) return res.status(404).json({ error: "User not found" });
-    
-    // Safety check
-    if (!user.heroInventory) user.heroInventory = [];
-
-    const alreadyOwns = user.heroInventory.some(i => i.itemId === itemData.id);
-    if (alreadyOwns && itemData.type !== 'consumable') {
-        return res.status(400).json({ error: "Item already owned" });
-    }
-
-    // ✅ FIX: Strict Server-Side Balance Check
-    if ((user.coins || 0) < itemData.price) {
-        return res.status(400).json({ error: "Not enough coins" });
-    }
-    
-    // Deduct
-    user.coins -= itemData.price;
-    
-    // Add Item
-    user.heroInventory.push({
-        itemId: itemData.id,
-        name: itemData.name,
-        type: itemData.type,
-        price: itemData.price
-    });
-    
-    await user.save();
-    res.json(user);
-  } catch (err) {
-    console.error("Buy Error:", err);
-    res.status(500).json({ error: err.message });
-  }
-};
-
-exports.equipItem = async (req, res) => {
-  try {
-    const userId = req.params.userId || req.body.userId;
-    const item = req.body.item || req.body;
-    
-    const user = await User.findOne({ userId });
-    
-    // If it's a theme, update activeTheme
-    if (item.type === 'theme') {
-        user.activeTheme = item.id; 
-    }
-    
-    await user.save();
-    res.json(user);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-
-exports.getStreak = async (req, res) => res.json({ streak: 0 });
-exports.getLeaderboard = async (req, res) => res.json([]);
