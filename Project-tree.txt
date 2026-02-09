@@ -1,0 +1,86 @@
+c:/Users/sdivy/OneDrive/Documents/GitHub/habit-tracker/
+├── .github/
+│   ├── appmod/
+│   │   └── appcat/
+│   └── workflows/
+│       └── keep-alive.yml
+├── .gitignore
+├─] dist/ (ignored)
+├── eslint.config.js
+├── index.html
+├─] node_modules/ (ignored)
+├── package-lock.json
+├── package.json
+├── public/
+│   ├── cyber-desktop.jpg
+│   ├── cyber-mobile.jpg
+│   ├── forest-desktop.jpg
+│   ├── forest-mobile.jpg
+│   ├── hero.png
+│   ├── logo.png
+│   ├── pwa-192x192.png
+│   ├── pwa-512x512.png
+│   ├── sw.js
+│   ├── vite.svg
+│   └── _redirects
+├── README.md
+├── server/
+│   ├─] .env (ignored)
+│   ├── controllers/
+│   │   ├── gamificationController.js
+│   │   ├── guildController.js
+│   │   ├── habitController.js
+│   │   └── notificationController.js
+│   ├── models/
+│   │   ├── Guild.js
+│   │   ├── MonthData.js
+│   │   ├── Subscription.js
+│   │   └── User.js
+│   ├─] node_modules/ (ignored)
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── routes/
+│   │   ├── gamificationRoutes.js
+│   │   ├── guildRoutes.js
+│   │   ├── habitRoutes.js
+│   │   └── notificationRoutes.js
+│   └── server.js
+├── src/
+│   ├── App.css
+│   ├── App.jsx
+│   ├── assets/
+│   │   ├── logo.png
+│   │   └── react.svg
+│   ├── components/
+│   │   ├── Analytics.jsx
+│   │   ├── Guild.jsx
+│   │   ├── HabitModal.jsx
+│   │   ├── HabitOverview.jsx
+│   │   ├── HabitRow.jsx
+│   │   ├── Leaderboard.jsx
+│   │   ├── Login.jsx
+│   │   ├── MonthView.jsx
+│   │   ├── Navbar.jsx
+│   │   ├── NotificationButton.jsx
+│   │   ├── ShopModal.jsx
+│   │   ├── StatsModal.jsx
+│   │   ├── TrackerView.jsx
+│   │   ├── WeeklyReport.jsx
+│   │   └── YearView.jsx
+│   ├── constants.js
+│   ├── context/
+│   │   ├── GamificationContext.jsx
+│   │   └── HabitContext.jsx
+│   ├── data/
+│   │   └── shopItems.js
+│   ├── db.js
+│   ├── firebase.js
+│   ├── gamification.js
+│   ├── hooks/
+│   │   ├── useGamification.js
+│   │   └── useHabits.js
+│   ├── index.css
+│   ├── main.jsx
+│   └── syncManager.js
+├── vercel.json
+└── vite.config.js
