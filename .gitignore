@@ -23,11 +23,11 @@ dist-ssr
 *.sln
 *.sw?
 
-server/.env
+Backend/.env
 
 node_modules/
 dist/
 .env
 .DS_Store
 
-server\node_modules
+Backend/node_modules
