@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { loginWithGoogle, loginWithEmail, registerWithEmail } from '../firebase';
-import logoImg from '../assets/logo.png';
+import { Mail, Lock, Eye, EyeOff, ArrowRight, Sparkles, TrendingUp, User } from 'lucide-react';
+import '../Login.css';
 
 export default function Login({ onLogin }) {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -8,6 +9,7 @@ export default function Login({ onLogin }) {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -37,69 +39,165 @@ export default function Login({ onLogin }) {
     }
   };
 
-  return (
-    <div className="login-container">
-      {/* Background Blobs for the 'Glass' effect */}
-      <div className="bg-blob blob-1"></div>
-      <div className="bg-blob blob-2"></div>
-
-      {/* Added 'glass' class here for the visual effect */}
-      <div className="login-card glass animate-fade">
-        <img src={logoImg} alt="Logo" className="login-logo" />
+  if (isSignUp) {
+    return (
+      <div className="auth-page">
+        <div className="auth-header-left">
+          <div className="auth-logo-horizontal">
+            <div style={{ position: 'relative' }}>
+              <TrendingUp size={20} strokeWidth={2.5} />
+              <Sparkles size={10} style={{ position: 'absolute', top: -4, right: -4 }} />
+            </div>
+            <h2>HABIT TRACKER</h2>
+          </div>
+        </div>
         
-        <h1>{isSignUp ? "Create Account" : "Welcome"}</h1>
-        <p>{isSignUp ? "Start your journey today." : "Consistency is no longer a problem."}</p>
+        <div className="auth-signup-hero">
+          <h1>Start Your<br/>Journey.</h1>
+          <p>Consistency is the key to success.</p>
+        </div>
 
-        {error && <div className="error-message">{error}</div>}
+        <div className="auth-card">
+          {error && <div className="auth-error">{error}</div>}
+          <form onSubmit={handleSubmit} className="auth-form">
+            <div className="auth-input-group">
+              <label>Full Name</label>
+              <div className="auth-input-wrapper">
+                <div className="auth-icon"><User size={18} /></div>
+                <input 
+                  type="text" 
+                  placeholder="John Doe" 
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required 
+                />
+              </div>
+            </div>
 
+            <div className="auth-input-group">
+              <label>Email Address</label>
+              <div className="auth-input-wrapper">
+                <div className="auth-icon"><Mail size={18} /></div>
+                <input 
+                  type="email" 
+                  placeholder="name@example.com" 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required 
+                />
+              </div>
+            </div>
+
+            <div className="auth-input-group">
+              <label>Password</label>
+              <div className="auth-input-wrapper">
+                <div className="auth-icon"><Lock size={18} /></div>
+                <input 
+                  type={showPassword ? "text" : "password"} 
+                  placeholder="••••••••" 
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required 
+                />
+                <div className="auth-action-icon" onClick={() => setShowPassword(!showPassword)}>
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </div>
+              </div>
+            </div>
+
+            <button type="submit" className="auth-btn auth-btn-primary">
+              Create Account
+            </button>
+          </form>
+
+          <div className="auth-divider">
+            <span>OR CONTINUE WITH</span>
+          </div>
+
+          <button type="button" className="auth-btn auth-btn-google-dark" onClick={handleGoogleLogin}>
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width="20" height="20" />
+            <span>Google</span>
+          </button>
+        </div>
+
+        <div className="auth-footer-text">
+          Already have an account? <span className="auth-link" onClick={() => { setIsSignUp(false); setError(''); }}>Log In</span>
+        </div>
+        
+        <div className="auth-legal-footer">
+          © 2024 HABIT TRACKER. DISCIPLINE OVER MOTIVATION.
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="auth-page">
+      <div className="auth-login-hero">
+        <div className="auth-logo-box">
+          <div style={{ position: 'relative' }}>
+            <TrendingUp className="auth-logo-icon" size={32} strokeWidth={2.5} />
+            <Sparkles className="auth-logo-icon" size={14} style={{ position: 'absolute', top: -6, right: -6 }} />
+          </div>
+        </div>
+        <h1 className="auth-title-large">Habit Tracker</h1>
+        <p className="auth-subtitle">Welcome Back! Ready to build your<br/>streak?</p>
+      </div>
+
+      <div className="auth-card">
+        {error && <div className="auth-error">{error}</div>}
         <form onSubmit={handleSubmit} className="auth-form">
-          {isSignUp && (
-            <input 
-              type="text" 
-              placeholder="Full Name" 
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required 
-            />
-          )}
-          
-          <input 
-            type="email" 
-            placeholder="Email Address" 
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required 
-          />
-          
-          <input 
-            type="password" 
-            placeholder="Password" 
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required 
-          />
+          <div className="auth-input-group">
+            <label>EMAIL ADDRESS</label>
+            <div className="auth-input-wrapper">
+              <div className="auth-icon"><Mail size={18} /></div>
+              <input 
+                type="email" 
+                placeholder="name@example.com" 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required 
+              />
+            </div>
+          </div>
 
-          <button type="submit" className="primary-auth-btn">
-            {isSignUp ? "Sign Up" : "Log In"}
+          <div className="auth-input-group">
+            <div className="auth-label-row">
+              <label>PASSWORD</label>
+              <span className="auth-forgot-link">Forgot?</span>
+            </div>
+            <div className="auth-input-wrapper">
+              <div className="auth-icon"><Lock size={18} /></div>
+              <input 
+                type={showPassword ? "text" : "password"} 
+                placeholder="••••••••" 
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required 
+              />
+              <div className="auth-action-icon" onClick={() => setShowPassword(!showPassword)}>
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" className="auth-btn auth-btn-primary">
+            Log In <ArrowRight size={18} />
           </button>
         </form>
 
-        <div className="divider"><span>OR</span></div>
+        <div className="auth-divider">
+          <span>OR CONTINUE WITH</span>
+        </div>
 
-        <button className="google-btn" onClick={handleGoogleLogin}>
-          <img 
-            src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" 
-            alt="G" 
-          />
-          {isSignUp ? "Sign up with Google" : "Sign in with Google"}
+        <button type="button" className="auth-btn auth-btn-google-light" onClick={handleGoogleLogin}>
+          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width="20" height="20" />
+          <span>Sign in with Google</span>
         </button>
+      </div>
 
-        <p className="toggle-auth">
-          {isSignUp ? "Already have an account?" : "Don't have an account?"}
-          <span onClick={() => { setIsSignUp(!isSignUp); setError(''); }}>
-            {isSignUp ? " Log In" : " Sign Up"}
-          </span>
-        </p>
+      <div className="auth-footer-text">
+        Don't have an account? <span className="auth-link" onClick={() => { setIsSignUp(true); setError(''); }}>Sign Up</span>
       </div>
     </div>
   );
