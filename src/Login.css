@@ -14,12 +14,10 @@
   overflow-y: auto;
 }
 
-.auth-page > :first-child {
-  margin-top: auto;
-}
-
-.auth-page > :last-child {
-  margin-bottom: auto;
+.auth-page::before,
+.auth-page::after {
+  content: '';
+  flex: 1 0 auto;
 }
 
 .auth-header-left {
@@ -69,18 +67,18 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  margin-bottom: 2.5rem;
+  margin-bottom: 1.5rem;
 }
 
 .auth-logo-box {
-  width: 72px;
-  height: 72px;
+  width: 64px;
+  height: 64px;
   background: #a78bfa;
-  border-radius: 20px;
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   box-shadow: 0 0 40px rgba(167, 139, 250, 0.15);
 }
 
@@ -89,10 +87,10 @@
 }
 
 .auth-title-large {
-  font-size: 2.75rem;
+  font-size: 2.25rem;
   font-weight: 800;
   color: #a78bfa;
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 0.25rem 0;
 }
 
 .auth-subtitle {
@@ -108,7 +106,7 @@
   background-color: #1d233a;
   border: 1px solid #2d3748;
   border-radius: 24px;
-  padding: 2.5rem;
+  padding: 2rem;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
 }
 
@@ -264,7 +262,7 @@
 }
 
 .auth-footer-text {
-  margin-top: 2.5rem;
+  margin-top: 1.5rem;
   font-size: 0.95rem;
   color: #cbd5e1;
 }
