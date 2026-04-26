@@ -438,3 +438,234 @@ body {
   color: #ef4444; /* Danger Red */
   background: rgba(239, 68, 68, 0.1);
 }
+
+/* =========================================
+   7. REDESIGNED YEAR CARDS & MONTH GRID
+   ========================================= */
+
+/* Chronicles Header */
+.chronicles-header {
+  margin-bottom: 2rem;
+}
+
+.chronicles-header h1 {
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+  color: #ffffff;
+}
+
+.chronicles-header p {
+  color: #94a3b8;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  max-width: 480px;
+}
+
+/* Year Cards Grid */
+.year-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 1.25rem;
+}
+
+/* Individual Year Card */
+.year-card-v2 {
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid #334155;
+  border-radius: 16px;
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.year-card-v2:hover {
+  border-color: #a78bfa;
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+}
+
+.year-card-v2-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.25rem;
+}
+
+.year-card-v2-year {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.year-card-v2-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(167, 139, 250, 0.15);
+  border: 1px solid rgba(167, 139, 250, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #a78bfa;
+}
+
+.year-card-v2-stats {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: #94a3b8;
+  margin-bottom: 0.5rem;
+}
+
+.year-card-v2-bar {
+  height: 5px;
+  background: #0f172a;
+  border-radius: 5px;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.year-card-v2-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #6366f1, #a78bfa);
+  border-radius: 5px;
+  transition: width 0.6s ease;
+}
+
+.year-card-v2-streak {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-bottom: 1.25rem;
+}
+
+.year-card-v2-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 1rem;
+  border-top: 1px solid #334155;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #cbd5e1;
+  transition: color 0.2s;
+}
+
+.year-card-v2:hover .year-card-v2-action {
+  color: #a78bfa;
+}
+
+/* Add Year Card (dashed) */
+.add-year-card-v2 {
+  border: 2px dashed #334155;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  cursor: pointer;
+  color: #64748b;
+  gap: 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.25s ease;
+}
+
+.add-year-card-v2:hover {
+  border-color: #a78bfa;
+  color: #a78bfa;
+  background: rgba(167, 139, 250, 0.05);
+}
+
+/* Back Button */
+.back-btn-v2 {
+  background: #334155;
+  border: none;
+  color: white;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.back-btn-v2:hover {
+  background: #475569;
+}
+
+/* Month Scroll Container */
+.month-scroll-container {
+  max-height: calc(100vh - 220px);
+  overflow-y: auto;
+  border-radius: 16px;
+  border: 1px solid #334155;
+  background: rgba(30, 41, 59, 0.3);
+}
+
+.month-scroll-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.month-scroll-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.month-scroll-container::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 3px;
+}
+
+/* Month Compact Grid */
+.month-compact-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.month-compact-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1.25rem;
+  cursor: pointer;
+  transition: background 0.15s;
+  border-bottom: 1px solid #2d3748;
+  border-right: 1px solid #2d3748;
+}
+
+.month-compact-card:nth-child(3n) {
+  border-right: none;
+}
+
+.month-compact-card:nth-last-child(-n+3) {
+  border-bottom: none;
+}
+
+.month-compact-card:hover {
+  background: rgba(167, 139, 250, 0.05);
+}
+
+.month-compact-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.month-compact-status {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+}
+
+/* Animation */
+.animate-fade {
+  animation: fadeIn 0.3s ease-out;
+}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
-import { LayoutGrid, Calendar, ChevronLeft, LogOut, Plus, X, Sword, Brain, Sparkles, MessageCircle, Trash2, Clock, Zap } from 'lucide-react';
+import { LayoutGrid, Calendar, ChevronLeft, LogOut, Plus, X, Sword, Brain, Sparkles, MessageCircle, Trash2, Clock, Zap, ArrowRight, Flame } from 'lucide-react';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth } from './firebase'; // Ensure you have this file
 import Login from './components/Login'; // Ensure you have this component
@@ -138,26 +138,48 @@ const Sidebar = ({ currentView, setView, selectedYear, selectedMonth, onLogout }
 // --- HOME DASHBOARD (YEARS) ---
 const HomeDashboard = ({ years, onCreateYear, onSelectYear }) => {
   const nextYear = years.length > 0 ? Math.max(...years) + 1 : 2026;
+  const currentYear = new Date().getFullYear();
 
   return (
     <div className="container animate-fade">
-      <div className="section-header">
-        <h2 style={{ fontSize: '24px', fontWeight: 'bold' }}>Your Chronicles</h2>
-        <p style={{ color: '#94a3b8' }}>Select a year or start a new journey.</p>
+      <div className="chronicles-header">
+        <h1>Your Chronicles</h1>
+        <p>Reflect on your past journeys and prepare for the road ahead. Every year is a new chapter in your growth.</p>
       </div>
 
-      <div className="months-grid">
-        {years.map(year => (
-          <div key={year} className="month-card" onClick={() => onSelectYear(year)}>
-            <Clock size={32} style={{ marginBottom: '1rem', color: '#10b981' }} />
-            <div className="month-name" style={{ marginBottom: 0 }}>{year}</div>
-            <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>View Progress</span>
-          </div>
-        ))}
+      <div className="year-cards-grid">
+        {years.map(year => {
+          const isPast = year < currentYear;
+          return (
+            <div key={year} className="year-card-v2" onClick={() => onSelectYear(year)}>
+              <div className="year-card-v2-top">
+                <span className="year-card-v2-year">{year}</span>
+                <div className="year-card-v2-icon">
+                  <Clock size={18} />
+                </div>
+              </div>
+              <div className="year-card-v2-stats">
+                <span>Complete</span>
+                <span>{isPast ? '75' : '0'}%</span>
+              </div>
+              <div className="year-card-v2-bar">
+                <div className="year-card-v2-bar-fill" style={{ width: isPast ? '75%' : '0%' }}></div>
+              </div>
+              <div className="year-card-v2-streak" style={{ color: isPast ? '#10b981' : '#64748b' }}>
+                <Flame size={14} />
+                <span>{isPast ? '324 Day Streak' : 'Upcoming'}</span>
+              </div>
+              <div className="year-card-v2-action">
+                <span>View</span>
+                <ArrowRight size={16} />
+              </div>
+            </div>
+          );
+        })}
 
-        <div className="add-year-card" onClick={() => onCreateYear(nextYear)}>
-          <Plus size={40} style={{ marginBottom: '1rem' }} />
-          <span style={{ fontSize: '1.2rem', fontWeight: '600' }}>Create {nextYear}</span>
+        <div className="add-year-card-v2" onClick={() => onCreateYear(nextYear)}>
+          <Plus size={32} />
+          <span>Create {nextYear}</span>
         </div>
       </div>
     </div>
@@ -174,28 +196,27 @@ const YearGrid = ({ year, onSelectMonth, onBack }) => {
   return (
     <div className="container animate-fade">
       <div className="section-header" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-         <button 
-            onClick={onBack}
-            style={{ background: '#334155', border: 'none', color: 'white', padding: '8px', borderRadius: '8px', cursor: 'pointer' }}
-          >
-            <ChevronLeft size={20} />
-          </button>
+        <button onClick={onBack} className="back-btn-v2">
+          <ChevronLeft size={20} />
+        </button>
         <div>
           <h2 style={{ fontSize: '24px', fontWeight: 'bold' }}>{year} Overview</h2>
           <p style={{ color: '#94a3b8' }}>Select a month to track quests.</p>
         </div>
       </div>
 
-      <div className="months-grid">
-        {months.map((m, i) => (
-          <div key={m} className="month-card" onClick={() => onSelectMonth(m)}>
-            <div className="month-name">{m}</div>
-            <div className="status-badge">
-               <div style={{ width: 8, height: 8, borderRadius: '50%', background: i < 3 ? '#10b981' : '#cbd5e1' }} />
-               <span style={{ color: i < 3 ? '#10b981' : '#94a3b8' }}>{i < 3 ? 'On Track' : 'No Data'}</span>
+      <div className="month-scroll-container">
+        <div className="month-compact-grid">
+          {months.map((m, i) => (
+            <div key={m} className="month-compact-card" onClick={() => onSelectMonth(m)}>
+              <span className="month-compact-name">{m}</span>
+              <div className="month-compact-status">
+                <div style={{ width: 8, height: 8, borderRadius: '50%', background: i < 3 ? '#10b981' : '#475569' }}></div>
+                <span style={{ color: i < 3 ? '#10b981' : '#94a3b8' }}>{i < 3 ? 'On Track' : 'No Data'}</span>
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );
