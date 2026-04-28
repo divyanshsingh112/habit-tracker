@@ -8,6 +8,9 @@ import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth } from './firebase'; 
 import Login from './components/Login'; 
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const USE_DEMO_DATA_FALLBACK = true; 
+
 // --- MODAL COMPONENT (Redesigned) ---
 const NewHabitModal = ({ isOpen, onClose, onSave }) => {
   const [name, setName] = useState('');
@@ -157,7 +160,6 @@ const HomeDashboard = ({ years, onCreateYear, onSelectYear }) => {
 
       <div className="year-cards-grid">
         {years.map(year => {
-          const isPast = year < currentYear;
           return (
             <div key={year} className="year-card-v2" onClick={() => onSelectYear(year)}>
               <div className="year-card-v2-top">
@@ -168,14 +170,14 @@ const HomeDashboard = ({ years, onCreateYear, onSelectYear }) => {
               </div>
               <div style={{display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#94a3b8', marginBottom: '0.5rem'}}>
                 <span>Complete</span>
-                <span>{isPast ? '75' : '0'}%</span>
+                <span>0%</span>
               </div>
               <div style={{height: '5px', background: '#0f172a', borderRadius: '5px', overflow: 'hidden', marginBottom: '1rem'}}>
-                <div style={{ width: isPast ? '75%' : '0%', height: '100%', background: 'linear-gradient(90deg, #6366f1, #a78bfa)', borderRadius: '5px' }}></div>
+                <div style={{ width: '0%', height: '100%', background: 'linear-gradient(90deg, #6366f1, #a78bfa)', borderRadius: '5px' }}></div>
               </div>
-              <div style={{display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', fontWeight: '600', color: isPast ? '#a855f7' : '#64748b'}}>
+              <div style={{display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', fontWeight: '600', color: '#64748b'}}>
                 <Flame size={14} />
-                <span>{isPast ? '324 Day Streak' : 'Upcoming'}</span>
+                <span>0 Day Streak</span>
               </div>
             </div>
           );
@@ -225,29 +227,146 @@ const YearGrid = ({ year, onSelectMonth, onBack }) => {
 };
 
 // --- TRACKER LIST (Insights View Redesign) ---
-const TrackerList = ({ year, month, user, onBack, onOpenNewQuest }) => {
-  // Generate Days Data
+const TrackerList = ({ year, month, user, onBack }) => {
+  const [loading, setLoading] = useState(false);
+  const [habits, setHabits] = useState([]);
+  const [isModalOpen, setModalOpen] = useState(false);
+
+  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   const getDaysInMonth = (monthName, yearVal) => {
-    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     const monthIndex = months.indexOf(monthName);
     return new Date(yearVal, monthIndex + 1, 0).getDate();
   };
-
   const totalDays = getDaysInMonth(month, year);
   
-  // Dummy logic to match the Heatmap exactly as shown in the screenshot
-  const getHeatmapLevel = (day) => {
-    if (day === 22 || day === 4) return 3; // Bright green
-    if (day % 7 === 0) return 0; // Empty
-    if (day % 3 === 0) return 2; // Mid green
-    if (day % 2 === 0) return 1; // Dark green
-    return 0; // Default empty
+  const today = new Date();
+  const currentRealYear = today.getFullYear();
+  const currentRealMonthName = months[today.getMonth()];
+  const currentRealDay = today.getDate();
+  const isCurrentMonth = year === currentRealYear && month === currentRealMonthName;
+
+  useEffect(() => {
+    const fetchHabits = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch(`${API_URL}/api/habits?uid=${user.uid}&year=${year}&month=${month}`);
+        if (!response.ok) throw new Error("Failed to connect to backend");
+        const data = await response.json();
+        setHabits(data || []); 
+      } catch (error) {
+        console.error("Backend Error:", error);
+        setHabits([]); // Start fresh empty instead of dummy data
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (user) fetchHabits();
+  }, [year, month, user]);
+
+  const toggleDay = async (habitId, day) => {
+    if (!isCurrentMonth || day !== currentRealDay) return;
+
+    const habitIndex = habits.findIndex(h => h.id === habitId);
+    const oldHabit = habits[habitIndex];
+    const newData = { ...(oldHabit.data || {}) };
+    
+    if (newData[day]) delete newData[day];
+    else newData[day] = true;
+
+    const newHabits = [...habits];
+    newHabits[habitIndex] = { ...oldHabit, data: newData };
+    setHabits(newHabits);
+
+    try {
+        await fetch(`${API_URL}/api/habits/${habitId}/toggle`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ day, completed: !!newData[day] })
+        });
+    } catch (err) {
+        console.error("Failed to sync toggle", err);
+    }
   };
 
-  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  const addHabit = async (name, attr, difficulty) => {
+    const tempId = Date.now();
+    const newHabit = { id: tempId, name, attr, difficulty, data: {} };
+    setHabits([...habits, newHabit]);
+    setModalOpen(false);
+
+    try {
+        const res = await fetch(`${API_URL}/api/habits`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ uid: user.uid, year, month, name, attr, difficulty })
+        });
+        const savedHabit = await res.json();
+        setHabits(prev => prev.map(h => h.id === tempId ? savedHabit : h));
+    } catch (err) {
+        console.error("Failed to create habit", err);
+    }
+  };
+
+  const deleteHabit = async (id) => {
+    if (window.confirm("Abandon this quest?")) {
+      setHabits(habits.filter(h => h.id !== id));
+      try {
+        await fetch(`${API_URL}/api/habits/${id}`, { method: 'DELETE' });
+      } catch (err) {
+        console.error("Failed to delete", err);
+      }
+    }
+  };
+
+  // Stats Calculations
+  let totalCompletions = 0;
+  habits.forEach(h => {
+     if (h.data) totalCompletions += Object.keys(h.data).length;
+  });
+
+  const maxPossibleCompletions = habits.length * totalDays;
+  const successRate = maxPossibleCompletions === 0 ? 0 : Math.round((totalCompletions / maxPossibleCompletions) * 100);
+
+  let computedStreak = 0;
+  if (isCurrentMonth) {
+    for (let i = currentRealDay; i >= 1; i--) {
+      let anyDone = habits.some(h => h.data && h.data[i]);
+      if (anyDone) {
+        computedStreak++;
+      } else {
+        if (i === currentRealDay) continue; // Don't break streak if today isn't done yet
+        break;
+      }
+    }
+  } else {
+    // For past months, just calculate longest streak
+    let currentStreak = 0;
+    for (let i = 1; i <= totalDays; i++) {
+       let anyDone = habits.some(h => h.data && h.data[i]);
+       if (anyDone) {
+          currentStreak++;
+          if (currentStreak > computedStreak) computedStreak = currentStreak;
+       } else {
+          currentStreak = 0;
+       }
+    }
+  }
+
+  // Heatmap Data
+  const getHeatmapLevel = (day) => {
+    let completedCount = 0;
+    habits.forEach(h => {
+       if (h.data && h.data[day]) completedCount++;
+    });
+    if (completedCount === 0) return 0;
+    if (completedCount === 1) return 1;
+    if (completedCount === 2) return 2;
+    return 3;
+  };
+
   const monthIndex = months.indexOf(month);
-  const firstDay = new Date(year, monthIndex, 1).getDay(); // 0 is Sunday
-  const startOffset = firstDay === 0 ? 6 : firstDay - 1; // Offset to start Mon
+  const firstDay = new Date(year, monthIndex, 1).getDay();
+  const startOffset = firstDay === 0 ? 6 : firstDay - 1;
 
   const heatmapCells = [];
   for (let i = 0; i < startOffset; i++) {
@@ -255,12 +374,15 @@ const TrackerList = ({ year, month, user, onBack, onOpenNewQuest }) => {
   }
   for (let day = 1; day <= totalDays; day++) {
     const level = getHeatmapLevel(day);
+    const isToday = isCurrentMonth && day === currentRealDay;
     heatmapCells.push(
-      <div key={`day-${day}`} className={`heatmap-cell level-${level}`}>
-        {day === 4 || day === 22 ? day : ''}
+      <div key={`day-${day}`} className={`heatmap-cell level-${level}`} style={isToday ? { border: '2px solid #a855f7' } : {}}>
+        {isToday ? day : ''}
       </div>
     );
   }
+
+  if (loading) return <div className="container animate-fade" style={{ color: 'white' }}>Loading Insights...</div>;
 
   return (
     <div className="container animate-fade">
@@ -272,23 +394,23 @@ const TrackerList = ({ year, month, user, onBack, onOpenNewQuest }) => {
       <div className="stats-grid">
         <div className="stat-card" style={{ border: '1px solid #334155' }}>
           <span className="stat-label" style={{ color: '#2dd4bf' }}>SUCCESS RATE</span>
-          <div className="stat-value">87% <Activity size={18} color="#2dd4bf" /></div>
+          <div className="stat-value">{successRate}% <Activity size={18} color="#2dd4bf" /></div>
         </div>
         <div className="stat-card" style={{ border: '1px solid rgba(168, 85, 247, 0.3)' }}>
-          <span className="stat-label">LONGEST STREAK</span>
-          <div className="stat-value">14 <span>days</span></div>
+          <span className="stat-label">CURRENT STREAK</span>
+          <div className="stat-value">{computedStreak} <span>days</span></div>
         </div>
       </div>
 
       <div className="quests-completed-card" style={{ border: '1px solid rgba(168, 85, 247, 0.2)' }}>
         <div className="quests-header">
           <span className="quests-label">QUESTS COMPLETED</span>
-          <span className="quests-number">142</span>
+          <span className="quests-number">{totalCompletions}</span>
         </div>
         <div className="progress-track">
-          <div className="progress-fill" style={{ width: '75%' }}></div>
+          <div className="progress-fill" style={{ width: `${successRate}%` }}></div>
         </div>
-        <div className="progress-text">75% of monthly goal</div>
+        <div className="progress-text">{successRate}% of monthly goal</div>
       </div>
 
       <div className="heatmap-card">
@@ -317,14 +439,71 @@ const TrackerList = ({ year, month, user, onBack, onOpenNewQuest }) => {
           <span>More</span>
         </div>
       </div>
+
+      {/* Active Quests List */}
+      <div className="active-quests-section" style={{ marginTop: '2.5rem', marginBottom: '2rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+          <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'white' }}>Active Quests</h3>
+          <button 
+            onClick={() => setModalOpen(true)}
+            style={{ padding: '0.5rem 1rem', background: '#d8b4fe', border: 'none', color: '#0f172a', borderRadius: '12px', cursor: 'pointer', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '8px' }}
+          >
+            <Plus size={16} /> Forge
+          </button>
+        </div>
+
+        <div className="quests-list" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          {habits.length === 0 && (
+            <div style={{ padding: '2rem', textAlign: 'center', color: '#94a3b8', background: '#1e293b', borderRadius: '12px', border: '1px dashed #334155' }}>
+              No active quests. Forge a new one to begin your journey!
+            </div>
+          )}
+          {habits.map(habit => {
+            const isCompletedToday = habit.data && habit.data[currentRealDay];
+            return (
+              <div key={habit.id} className="quest-card" style={{ background: '#1e293b', padding: '1rem', borderRadius: '12px', border: '1px solid #334155', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  <div className={`class-icon-small ${habit.attr}`} style={{ width: 40, height: 40, borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.05)' }}>
+                    {habit.attr === 'warrior' && <Sword size={20} color="#a78bfa" />}
+                    {habit.attr === 'mage' && <Sparkles size={20} color="#2dd4bf" />}
+                    {habit.attr === 'rogue' && <Activity size={20} color="#4ade80" />}
+                  </div>
+                  <div>
+                    <div style={{ color: 'white', fontWeight: 'bold', fontSize: '1rem' }}>{habit.name}</div>
+                    <div style={{ color: '#94a3b8', fontSize: '0.8rem', textTransform: 'capitalize' }}>Class: {habit.attr} • Level: {habit.difficulty || 'Adept'}</div>
+                  </div>
+                </div>
+                
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  {isCurrentMonth ? (
+                    <button 
+                      onClick={() => toggleDay(habit.id, currentRealDay)}
+                      style={{ 
+                        width: 36, height: 36, borderRadius: '8px', 
+                        background: isCompletedToday ? '#2dd4bf' : '#0f172a',
+                        border: isCompletedToday ? 'none' : '2px solid #334155',
+                        cursor: 'pointer',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        transition: 'all 0.2s',
+                        boxShadow: isCompletedToday ? '0 0 10px rgba(45, 212, 191, 0.4)' : 'none'
+                      }}
+                    >
+                      {isCompletedToday && <Zap size={16} color="#0f172a" fill="#0f172a" />}
+                    </button>
+                  ) : (
+                    <div style={{ color: '#94a3b8', fontSize: '0.85rem' }}>View Only</div>
+                  )}
+                  <button onClick={() => deleteHabit(habit.id)} style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+                    <X size={18} />
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
       
       <div style={{ marginTop: '2rem', display: 'flex', gap: '1rem', flexDirection: 'column' }}>
-        <button 
-          onClick={onOpenNewQuest}
-          style={{ padding: '1rem 1.5rem', background: '#d8b4fe', border: 'none', color: '#0f172a', borderRadius: '12px', cursor: 'pointer', fontWeight: '700', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}
-        >
-          <Plus size={20} /> Forge New Quest
-        </button>
         <button 
           onClick={onBack}
           style={{ padding: '1rem 1.5rem', background: 'transparent', border: '1px solid #334155', color: 'white', borderRadius: '12px', cursor: 'pointer', fontWeight: '600', width: '100%' }}
@@ -332,6 +511,12 @@ const TrackerList = ({ year, month, user, onBack, onOpenNewQuest }) => {
           Back to Chronicles
         </button>
       </div>
+
+      <NewHabitModal 
+        isOpen={isModalOpen} 
+        onClose={() => setModalOpen(false)} 
+        onSave={addHabit} 
+      />
     </div>
   );
 };
@@ -346,9 +531,6 @@ function App() {
   const [yearsList, setYearsList] = useState([2025, 2026]); 
   const [selectedYear, setSelectedYear] = useState(null);
   const [selectedMonth, setSelectedMonth] = useState(null);
-  
-  // Modal State
-  const [isModalOpen, setModalOpen] = useState(false);
 
   // AUTH CHECK
   useEffect(() => {
@@ -370,12 +552,6 @@ function App() {
     setCurrentView('month-tracker');
   };
   const handleSidebarNavigation = (destination) => setCurrentView(destination);
-
-  const handleCreateQuest = async (name, attr, difficulty) => {
-    // Integration logic here - right now just visual testing
-    console.log("Created Quest:", { name, attr, difficulty });
-    setModalOpen(false);
-  };
 
   if (loading) return <div style={{background: '#0f172a', height:'100vh', color:'white', display:'flex', alignItems:'center', justifyContent:'center'}}>Loading Guild...</div>;
   if (!user) return <Login onLogin={setUser} />;
@@ -418,7 +594,7 @@ function App() {
           )}
 
           {currentView === 'month-tracker' && selectedYear && selectedMonth && (
-            <TrackerList year={selectedYear} month={selectedMonth} user={user} onBack={() => setCurrentView('year-grid')} onOpenNewQuest={() => setModalOpen(true)} />
+            <TrackerList year={selectedYear} month={selectedMonth} user={user} onBack={() => setCurrentView('year-grid')} />
           )}
         </div>
 
@@ -442,12 +618,6 @@ function App() {
           </div>
         </nav>
       </main>
-
-      <NewHabitModal 
-        isOpen={isModalOpen} 
-        onClose={() => setModalOpen(false)} 
-        onSave={handleCreateQuest} 
-      />
     </div>
   );
 }
