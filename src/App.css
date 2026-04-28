@@ -1,22 +1,24 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
-/* =========================================
-   1. VARIABLES & RESET
-   ========================================= */
 :root {
-  /* Midnight Theme (Default) */
-  --bg-body: #0f172a;       /* Dark Navy Background */
-  --bg-card: #1e293b;       /* Slightly Lighter Card */
-  --bg-sidebar: #0f172a;    /* Sidebar matches body */
-  --text-main: #ffffff;
+  --bg-body: #0f172a;
+  --bg-card: #1e293b;
+  --bg-card-hover: #334155;
+  --text-main: #f8fafc;
   --text-muted: #94a3b8;
   --border: #334155;
-  --primary: #10b981;       /* Green Success */
-  --accent: #6366f1;        /* Indigo */
+  --primary: #10b981;
+  --primary-glow: rgba(16, 185, 129, 0.2);
+  --accent: #a855f7;
+  --accent-glow: rgba(168, 85, 247, 0.2);
+  --danger: #ef4444;
+  --warrior: #a78bfa;
+  --mage: #2dd4bf;
+  --rogue: #4ade80;
   
   --radius-lg: 16px;
+  --radius-md: 12px;
   --radius-sm: 8px;
-  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -25,28 +27,38 @@ body {
   font-family: 'Inter', sans-serif;
   background-color: var(--bg-body);
   color: var(--text-main);
-  height: 100vh;
-  overflow: hidden;
+  /* Make body scrollable */
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
-/* =========================================
-   2. MAIN LAYOUT (Sidebar + Content)
-   ========================================= */
 .app-layout {
   display: flex;
-  height: 100vh;
+  min-height: 100vh;
   width: 100vw;
+  flex-direction: column;
+}
+
+@media (min-width: 768px) {
+  .app-layout {
+    flex-direction: row;
+  }
 }
 
 /* Sidebar */
 .sidebar {
-  width: 260px;
-  background: var(--bg-sidebar);
-  border-right: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  padding: 1.5rem;
-  flex-shrink: 0;
+  display: none;
+}
+@media (min-width: 768px) {
+  .sidebar {
+    width: 260px;
+    background: var(--bg-body);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem;
+    flex-shrink: 0;
+  }
 }
 
 .brand {
@@ -87,398 +99,536 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow: hidden; /* Prevent body scroll */
+  padding-bottom: 80px; /* For mobile bottom nav space */
+}
+@media (min-width: 768px) {
+  .main-content {
+    padding-bottom: 0;
+  }
 }
 
 .top-bar {
-  height: 70px;
-  border-bottom: 1px solid var(--border);
+  display: none;
+}
+@media (min-width: 768px) {
+  .top-bar {
+    height: 70px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2rem;
+  }
+}
+
+.mobile-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+}
+@media (min-width: 768px) {
+  .mobile-header {
+    display: none;
+  }
+}
+
+.mobile-header-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #a855f7; /* Purple to match image */
+}
+
+.avatar-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #334155;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 2rem;
+  justify-content: center;
+  overflow: hidden;
 }
 
 .scroll-area {
   flex: 1;
-  overflow-y: auto;
-  padding: 2rem;
-}
-
-.container {
-  max-width: 1200px;
+  padding: 1.5rem;
+  max-width: 800px;
   margin: 0 auto;
+  width: 100%;
 }
 
-/* =========================================
-   3. YEAR VIEW (The Grid)
-   ========================================= */
-.section-header {
-  margin-bottom: 2rem;
+/* Bottom Nav */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--bg-body);
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-around;
+  padding: 0.75rem 0;
+  padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+  z-index: 50;
+}
+@media (min-width: 768px) {
+  .bottom-nav {
+    display: none;
+  }
 }
 
-/* THIS IS THE GRID FIX */
-.months-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* Force columns */
-  gap: 1.5rem;
-}
-
-.month-card {
-  background: white; /* Matches your screenshot */
-  color: #1e293b;    /* Dark text on white card */
-  padding: 2rem;
-  border-radius: var(--radius-lg);
+.bottom-nav-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  height: 180px;
+  gap: 0.25rem;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: transform 0.2s;
-  box-shadow: var(--shadow);
-  text-align: center;
+  transition: color 0.2s;
 }
 
-.month-card:hover {
-  transform: translateY(-4px);
+.bottom-nav-item.active {
+  color: #a855f7;
 }
 
-.month-name {
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-  color: #f8fafc; /* Very light grey for name background if needed, or stick to dark */
-  color: #1e293b;
+/* Insights Page / Tracker Page */
+.insights-header {
+  margin-bottom: 2rem;
 }
 
-.status-badge {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.875rem;
-  color: #94a3b8;
+.insights-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #d8b4fe; /* Light purple */
+  margin-bottom: 0.5rem;
 }
 
-/* =========================================
-   4. TRACKER VIEW (Rows)
-   ========================================= */
-.tracker-container {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
+.insights-subtitle {
+  color: var(--text-main);
+  font-size: 1rem;
 }
 
-/* Header Row */
-.row-header {
+/* Stat Cards */
+.stats-grid {
   display: grid;
-  grid-template-columns: 250px 1fr 100px; /* Fixed Name | Flexible Days | Fixed Stats */
-  background: rgba(0,0,0,0.2);
-  padding: 1rem;
-  border-bottom: 1px solid var(--border);
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.stat-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.stat-label {
+  color: #a855f7; /* Purple */
+  font-size: 0.75rem;
   font-weight: 700;
-  font-size: 0.875rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.stat-value {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--text-main);
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.stat-value span {
+  font-size: 1rem;
+  font-weight: 500;
   color: var(--text-muted);
 }
 
-/* Data Row */
-.habit-row {
-  display: grid;
-  grid-template-columns: 250px 1fr 100px;
-  border-bottom: 1px solid var(--border);
-  align-items: center;
-  transition: background 0.1s;
-}
-
-.habit-row:hover {
-  background: rgba(255,255,255,0.02);
-}
-
-.habit-name {
+.quests-completed-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
   padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.quests-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.quests-label {
+  color: #e2e8f0;
+  font-size: 0.875rem;
   font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  border-right: 1px solid var(--border);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
-.habit-days {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 0 1rem;
-  overflow-x: auto;
+.quests-number {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #d8b4fe;
 }
 
-/* The Checkbox Square */
-.day-box {
-  width: 36px;
-  height: 36px;
+.progress-track {
+  height: 8px;
+  background: #334155;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #a855f7, #d8b4fe);
+  border-radius: 4px;
+  transition: width 0.5s ease-out;
+}
+
+.progress-text {
+  text-align: right;
+  font-size: 0.75rem;
+  color: var(--text-main);
+  font-weight: 500;
+}
+
+/* Heatmap Card */
+.heatmap-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+}
+
+.heatmap-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.heatmap-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.heatmap-month-badge {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.heatmap-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.5rem;
+}
+
+.heatmap-day-header {
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 0.5rem;
+}
+
+.heatmap-cell {
+  aspect-ratio: 1;
   border-radius: 6px;
-  background: #334155; /* Dark grey default */
-  cursor: pointer;
+  background: #334155; /* Default empty cell */
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-  color: white;
-  transition: all 0.2s;
-}
-
-.day-box:hover {
-  border: 2px solid var(--text-muted);
-}
-
-.day-box.completed {
-  background: var(--primary); /* Green Success */
-  box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
-}
-
-.habit-stats {
-  padding: 1rem;
-  text-align: center;
+  font-size: 0.75rem;
   font-weight: 700;
-  color: var(--primary);
-  border-left: 1px solid var(--border);
+  color: #0f172a;
 }
-/* =========================================
-   5. NEW QUEST MODAL (Polished)
-   ========================================= */
+
+.heatmap-cell.empty {
+  background: transparent;
+}
+
+.heatmap-cell.level-0 { background: #334155; }
+.heatmap-cell.level-1 { background: #166534; color: transparent; box-shadow: 0 0 10px rgba(22, 101, 52, 0.2); }
+.heatmap-cell.level-2 { background: #22c55e; color: transparent; box-shadow: 0 0 10px rgba(34, 197, 94, 0.4); }
+.heatmap-cell.level-3 { background: #4ade80; color: #0f172a; box-shadow: 0 0 15px rgba(74, 222, 128, 0.6); }
+
+.heatmap-legend {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1.5rem;
+  font-size: 0.75rem;
+  color: var(--text-main);
+}
+
+.legend-colors {
+  display: flex;
+  gap: 4px;
+}
+
+.legend-box {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+}
+
+/* Forge New Quest Modal */
 .modal-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(15, 23, 42, 0.7); /* Dark Navy Fade */
+  background: rgba(15, 23, 42, 0.8);
   backdrop-filter: blur(4px);
   z-index: 100;
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: fadeIn 0.2s ease-out;
+  padding: 1rem;
 }
 
 .modal-card {
-  background: #1e293b; /* Slate 800 */
+  background: var(--bg-card);
   width: 100%;
-  max-width: 500px;
-  border-radius: 24px;
-  border: 1px solid #334155;
+  max-width: 400px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-  overflow: hidden;
+  position: relative;
+  max-height: 90vh;
+  overflow-y: auto;
   animation: scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.modal-header {
-  padding: 1.5rem;
-  border-bottom: 1px solid #334155;
+.modal-close {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  background: rgba(0,0,0,0.2);
+  justify-content: center;
+  color: var(--text-muted);
+  cursor: pointer;
+  border: none;
+  transition: background 0.2s;
+}
+
+.modal-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.modal-header {
+  padding: 2rem 1.5rem 1rem;
+}
+
+.modal-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #d8b4fe; /* Purple */
+  margin-bottom: 0.5rem;
+}
+
+.modal-subtitle {
+  color: #cbd5e1;
+  font-size: 0.95rem;
 }
 
 .modal-body {
-  padding: 2rem;
+  padding: 0 1.5rem 2rem;
 }
 
-/* Input Styling */
+.input-group {
+  margin-bottom: 1.5rem;
+}
+
 .input-label {
   display: block;
-  color: #94a3b8;
+  color: var(--text-main);
   font-size: 0.875rem;
   font-weight: 600;
-  margin-bottom: 0.5rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  margin-bottom: 0.75rem;
 }
 
 .modal-input {
   width: 100%;
   padding: 1rem;
   background: #0f172a;
-  border: 2px solid #334155;
-  border-radius: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
   color: white;
   font-size: 1rem;
   outline: none;
-  transition: all 0.2s;
-  margin-bottom: 1.5rem;
+  transition: border-color 0.2s;
 }
 
 .modal-input:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+  border-color: var(--accent);
 }
 
-/* Class Selector Grid */
 .class-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 2rem;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
 }
 
 .class-card {
   background: #0f172a;
-  border: 2px solid #334155;
-  padding: 1rem;
-  border-radius: 12px;
+  border: 1px solid var(--border);
+  padding: 1rem 0.5rem;
+  border-radius: var(--radius-md);
   cursor: pointer;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 12px;
+  text-align: center;
+  gap: 0.5rem;
   transition: all 0.2s;
-  opacity: 0.7;
 }
 
 .class-card:hover {
-  opacity: 1;
-  background: #1e293b;
+  background: rgba(255, 255, 255, 0.05);
 }
 
-/* Active States for Classes */
 .class-card.active {
-  opacity: 1;
-  background: #1e293b;
+  border-color: #d8b4fe;
+  box-shadow: 0 0 0 1px #d8b4fe;
+  background: rgba(216, 180, 254, 0.05);
 }
-.class-card.active.warrior { border-color: #ef4444; box-shadow: 0 0 15px rgba(239, 68, 68, 0.2); }
-.class-card.active.mage    { border-color: #3b82f6; box-shadow: 0 0 15px rgba(59, 130, 246, 0.2); }
-.class-card.active.monk    { border-color: #a855f7; box-shadow: 0 0 15px rgba(168, 85, 247, 0.2); }
-.class-card.active.bard    { border-color: #f59e0b; box-shadow: 0 0 15px rgba(245, 158, 11, 0.2); }
 
 .class-icon {
-  width: 32px; height: 32px;
-  border-radius: 8px;
-  display: flex; align-items: center; justify-content: center;
-  color: white;
-  font-weight: bold;
+  margin-bottom: 0.25rem;
 }
 
-/* Modal Actions */
+.class-card.warrior .class-icon { color: var(--warrior); }
+.class-card.mage .class-icon { color: var(--mage); }
+.class-card.rogue .class-icon { color: var(--rogue); }
+
+.class-name {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+.class-card.warrior .class-name { color: var(--warrior); }
+.class-card.mage .class-name { color: var(--mage); }
+.class-card.rogue .class-name { color: var(--rogue); }
+
+
+.class-desc {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  line-height: 1.2;
+}
+
+.difficulty-group {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.diff-btn {
+  flex: 1;
+  padding: 0.75rem 0;
+  background: #0f172a;
+  border: 1px solid var(--border);
+  color: var(--text-main);
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.diff-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.diff-btn.active {
+  background: #164e63; /* Dark teal background */
+  border-color: #2dd4bf; /* Mint border */
+  color: #2dd4bf;
+}
+
 .modal-actions {
   display: flex;
   gap: 1rem;
+  margin-top: 2rem;
 }
 
 .btn-cancel {
   flex: 1;
-  padding: 1rem;
+  padding: 0.875rem;
   background: transparent;
-  border: 1px solid #334155;
-  color: #94a3b8;
-  border-radius: 12px;
+  border: 1px solid var(--border);
+  color: var(--text-main);
+  border-radius: 20px;
   font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
 }
-.btn-cancel:hover { background: #334155; color: white; }
 
-.btn-confirm {
-  flex: 2;
-  padding: 1rem;
-  background: var(--primary);
-  color: #0f172a; /* Dark text on green is readable */
+.btn-cancel:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.btn-create {
+  flex: 1.5;
+  padding: 0.875rem;
+  background: #d8b4fe;
+  color: #0f172a;
   border: none;
-  border-radius: 12px;
+  border-radius: 20px;
   font-weight: 700;
-  font-size: 1rem;
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-}
-.btn-confirm:hover { transform: translateY(-2px); filter: brightness(1.1); }
-
-/* Animations */
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes scaleUp { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-
-/* ... (Keep all previous styles) ... */
-
-/* =========================================
-   6. NEW DASHBOARD & DELETION UI
-   ========================================= */
-
-/* The 'Add Year' Dashed Card */
-.add-year-card {
-  border: 3px dashed var(--border);
-  border-radius: var(--radius-lg);
-  background: rgba(255, 255, 255, 0.02);
   display: flex;
-  flex-direction: column;
-  align-items: center;
   justify-content: center;
-  height: 180px;
-  cursor: pointer;
-  transition: all 0.3s;
-  color: var(--text-muted);
-}
-
-.add-year-card:hover {
-  border-color: var(--primary);
-  color: var(--primary);
-  background: rgba(16, 185, 129, 0.05);
-}
-
-/* Update Tracker Grid for Delete Button */
-.row-header, .habit-row {
-  /* Updated columns: Name | Days | Stats | Delete */
-  grid-template-columns: 220px 1fr 80px 50px; 
-}
-
-/* Delete Button styles */
-.delete-btn {
-  display: flex;
   align-items: center;
-  justify-content: center;
-  color: var(--text-muted);
+  gap: 0.5rem;
   cursor: pointer;
-  transition: color 0.2s;
-  border-left: 1px solid var(--border);
-  height: 100%;
+  transition: transform 0.2s;
 }
 
-.delete-btn:hover {
-  color: #ef4444; /* Danger Red */
-  background: rgba(239, 68, 68, 0.1);
+.btn-create:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.05);
 }
 
-/* =========================================
-   7. REDESIGNED YEAR CARDS & MONTH GRID
-   ========================================= */
-
-/* Chronicles Header */
-.chronicles-header {
-  margin-bottom: 2rem;
+/* Home / Year Grid styling */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-.chronicles-header h1 {
-  font-size: 2rem;
-  font-weight: 800;
-  margin-bottom: 0.5rem;
-  color: #ffffff;
-}
-
-.chronicles-header p {
-  color: #94a3b8;
-  font-size: 0.95rem;
-  line-height: 1.6;
-  max-width: 480px;
-}
-
-/* Year Cards Grid */
 .year-cards-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
   gap: 1.25rem;
 }
 
-/* Individual Year Card */
 .year-card-v2 {
   background: rgba(30, 41, 59, 0.6);
-  border: 1px solid #334155;
+  border: 1px solid var(--border);
   border-radius: 16px;
   padding: 1.5rem;
   cursor: pointer;
-  transition: all 0.25s ease;
   display: flex;
   flex-direction: column;
+  transition: all 0.25s ease;
 }
 
 .year-card-v2:hover {
@@ -497,7 +647,6 @@ body {
 .year-card-v2-year {
   font-size: 2rem;
   font-weight: 800;
-  color: #ffffff;
 }
 
 .year-card-v2-icon {
@@ -505,64 +654,14 @@ body {
   height: 36px;
   border-radius: 50%;
   background: rgba(167, 139, 250, 0.15);
-  border: 1px solid rgba(167, 139, 250, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
   color: #a78bfa;
 }
 
-.year-card-v2-stats {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.85rem;
-  color: #94a3b8;
-  margin-bottom: 0.5rem;
-}
-
-.year-card-v2-bar {
-  height: 5px;
-  background: #0f172a;
-  border-radius: 5px;
-  overflow: hidden;
-  margin-bottom: 1rem;
-}
-
-.year-card-v2-bar-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #6366f1, #a78bfa);
-  border-radius: 5px;
-  transition: width 0.6s ease;
-}
-
-.year-card-v2-streak {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: 0.8rem;
-  font-weight: 600;
-  margin-bottom: 1.25rem;
-}
-
-.year-card-v2-action {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-top: 1rem;
-  border-top: 1px solid #334155;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #cbd5e1;
-  transition: color 0.2s;
-}
-
-.year-card-v2:hover .year-card-v2-action {
-  color: #a78bfa;
-}
-
-/* Add Year Card (dashed) */
 .add-year-card-v2 {
-  border: 2px dashed #334155;
+  border: 2px dashed var(--border);
   border-radius: 16px;
   display: flex;
   flex-direction: column;
@@ -572,7 +671,6 @@ body {
   cursor: pointer;
   color: #64748b;
   gap: 0.75rem;
-  font-size: 1rem;
   font-weight: 600;
   transition: all 0.25s ease;
 }
@@ -583,69 +681,26 @@ body {
   background: rgba(167, 139, 250, 0.05);
 }
 
-/* Back Button */
-.back-btn-v2 {
-  background: #334155;
-  border: none;
-  color: white;
-  padding: 8px;
-  border-radius: 8px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s;
-}
-
-.back-btn-v2:hover {
-  background: #475569;
-}
-
-/* Month Scroll Container */
-.month-scroll-container {
-  max-height: calc(100vh - 220px);
-  overflow-y: auto;
-  border-radius: 16px;
-  border: 1px solid #334155;
-  background: rgba(30, 41, 59, 0.3);
-}
-
-.month-scroll-container::-webkit-scrollbar {
-  width: 6px;
-}
-
-.month-scroll-container::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.month-scroll-container::-webkit-scrollbar-thumb {
-  background: #475569;
-  border-radius: 3px;
-}
-
-/* Month Compact Grid */
 .month-compact-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+@media (max-width: 600px) {
+  .month-compact-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 .month-compact-card {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
   padding: 1.25rem;
   cursor: pointer;
+  border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--border);
   transition: background 0.15s;
-  border-bottom: 1px solid #2d3748;
-  border-right: 1px solid #2d3748;
-}
-
-.month-compact-card:nth-child(3n) {
-  border-right: none;
-}
-
-.month-compact-card:nth-last-child(-n+3) {
-  border-bottom: none;
 }
 
 .month-compact-card:hover {
@@ -655,17 +710,18 @@ body {
 .month-compact-name {
   font-size: 1rem;
   font-weight: 700;
-  color: #ffffff;
+  display: block;
+  margin-bottom: 0.5rem;
 }
 
 .month-compact-status {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
   font-size: 0.75rem;
+  color: var(--text-muted);
 }
 
-/* Animation */
+/* Animations */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes scaleUp { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 .animate-fade {
   animation: fadeIn 0.3s ease-out;
 }
